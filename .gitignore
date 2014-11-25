@@ -26,3 +26,20 @@
 *.exe
 *.out
 *.app
+
+# My directories
+functional/lib/
+functional/bin/
+functional/3rd/
+functional/temp/
+functional/assets/
+functional/doc/out/
+functional/msvc/ipch/
+
+imperative/lib/
+imperative/bin/
+imperative/3rd/
+imperative/temp/
+imperative/assets/
+imperative/doc/out/
+imperative/msvc/ipch/
