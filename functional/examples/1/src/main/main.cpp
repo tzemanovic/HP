@@ -1,4 +1,4 @@
-#include <pch/pch.h>
+#include <pch/pch.hpp>
 
 #ifdef PW_DEBUG
 #include <vld.h>

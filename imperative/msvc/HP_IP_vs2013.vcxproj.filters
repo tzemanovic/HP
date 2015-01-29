@@ -13,6 +13,9 @@
     <Filter Include="include\pch">
       <UniqueIdentifier>{360346d9-c5ce-4f5f-9b9c-f3f34eb08f23}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\window">
+      <UniqueIdentifier>{0684d5fb-cfe6-4a91-bbb8-48c2ac9e5c8b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -23,8 +26,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\pch\pch.h">
+    <ClInclude Include="..\include\pch\pch.hpp">
       <Filter>include\pch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\window.hpp">
+      <Filter>include\window</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

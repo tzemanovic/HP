@@ -27,6 +27,10 @@
 *.out
 *.app
 
+# MSVC
+*.sdf
+*.suo
+
 # My directories
 functional/lib/
 functional/bin/
