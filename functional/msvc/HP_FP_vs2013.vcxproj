@@ -29,10 +29,14 @@
   <ItemGroup>
     <ClCompile Include="..\include\pch\pch.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
+    <ClCompile Include="..\src\window\window.cpp" />
+    <ClCompile Include="..\src\window\windowConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\pch\pch.hpp" />
     <ClInclude Include="..\include\window\window.hpp" />
+    <ClInclude Include="..\include\window\windowConfig.hpp" />
+    <ClInclude Include="..\include\window\windowStyle.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5817AA84-19C1-4361-ADA3-43A8FC17F0D8}</ProjectGuid>

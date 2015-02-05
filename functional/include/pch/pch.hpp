@@ -45,6 +45,7 @@
 
 
 #include <string>
+#include <tuple>
 
 
 #if defined( HP_PLATFORM_WIN32 )

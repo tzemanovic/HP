@@ -16,6 +16,9 @@
     <Filter Include="include\window">
       <UniqueIdentifier>{121ef676-7b36-4f81-8f36-42d5bd1c267b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\window">
+      <UniqueIdentifier>{0be02757-c120-4b0b-b63d-6af28fbcdfa4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -24,6 +27,12 @@
     <ClCompile Include="..\include\pch\pch.cpp">
       <Filter>include\pch</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\window\window.cpp">
+      <Filter>src\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\window\windowConfig.cpp">
+      <Filter>src\window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\window\window.hpp">
@@ -31,6 +40,12 @@
     </ClInclude>
     <ClInclude Include="..\include\pch\pch.hpp">
       <Filter>include\pch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\windowConfig.hpp">
+      <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\windowStyle.hpp">
+      <Filter>include\window</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
