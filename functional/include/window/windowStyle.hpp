@@ -4,8 +4,8 @@ namespace hp_fp
 {
 	enum struct WindowStyle : unsigned
 	{
-		Windowed,
+		Window,
 		Fullscreen,
-		Default = Windowed
+		Default = Window
 	};
 }

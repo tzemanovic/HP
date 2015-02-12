@@ -2,7 +2,7 @@
 #include "windowStyle.hpp"
 
 // Generated using tools/immutableStruct.hs:
-// gen' "WindowConfig" [("unsigned", "width"), ("unsigned", "height"), ("WindowStyle", "windowStyle"), ("unsigned", "bitsPerPx")] ["windowStyle"]
+// gen "WindowConfig" [("unsigned", "width"), ("unsigned", "height"), ("WindowStyle", "windowStyle"), ("unsigned", "bitsPerPx")] ["windowStyle"]
 namespace hp_fp
 {
 	struct WindowConfig

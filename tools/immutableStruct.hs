@@ -18,7 +18,7 @@ Output:
 #include "windowStyle.hpp"
 
 // Generated using tools/immutableStruct.hs:
-// gen' "WindowConfig" [("unsigned", "width"), ("unsigned", "height"), ("WindowStyle", "windowStyle"), ("unsigned", "bitsPerPx")] ["windowStyle"]
+// gen "WindowConfig" [("unsigned", "width"), ("unsigned", "height"), ("WindowStyle", "windowStyle"), ("unsigned", "bitsPerPx")] ["windowStyle"]
 namespace hp_fp
 {
 	struct WindowConfig
@@ -50,17 +50,17 @@ namespace hp_fp
 
 -}
 
-gen' :: Name -> [(VarType, VarName)] -> [Include] -> IO ()
-gen' n vs i = do
+gen :: Name -> [(VarType, VarName)] -> [Include] -> IO ()
+gen n vs i = do
   outh <- openFile ((toLower (head n):tail n) ++ ".hpp") WriteMode
   hPutStrLn outh $ immutableStruct n vs i
   hClose outh
 
-gen :: Name -> [(VarType, VarName)] -> [Include] -> IO ()
-gen n vs i = putStrLn $ immutableStruct n vs i
+gen' :: Name -> [(VarType, VarName)] -> [Include] -> IO ()
+gen' n vs i = putStrLn $ immutableStruct n vs i
 
 immutableStruct :: Name -> [(VarType, VarName)] -> [Include] -> String
-immutableStruct n vs i = "#pragma once\n" ++ includes i ++ "\n// Generated using tools/immutableStruct.hs:\n// gen' " ++ args n vs i ++ "\nnamespace hp_fp\n{\nstruct " ++ n ++ "\n{\npublic:\n" ++ variables vs ++ "public:\n" ++ setters n (variableNames vs) vs ++ "};\n}"
+immutableStruct n vs i = "#pragma once\n" ++ includes i ++ "\n// Generated using tools/immutableStruct.hs:\n// gen " ++ args n vs i ++ "\nnamespace hp_fp\n{\nstruct " ++ n ++ "\n{\npublic:\n" ++ variables vs ++ "public:\n" ++ setters n (variableNames vs) vs ++ "};\n}"
   where 
   includes :: [Include] -> String
   includes i = foldl1 (++) (map (\x -> "#include \"" ++ x ++ ".hpp\"\n") i)

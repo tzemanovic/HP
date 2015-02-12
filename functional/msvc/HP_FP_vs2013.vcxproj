@@ -30,7 +30,6 @@
     <ClCompile Include="..\include\pch\pch.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
     <ClCompile Include="..\src\window\window.cpp" />
-    <ClCompile Include="..\src\window\windowConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\pch\pch.hpp" />

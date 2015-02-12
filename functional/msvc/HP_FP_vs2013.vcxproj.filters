@@ -30,9 +30,6 @@
     <ClCompile Include="..\src\window\window.cpp">
       <Filter>src\window</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\window\windowConfig.cpp">
-      <Filter>src\window</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\window\window.hpp">
@@ -41,10 +38,10 @@
     <ClInclude Include="..\include\pch\pch.hpp">
       <Filter>include\pch</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\window\windowConfig.hpp">
+    <ClInclude Include="..\include\window\windowStyle.hpp">
       <Filter>include\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\window\windowStyle.hpp">
+    <ClInclude Include="..\include\window\windowConfig.hpp">
       <Filter>include\window</Filter>
     </ClInclude>
   </ItemGroup>
