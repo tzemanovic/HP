@@ -34,7 +34,8 @@
   <ItemGroup>
     <ClInclude Include="..\include\pch\pch.hpp" />
     <ClInclude Include="..\include\window\window.hpp" />
-    <ClInclude Include="..\include\window\windowConfig.hpp" />
+    <ClInclude Include="..\include\window\windowConfigImm.hpp" />
+    <ClInclude Include="..\include\window\windowMut.hpp" />
     <ClInclude Include="..\include\window\windowStyle.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

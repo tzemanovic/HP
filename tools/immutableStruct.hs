@@ -1,4 +1,4 @@
-import Data.Char (toLower)
+import Data.Char (toLower, toUpper)
 import System.IO
 import Data.List (intersperse)
 
@@ -24,26 +24,26 @@ namespace hp_fp
 	struct WindowConfig
 	{
 	public:
-		const unsigned _width;
-		const unsigned _height;
-		const WindowStyle _windowStyle;
-		const unsigned _bitsPerPx;
+		const unsigned width;
+		const unsigned height;
+		const WindowStyle windowStyle;
+		const unsigned bitsPerPx;
 	public:
-		const WindowConfig width( const unsigned width ) const
+		const WindowConfig setWidth( const unsigned w ) const
 		{
-			return WindowConfig{ width, _height, _windowStyle, _bitsPerPx };
+			return WindowConfig{ w, height, windowStyle, bitsPerPx };
 		}
-		const WindowConfig height( const unsigned height ) const
+		const WindowConfig setHeight( const unsigned h ) const
 		{
-			return WindowConfig{ _width, height, _windowStyle, _bitsPerPx };
+			return WindowConfig{ width, h, windowStyle, bitsPerPx };
 		}
-		const WindowConfig windowStyle( const WindowStyle windowStyle ) const
+		const WindowConfig setWindowStyle( const WindowStyle w ) const
 		{
-			return WindowConfig{ _width, _height, windowStyle, _bitsPerPx };
+			return WindowConfig{ width, height, w, bitsPerPx };
 		}
-		const WindowConfig bitsPerPx( const unsigned bitsPerPx ) const
+		const WindowConfig setBitsPerPx( const unsigned b ) const
 		{
-			return WindowConfig{ _width, _height, _windowStyle, bitsPerPx };
+			return WindowConfig{ width, height, windowStyle, b };
 		}
 	};
 }
@@ -52,7 +52,8 @@ namespace hp_fp
 
 gen :: Name -> [(VarType, VarName)] -> [Include] -> IO ()
 gen n vs i = do
-  outh <- openFile ((toLower (head n):tail n) ++ ".hpp") WriteMode
+  let filename = (toLower (head n):tail n) ++ "Imm.hpp"
+  outh <- openFile filename WriteMode
   hPutStrLn outh $ immutableStruct n vs i
   hClose outh
 
@@ -60,8 +61,9 @@ gen' :: Name -> [(VarType, VarName)] -> [Include] -> IO ()
 gen' n vs i = putStrLn $ immutableStruct n vs i
 
 immutableStruct :: Name -> [(VarType, VarName)] -> [Include] -> String
-immutableStruct n vs i = "#pragma once\n" ++ includes i ++ "\n// Generated using tools/immutableStruct.hs:\n// gen " ++ args n vs i ++ "\nnamespace hp_fp\n{\nstruct " ++ n ++ "\n{\npublic:\n" ++ variables vs ++ "public:\n" ++ setters n (variableNames vs) vs ++ "};\n}"
+immutableStruct n vs i = "#pragma once\n" ++ includes i ++ "\n// Generated using tools/immutableStruct.hs:\n// gen " ++ args n vs i ++ "\nnamespace hp_fp\n{\nstruct " ++ nn ++ "\n{\npublic:\n" ++ variables vs ++ "public:\n" ++ setters nn (variableNames vs) vs ++ "};\n}"
   where 
+  nn = n ++ "Imm"
   includes :: [Include] -> String
   includes i = foldl1 (++) (map (\x -> "#include \"" ++ x ++ ".hpp\"\n") i)
   args :: Name -> [(VarType, VarName)] -> [Include] -> String
@@ -79,18 +81,18 @@ immutableStruct n vs i = "#pragma once\n" ++ includes i ++ "\n// Generated using
     constructorArgs ((vType, vName):vs) = "const " ++ vType ++ " " ++ vName ++ ", " ++ constructorArgs vs
   variables :: [(String, String)] -> String
   variables [] = ""
-  variables ((vType, vName):vs) = "const " ++ vType ++ " _" ++ vName ++ ";\n" ++ variables vs
+  variables ((vType, vName):vs) = "const " ++ vType ++ " " ++ vName ++ ";\n" ++ variables vs
   setters :: String -> [String] -> [(String, String)] -> String
   setters _ _ [] = ""
-  setters n vNames ((vType, vName):vs) = "const " ++ n ++ " " ++ vName ++ "(const " ++ vType ++ " " ++ vName ++ ") const\n{\nreturn " ++ n ++ "{ " ++ constructorArgs vName vNames ++ " };\n }\n" ++ setters n vNames vs
+  setters n vNames ((vType, vName):vs) = "const " ++ n ++ " set" ++ (toUpper (head vName):tail vName) ++ "(const " ++ vType ++ " " ++ [head vName] ++ ") const\n{\nreturn " ++ n ++ "{ " ++ constructorArgs vName vNames ++ " };\n }\n" ++ setters n vNames vs
     where
     constructorArgs :: String -> [String] -> String
     constructorArgs currentVName [vName] = if (currentVName == vName) 
-                                              then vName
-                                              else "_" ++ vName
+                                              then [head vName]
+                                              else vName
     constructorArgs currentVName (vName:vNames) = (if (currentVName == vName) 
-                                                     then vName ++ "," 
-                                                     else "_" ++ vName ++ ",")
+                                                     then [head vName] ++ ", " 
+                                                     else vName ++ ", ")
                                                    ++ constructorArgs currentVName vNames
   variableNames :: [(String, String)] -> [String]
   variableNames [] = []

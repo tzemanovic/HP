@@ -41,7 +41,10 @@
     <ClInclude Include="..\include\window\windowStyle.hpp">
       <Filter>include\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\window\windowConfig.hpp">
+    <ClInclude Include="..\include\window\windowConfigImm.hpp">
+      <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\windowMut.hpp">
       <Filter>include\window</Filter>
     </ClInclude>
   </ItemGroup>

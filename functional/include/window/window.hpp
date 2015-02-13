@@ -1,18 +1,11 @@
 #pragma once
-#include "windowConfig.hpp"
+#include "windowConfigImm.hpp"
 
 namespace hp_fp
 {
-	struct Window
-	{
-	private:
-		WindowHandle	_handle;
-		LPCWSTR			_name;
-	};
-
 	namespace Window
 	{
-		Window open( const String&& windowName, const WindowConfig& windowConfig );
+		Window open( const String&& windowName, const WindowConfigImm& windowConfig );
 		std::tuple<unsigned, unsigned, unsigned> getCurrentMode( );
 	}
 }

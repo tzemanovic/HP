@@ -5,7 +5,7 @@ namespace hp_fp
 {
 	namespace Window
 	{
-		WindowHandle open( const String&& windowName, const WindowConfig& windowConfig )
+		WindowHandle open( const String&& windowName, const WindowConfigImm& windowConfig )
 		{
 			return nullptr;
 			std::wstring windowNameW = s2ws( windowName );

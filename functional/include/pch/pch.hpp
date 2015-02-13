@@ -49,6 +49,24 @@
 
 
 #if defined( HP_PLATFORM_WIN32 )
+typedef unsigned char		 UInt8;
+typedef signed char			 Int8;
+typedef unsigned short		 UInt16;
+typedef signed short		 Int16;
+typedef unsigned int		 UInt32;
+typedef signed int			 Int32;
+typedef unsigned long		 UInt64;
+typedef signed long			 Int64;
+#   ifdef _MSC_VER
+typedef signed __int64		 Int64;
+typedef unsigned __int64	 UInt64;
+#   else
+typedef signed long long	 Int64;
+typedef unsigned long long	 UInt64;
+#   endif
+typedef Int32				 Int;
+typedef UInt32				 UInt;
+
 typedef HWND		 WindowHandle;
 typedef std::string	 String;
 #endif
