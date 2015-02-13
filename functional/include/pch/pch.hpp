@@ -55,8 +55,6 @@ typedef unsigned short		 UInt16;
 typedef signed short		 Int16;
 typedef unsigned int		 UInt32;
 typedef signed int			 Int32;
-typedef unsigned long		 UInt64;
-typedef signed long			 Int64;
 #   ifdef _MSC_VER
 typedef signed __int64		 Int64;
 typedef unsigned __int64	 UInt64;

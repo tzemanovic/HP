@@ -2,12 +2,11 @@
 
 namespace hp_fp
 {
-	struct Window
+	struct WindowMut
 	{
-	public:
 		WindowHandle	handle;
 #if defined( HP_PLATFORM_WIN32 )
-		LPCWSTR			name;
+		const LPCWSTR	name;
 #endif
 	};
 }

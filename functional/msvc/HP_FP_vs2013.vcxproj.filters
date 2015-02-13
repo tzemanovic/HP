@@ -19,6 +19,15 @@
     <Filter Include="src\window">
       <UniqueIdentifier>{0be02757-c120-4b0b-b63d-6af28fbcdfa4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\utils">
+      <UniqueIdentifier>{4d4cc415-5b22-4676-bba9-0dea59c419d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\utils">
+      <UniqueIdentifier>{b1bda194-6c66-45d1-9332-8e09865c0a3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\adt">
+      <UniqueIdentifier>{ab3e36e8-9b95-448d-a536-e998a21c19f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -29,6 +38,9 @@
     </ClCompile>
     <ClCompile Include="..\src\window\window.cpp">
       <Filter>src\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utils\stringUtils.cpp">
+      <Filter>src\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -46,6 +58,15 @@
     </ClInclude>
     <ClInclude Include="..\include\window\windowMut.hpp">
       <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\utils\stringUtils.hpp">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\maybe.hpp">
+      <Filter>include\adt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\io.hpp">
+      <Filter>include\adt</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
