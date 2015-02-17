@@ -35,8 +35,11 @@
   <ItemGroup>
     <ClInclude Include="..\include\adt\io.hpp" />
     <ClInclude Include="..\include\adt\maybe.hpp" />
+    <ClInclude Include="..\include\adt\sum.hpp" />
+    <ClInclude Include="..\include\hpFp.hpp" />
     <ClInclude Include="..\include\pch\pch.hpp" />
     <ClInclude Include="..\include\utils\stringUtils.hpp" />
+    <ClInclude Include="..\include\window\inputMessage.hpp" />
     <ClInclude Include="..\include\window\window.hpp" />
     <ClInclude Include="..\include\window\windowConfigImm.hpp" />
     <ClInclude Include="..\include\window\windowMut.hpp" />
@@ -113,30 +116,30 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
   </PropertyGroup>

@@ -68,5 +68,14 @@
     <ClInclude Include="..\include\adt\io.hpp">
       <Filter>include\adt</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\window\inputMessage.hpp">
+      <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\sum.hpp">
+      <Filter>include\adt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hpFp.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

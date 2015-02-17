@@ -1,6 +1,7 @@
 #include <pch.hpp>
 #include <window/window.hpp>
 #include <utils/stringUtils.hpp>
+#include <window/inputMessage.hpp>
 
 namespace hp_fp
 {
@@ -50,6 +51,7 @@ namespace hp_fp
 				window.handle = CreateWindowEx( 0, window.name, window.name, style, left, top, width, height, GetDesktopWindow( ), nullptr, GetModuleHandle( nullptr ), nullptr );
 				if ( window.handle == nullptr )
 				{
+					ERR( GetLastError( ) );
 					return Nothing<WindowMut>( );
 				}
 				if ( windowConfig.windowStyle == WindowStyle::Fullscreen )
@@ -59,6 +61,14 @@ namespace hp_fp
 			}
 		}
 		return Just( &window );
+	}
+
+	const WindowConfigImm defaultWindowConfig( )
+	{
+		DEVMODE mode;
+		mode.dmSize = sizeof( mode );
+		EnumDisplaySettings( nullptr, ENUM_CURRENT_SETTINGS, &mode );
+		return WindowConfigImm{ mode.dmPelsWidth, mode.dmPelsHeight, WindowStyle::Default, mode.dmBitsPerPel };
 	}
 
 	std::tuple<unsigned, unsigned, unsigned> getCurrentMode( )
@@ -121,6 +131,19 @@ namespace hp_fp
 
 	LRESULT CALLBACK windowProc( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam )
 	{
+		switch ( message )
+		{
+		case WM_CLOSE:
+		{
+			// create close message and push it to the queue
+			InputMessage msg( CloseMessage{ } );
+			//_messages.push( msg );
+			break;
+		}
+		default:
+			// default window procedure
+			return DefWindowProc( handle, message, wParam, lParam );
+		}
 		//switch ( message )
 		//{
 		//case WM_CLOSE:

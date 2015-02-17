@@ -7,7 +7,8 @@ namespace hp_fp
 {
 	Maybe<WindowMut> open( const String&& windowName, const WindowConfigImm& windowConfig );
 
-	std::tuple<unsigned, unsigned, unsigned> getCurrentMode( );
+	const WindowConfigImm defaultWindowConfig( );
+	//std::tuple<unsigned, unsigned, unsigned> getCurrentMode( );
 
 	bool isOnlyInstance( const LPCWSTR windowName );
 

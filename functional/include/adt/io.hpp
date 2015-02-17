@@ -6,5 +6,6 @@ namespace hp_fp
 	struct IO
 	{
 		typedef std::function<T( )> type;
-	};
+	};
+
 }

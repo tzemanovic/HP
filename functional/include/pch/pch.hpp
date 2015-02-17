@@ -25,8 +25,12 @@
 #	define HP_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__ )
 #   define HP_DEBUG
 #	include <iostream>
+#	define ERR( x ) do { std::cerr << x; } while ( 0 )
+#	define LOG( x ) do { std::cout << x; } while ( 0 )
 #else
 #	define HP_NEW new
+#	define ERR( x )
+#	define LOG( x )
 #endif
 
 
@@ -44,8 +48,11 @@
 #endif
 
 
+#include <type_traits>
 #include <string>
 #include <tuple>
+
+//#include <Mach7/match.hpp>
 
 
 #if defined( HP_PLATFORM_WIN32 )

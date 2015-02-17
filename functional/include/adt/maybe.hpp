@@ -2,17 +2,17 @@
 
 namespace hp_fp
 {
-	template<typename A>
+	template<typename Type>
 	struct Maybe
 	{
-		template<typename B>
-		friend const Maybe<B> Just( const B* a );
+		template<typename TypeB>
+		friend const Maybe<TypeB> Just( const TypeB* a );
 
-		template<typename B>
-		friend const Maybe<B> Nothing( );
+		template<typename TypeB>
+		friend const Maybe<TypeB> Nothing( );
 
 	private:
-		Maybe( const A* a ) : _a( a )
+		Maybe( const Type* a ) : _a( a )
 		{
 
 		}
@@ -20,24 +20,19 @@ namespace hp_fp
 		{
 
 		}
-	public:
-		~Maybe( )
-		{
-			HP_DELETE( _a );
-		}
 	private:
-		const A* _a;
+		const Type* _a;
 	};
 
-	template<typename B>
-	const Maybe<B> Just( const B* a )
+	template<typename Type>
+	const Maybe<Type> Just( const Type* a )
 	{
-		return Maybe<B>( a );
+		return Maybe<Type>( a );
 	}
 
-	template<typename B>
-	const Maybe<B> Nothing( )
+	template<typename Type>
+	const Maybe<Type> Nothing( )
 	{
-		return Maybe<B>( );
+		return Maybe<Type>( );
 	}
 }
