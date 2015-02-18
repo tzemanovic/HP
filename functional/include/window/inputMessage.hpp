@@ -263,5 +263,6 @@ namespace hp_fp
 		MouseWheel,
 		Text
 	};
+
 	typedef Sum<CloseMessage, KeyMessage, MouseButtonMessage, MouseMoveMessage, MouseWheelMessage, TextMessage> InputMessage;
 }

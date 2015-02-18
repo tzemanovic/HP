@@ -14,6 +14,9 @@
 #   ifndef WIN32_LEAN_AND_MEAN
 #       define WIN32_LEAN_AND_MEAN
 #   endif
+#	ifndef NOMINMAX
+#		define NOMINMAX
+#	endif
 #   include <Windows.h>
 #else
 #   error This operation system is not supported
@@ -51,8 +54,14 @@
 #include <type_traits>
 #include <string>
 #include <tuple>
+#include <algorithm>
+#include <functional>
 
-#include <Mach7/match.hpp>
+//namespace std
+//{
+//	typedef type_info type_info;
+//}
+//#include <Mach7/match.hpp>
 
 
 #if defined( HP_PLATFORM_WIN32 )

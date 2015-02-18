@@ -10,11 +10,26 @@ using namespace hp_fp;
 
 int main( )
 {
-	Maybe<WindowMut> window = open( "example1", defaultWindowConfig( ) );
+	IO<Maybe<WindowMut>> window = open( "example1", defaultWindowConfig( ) );
+	ifThenElse<WindowMut, void>( window( ),
+		[]( WindowMut& window )
+	{
+		bool running = true;
+		while ( running )
+		{
+			processMessages( window.handle );
+		}
+	},
+		[]
+	{
+		ERR( "Failed to open the window." << std::endl );
+	} );
+
+
 	int i = 0;
 	int b = 10;
 	int c = i + 10;
-	
+
 	/*InputMessage msg( TextMessage{'a'} );
 	std::cout << msg.size << std::endl;
 	InputMessage msg2( CloseMessage{ } );

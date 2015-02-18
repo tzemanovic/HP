@@ -5,7 +5,7 @@
 
 namespace hp_fp
 {
-	Maybe<WindowMut> open( const String&& windowName, const WindowConfigImm& windowConfig )
+	IO<Maybe<WindowMut>> open( const String&& windowName, const WindowConfigImm& windowConfig )
 	{
 		std::wstring windowNameW = s2ws( windowName );
 		//_windowName = windowNameW.c_str( );
@@ -52,7 +52,7 @@ namespace hp_fp
 				if ( window.handle == nullptr )
 				{
 					ERR( GetLastError( ) );
-					return Nothing<WindowMut>( );
+					return io(nothing<WindowMut>( ) );
 				}
 				if ( windowConfig.windowStyle == WindowStyle::Fullscreen )
 				{
@@ -60,7 +60,7 @@ namespace hp_fp
 				}
 			}
 		}
-		return Just( &window );
+		return io( just( &window ) );
 	}
 
 	const WindowConfigImm defaultWindowConfig( )
@@ -347,5 +347,15 @@ namespace hp_fp
 		//	return DefWindowProc( handle, message, wParam, lParam );
 		//}
 		return 0;
+	}
+
+	void processMessages( WindowHandle windowHandle )
+	{
+		MSG message;
+		while ( PeekMessage( &message, windowHandle, 0, 0, PM_REMOVE ) )
+		{
+			TranslateMessage( &message );
+			DispatchMessage( &message );
+		}
 	}
 }

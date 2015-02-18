@@ -2,17 +2,14 @@
 
 namespace hp_fp
 {
-	template<typename Type>
+	template<typename A>
 	struct Maybe
 	{
-		template<typename TypeB>
-		friend const Maybe<TypeB> Just( const TypeB* a );
-
-		template<typename TypeB>
-		friend const Maybe<TypeB> Nothing( );
-
+		template<typename B> friend Maybe<B> just( B* b );
+		template<typename B> friend Maybe<B> nothing( );
+		template<typename B, typename C> friend C ifThenElse( const Maybe<B>& maybe, std::function<C( B& )> ifJust, std::function<C( )> ifNothing );
 	private:
-		Maybe( const Type* a ) : _a( a )
+		Maybe( A* a ) : _a( a )
 		{
 
 		}
@@ -21,18 +18,29 @@ namespace hp_fp
 
 		}
 	private:
-		const Type* _a;
+		A* _a;
 	};
 
-	template<typename Type>
-	const Maybe<Type> Just( const Type* a )
+	template<typename A>
+	Maybe<A> just( A* a )
 	{
-		return Maybe<Type>( a );
+		return Maybe<A>( a );
 	}
 
-	template<typename Type>
-	const Maybe<Type> Nothing( )
+	template<typename A>
+	Maybe<A> nothing( )
 	{
-		return Maybe<Type>( );
+		return Maybe<A>( );
 	}
+
+	template<typename A, typename B>
+	B ifThenElse( const Maybe<A>& maybe, std::function<B( A& )> ifJust, std::function<B( )> ifNothing )
+	{
+		if ( maybe._a == nullptr )
+		{
+			return ifNothing( );
+		}
+		return ifJust( *maybe._a );
+	}
+
 }

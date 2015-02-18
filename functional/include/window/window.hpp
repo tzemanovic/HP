@@ -1,11 +1,12 @@
 #pragma once
 #include <window/windowConfigImm.hpp>
 #include <window/windowMut.hpp>
+#include <adt/io.hpp>
 #include <adt/maybe.hpp>
 
 namespace hp_fp
 {
-	Maybe<WindowMut> open( const String&& windowName, const WindowConfigImm& windowConfig );
+	IO<Maybe<WindowMut>> open( const String&& windowName, const WindowConfigImm& windowConfig );
 
 	const WindowConfigImm defaultWindowConfig( );
 	//std::tuple<unsigned, unsigned, unsigned> getCurrentMode( );
@@ -17,4 +18,6 @@ namespace hp_fp
 	void switchToFullscreen( WindowHandle windowHandle, const WindowConfigImm& windowConfig );
 
 	LRESULT CALLBACK windowProc( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam );
+		
+	void processMessages( WindowHandle windowHandle );
 }

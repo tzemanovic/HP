@@ -3,7 +3,6 @@
 
 namespace hp_fp
 {
-#if defined( HP_PLATFORM_WIN32 )
 	std::wstring s2ws( const std::string& s )
 	{
 		int len;
@@ -21,5 +20,4 @@ namespace hp_fp
 		size_t pos = path.find_last_of( "\\/" );
 		return ( std::string::npos == pos ) ? "" : path.substr( 0, pos + 1 );
 	}
-#endif
 }

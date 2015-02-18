@@ -28,6 +28,12 @@
     <Filter Include="include\adt">
       <UniqueIdentifier>{ab3e36e8-9b95-448d-a536-e998a21c19f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\core">
+      <UniqueIdentifier>{68eeae6f-1633-4050-bf45-8c39212ff363}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core">
+      <UniqueIdentifier>{8d38fb79-4820-4a0b-88aa-c9f173c80df9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -41,6 +47,9 @@
     </ClCompile>
     <ClCompile Include="..\src\utils\stringUtils.cpp">
       <Filter>src\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\engine.cpp">
+      <Filter>src\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +85,12 @@
     </ClInclude>
     <ClInclude Include="..\include\hpFp.hpp">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\engineMut.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\engine.hpp">
+      <Filter>include\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
