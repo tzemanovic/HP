@@ -52,7 +52,7 @@
 #include <string>
 #include <tuple>
 
-//#include <Mach7/match.hpp>
+#include <Mach7/match.hpp>
 
 
 #if defined( HP_PLATFORM_WIN32 )

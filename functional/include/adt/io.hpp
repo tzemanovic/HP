@@ -2,10 +2,21 @@
 
 namespace hp_fp
 {
-	template<typename T>
+	template< >
+	struct IO < void >
+	{ };
+
+	template<typename A>
 	struct IO
 	{
-		typedef std::function<T( )> type;
+	public:
+		IO( const A& a ) : val( a )
+		{ }
+		const A& operator() ( ) const
+		{
+			return val;
+		}
+	private:
+		A val;
 	};
-
 }
