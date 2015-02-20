@@ -1,7 +1,7 @@
 #include <pch/pch.hpp>
 
 #ifdef HP_DEBUG
-#include <vld.h>
+//#include <vld.h>
 #endif
 
 #include <hpFp.hpp>
@@ -10,7 +10,8 @@ using namespace hp_fp;
 
 int main( )
 {
-	IO<Maybe<WindowMut>> window = open( "example1", defaultWindowConfig( ) );
+	init("example1");
+	/*IO<Maybe<WindowMut>> window = open( "example1", defaultWindowConfig( ) );
 	ifThenElse<WindowMut, void>( window( ),
 		[]( WindowMut& window )
 	{
@@ -23,7 +24,7 @@ int main( )
 		[]
 	{
 		ERR( "Failed to open the window." << std::endl );
-	} );
+	} );*/
 
 
 	int i = 0;

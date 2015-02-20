@@ -28,8 +28,8 @@
 #	define HP_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__ )
 #   define HP_DEBUG
 #	include <iostream>
-#	define ERR( x ) do { std::cerr << x; } while ( 0 )
-#	define LOG( x ) do { std::cout << x; } while ( 0 )
+#	define ERR( x ) do { std::cerr << x << std::endl; } while ( 0 )
+#	define LOG( x ) do { std::cout << x << std::endl; } while ( 0 )
 #else
 #	define HP_NEW new
 #	define ERR( x )

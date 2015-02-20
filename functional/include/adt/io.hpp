@@ -6,17 +6,17 @@ namespace hp_fp
 	template<typename A>
 	struct IO
 	{
-		template<typename B> friend const IO<B> io( const B& b );
+		template<typename B> friend const IO<B> io( B&& b );
 	public:
 		const A& operator() ( ) const
 		{
 			return val;
 		}
 	private:
-		IO( const A& a ) : val( a )
+		IO( A& a ) : val( a )
 		{ }
-		IO( const A&& a ) : val( a )
-		{ }
+		/*IO( A&& a ) : val( std::forward<A>(a) )
+		{ }*/
 	private:
 		A val;
 	};
@@ -26,8 +26,8 @@ namespace hp_fp
 	{ };
 
 	template<typename A>
-	const IO<A> io( const A& a )
+	const IO<A> io( A&& a )
 	{
-		return IO<A>( a );
+		return IO<A>( std::forward<A>(a) );
 	}
 }

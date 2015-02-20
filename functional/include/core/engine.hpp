@@ -4,5 +4,5 @@
 
 namespace hp_fp
 {
-	EngineMut init( const String&& name );
+	void init( const String&& name );
 }

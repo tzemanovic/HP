@@ -8,6 +8,7 @@ namespace hp_fp
 		template<typename B> friend Maybe<B> just( B* b );
 		template<typename B> friend Maybe<B> nothing( );
 		template<typename B, typename C> friend C ifThenElse( const Maybe<B>& maybe, std::function<C( B& )> ifJust, std::function<C( )> ifNothing );
+		//Maybe( const Maybe<A>& ) = delete;
 	private:
 		Maybe( A* a ) : _a( a )
 		{
@@ -17,6 +18,8 @@ namespace hp_fp
 		{
 
 		}
+		Maybe( Maybe&& m ) : _a( m._a )
+		{ }
 	private:
 		A* _a;
 	};
