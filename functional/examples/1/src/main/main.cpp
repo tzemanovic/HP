@@ -8,22 +8,64 @@
 
 using namespace hp_fp;
 
+class C
+{
+public:
+	C( int i ) : i( i )
+	{
+		LOG( "con" );
+	}
+	C( const C& )
+	{
+		LOG( "cop" );
+	}           // Copy constructor
+	C( C&& )
+	{
+		LOG( "mov" );
+	}                   // Move constructor
+	C& operator=( const C& )
+	{
+		LOG( "cop ass" );
+		return *this;
+	}// Copy assignment operator
+	C& operator=( C&& )
+	{
+		LOG( "mov ass" );
+		return *this;
+	}// Move assignment operator
+	virtual ~C( )
+	{ }                     // Destructor
+private:
+	int i;
+};
+
+C test( bool a )
+{
+	if ( a )
+	{
+		return C( 2 );
+	}
+	return C( 1 );
+}
+
 int main( )
 {
-	init("example1");
+	C a = test( false );
+	C d = test( true );
+	init( "example1" );
 	/*IO<Maybe<WindowMut>> window = open( "example1", defaultWindowConfig( ) );
 	ifThenElse<WindowMut, void>( window( ),
-		[]( WindowMut& window )
+	[]( WindowMut& window )
 	{
-		bool running = true;
-		while ( running )
-		{
-			processMessages( window.handle );
-		}
+	bool running = true;
+	while ( running )
+	{
+	processMessages( window.handle );
+	}
 	},
-		[]
+	[]
 	{
-		ERR( "Failed to open the window." << std::endl );
+	ERR( "Failed to open the window." << std::endl );
 	} );*/
 
 

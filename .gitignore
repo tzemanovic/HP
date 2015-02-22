@@ -47,3 +47,4 @@ imperative/temp/
 imperative/assets/
 imperative/doc/out/
 imperative/msvc/ipch/
+*.opensdf
