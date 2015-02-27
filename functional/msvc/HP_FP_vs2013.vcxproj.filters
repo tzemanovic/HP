@@ -92,5 +92,8 @@
     <ClInclude Include="..\include\core\engine.hpp">
       <Filter>include\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\utils\functionTraits.hpp">
+      <Filter>include\utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,19 +4,17 @@
 
 namespace hp_fp
 {
-	template<typename A> struct IO;
 	template<typename A> struct Maybe;
 	struct EngineMut;
 
-	IO<Maybe<WindowMut>> open( const String&& windowName, const WindowConfigImm& windowConfig );
-	IO<Maybe<WindowMut>> open( EngineMut& engine, const String&& windowName, const WindowConfigImm& windowConfig );
-	const WindowConfigImm defaultWindowConfig( );
-	void setWindowVisibility( WindowHandle windowHandle, bool visible );
-	void switchToFullscreen( WindowHandle windowHandle, const WindowConfigImm& windowConfig );
-	LRESULT CALLBACK windowProc( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam );
-	void processMessages( WindowHandle windowHandle );
+	Maybe<WindowMut> open_IO( EngineMut& engine, const WindowConfigImm& windowConfig );
+	const WindowConfigImm defaultWindowConfig_IO( );
+	void setWindowVisibility_IO( WindowHandle windowHandle, bool visible );
+	void switchToFullscreen_IO( WindowHandle windowHandle, const WindowConfigImm& windowConfig );
+	void processMessages_IO( WindowHandle windowHandle );
 	namespace
 	{
-		bool isOnlyInstance( const LPCWSTR windowName );
+		LRESULT CALLBACK windowProc_IO( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam );
+		bool isOnlyInstance_IO( const LPCWSTR windowName );
 	}
 }

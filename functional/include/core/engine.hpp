@@ -4,5 +4,7 @@
 
 namespace hp_fp
 {
-	void init( const String&& name );
+	EngineMut init( const String&& name );
+	void run_IO( EngineMut& engine );
+	void onClose_IO( EngineMut& engine );
 }
