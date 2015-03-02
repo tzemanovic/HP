@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClCompile Include="..\include\pch\pch.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
+    <ClCompile Include="..\src\graphics\renderer.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
     <ClCompile Include="..\src\utils\stringUtils.cpp" />
     <ClCompile Include="..\src\window\window.cpp" />
@@ -39,9 +40,10 @@
     <ClInclude Include="..\include\adt\sum.hpp" />
     <ClInclude Include="..\include\core\engine.hpp" />
     <ClInclude Include="..\include\core\engineMut.hpp" />
+    <ClInclude Include="..\include\graphics\renderer.hpp" />
+    <ClInclude Include="..\include\graphics\rendererMut.hpp" />
     <ClInclude Include="..\include\hpFp.hpp" />
     <ClInclude Include="..\include\pch\pch.hpp" />
-    <ClInclude Include="..\include\utils\functionTraits.hpp" />
     <ClInclude Include="..\include\utils\stringUtils.hpp" />
     <ClInclude Include="..\include\window\inputMessage.hpp" />
     <ClInclude Include="..\include\window\window.hpp" />

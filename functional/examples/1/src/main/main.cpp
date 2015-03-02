@@ -11,10 +11,6 @@ using namespace hp_fp;
 int main( )
 {
 	EngineMut engine = init( "example1" );
-	engine.onClose = []( EngineMut& engine )
-	{
-		engine.running = false;
-	};
 	run_IO( engine );
 
 	/*InputMessage msg( TextMessage{'a'} );

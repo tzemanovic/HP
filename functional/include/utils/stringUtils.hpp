@@ -1,5 +1,4 @@
 #pragma once
-
 namespace hp_fp
 {
 #if defined( HP_PLATFORM_WIN32 )

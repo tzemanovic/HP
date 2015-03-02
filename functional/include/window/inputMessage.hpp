@@ -1,6 +1,5 @@
 #pragma once
 #include <adt/sum.hpp>
-
 namespace hp_fp
 {
 	enum class Key : UInt8
@@ -115,12 +114,6 @@ namespace hp_fp
 		LAlt = VK_LMENU,
 		RAlt = VK_RMENU
 	};
-	// covert to UInt8 to use as array index
-	const UInt8 operator+ ( const Key val )
-	{
-		return static_cast< UInt8 >( val );
-	}
-
 	enum class MouseButton : UInt8
 	{
 		LeftButton = MK_LBUTTON,
@@ -131,7 +124,6 @@ namespace hp_fp
 		XButton1 = MK_XBUTTON1,
 		XButton2 = MK_XBUTTON2
 	};
-
 	struct KeyMods
 	{
 		KeyMods( const UInt8 mods ) : data( mods )
@@ -144,7 +136,7 @@ namespace hp_fp
 		static UInt8 const R_SHIFT = 1 << 5;
 		const bool lCtrl( ) const
 		{
-			return ( data & KeyMods::L_CTRL) != 0;
+			return ( data & KeyMods::L_CTRL ) != 0;
 		}
 		const bool rCtrl( ) const
 		{
@@ -169,13 +161,11 @@ namespace hp_fp
 	private:
 		const UInt8 data;
 	};
-
 	struct KeyMessage
 	{
 		const Key type;
 		const KeyMods mods;
 	};
-
 	struct MouseMods
 	{
 		MouseMods( const UInt8 mods ) : data( mods )
@@ -218,7 +208,6 @@ namespace hp_fp
 	private:
 		const UInt8 data;
 	};
-
 	struct MouseButtonMessage
 	{
 		const UInt16 x;
@@ -226,14 +215,12 @@ namespace hp_fp
 		const MouseButton type;
 		const MouseMods mods;
 	};
-
 	struct MouseMoveMessage
 	{
 		const UInt16 x;
 		const UInt16 y;
 		const MouseMods mods;
 	};
-
 	struct MouseWheelMessage
 	{
 		const UInt16 x;
@@ -241,28 +228,19 @@ namespace hp_fp
 		const UInt16 delta;
 		const MouseMods mods;
 	};
-
 	struct TextMessage
 	{
 		const UInt32 unicode;
 	};
-
-	struct CloseMessage
+	/*enum class Type : unsigned char
 	{
-
+	KeyDown,
+	KeyUp,
+	MouseButtonDown,
+	MouseButtonUp,
+	MouseMove,
+	MouseWheel,
+	Text
 	};
-
-	enum class Type : unsigned char
-	{
-		Close,
-		KeyDown,
-		KeyUp,
-		MouseButtonDown,
-		MouseButtonUp,
-		MouseMove,
-		MouseWheel,
-		Text
-	};
-
-	typedef Sum<CloseMessage, KeyMessage, MouseButtonMessage, MouseMoveMessage, MouseWheelMessage, TextMessage> InputMessage;
+	typedef Sum<KeyMessage, MouseButtonMessage, MouseMoveMessage, MouseWheelMessage, TextMessage> InputMessage;*/
 }

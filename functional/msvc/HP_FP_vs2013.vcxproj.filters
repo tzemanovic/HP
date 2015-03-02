@@ -34,6 +34,12 @@
     <Filter Include="src\core">
       <UniqueIdentifier>{8d38fb79-4820-4a0b-88aa-c9f173c80df9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\graphics">
+      <UniqueIdentifier>{cfd78685-8a8f-4985-b105-89f215efcc28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics">
+      <UniqueIdentifier>{b6dcc112-4124-466b-9a5c-b3d6b21783a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -50,6 +56,9 @@
     </ClCompile>
     <ClCompile Include="..\src\core\engine.cpp">
       <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\renderer.cpp">
+      <Filter>src\graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -92,8 +101,11 @@
     <ClInclude Include="..\include\core\engine.hpp">
       <Filter>include\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\utils\functionTraits.hpp">
-      <Filter>include\utils</Filter>
+    <ClInclude Include="..\include\graphics\rendererMut.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\renderer.hpp">
+      <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

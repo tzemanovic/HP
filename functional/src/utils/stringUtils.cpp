@@ -1,6 +1,5 @@
 #include <pch.hpp>
 #include <utils/stringUtils.hpp>
-
 namespace hp_fp
 {
 	std::wstring s2ws( const std::string& s )
@@ -14,7 +13,6 @@ namespace hp_fp
 		delete[] buf;
 		return r;
 	}
-
 	std::string basePath( const std::string& path )
 	{
 		size_t pos = path.find_last_of( "\\/" );

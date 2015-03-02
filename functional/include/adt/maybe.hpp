@@ -1,7 +1,4 @@
 #pragma once
-
-#include <utils/functionTraits.hpp>
-
 namespace hp_fp
 {
 	template<typename A>
@@ -9,7 +6,7 @@ namespace hp_fp
 	{
 		template<typename B> friend Maybe<B> just( B&& b );
 		template<typename B> friend Maybe<B> nothing( );
-		template<typename B, typename C, typename D> auto ifThenElse( const Maybe<B>& maybe, C ifJust, D ifNothing ) -> decltype( ifJust( *maybe._a ) );
+		template<typename B, typename C, typename D> friend auto ifThenElse( const Maybe<B>& maybe, C ifJust, D ifNothing ) -> decltype( ifJust( *maybe._a ) );
 		Maybe( const Maybe<A>& ) = delete;
 		Maybe( Maybe&& m ) : _a( std::move( m._a ) )
 		{ }
@@ -27,7 +24,7 @@ namespace hp_fp
 		{ }
 		Maybe( ) : _a( nullptr )
 		{ }
-	public:
+	private:
 		A* _a;
 	};
 	template<typename A>
@@ -45,7 +42,6 @@ namespace hp_fp
 	{
 		//static_assert( std::is_function<B>::value, "ifJust has to be a function." );
 		//static_assert( std::is_function<decltype( ifNothing )>::value, "ifNothing has to be a function." );
-		//static_assert( std::is_same<A, functionTraits<decltype( ifJust )>::arg<0>::type>::value, "ifJust function's argument has to be the same type as Maybe's typename." );
 		static_assert( std::is_same<decltype( ifJust( *maybe._a ) ), decltype( ifNothing( ) )>::value, "ifJust and ifNothing functions' return types have to be the same." );
 		if ( maybe._a == nullptr )
 		{

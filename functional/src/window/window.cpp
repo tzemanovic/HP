@@ -5,7 +5,6 @@
 #include <window/window.hpp>
 #include <adt/io.hpp>
 #include <adt/maybe.hpp>
-
 namespace hp_fp
 {
 	Maybe<WindowMut> open_IO( EngineMut& engine, const WindowConfigImm& windowConfig )
@@ -113,6 +112,14 @@ namespace hp_fp
 			DispatchMessage( &message );
 		}
 	}
+	void captureMouse_IO( WindowHandle windowHandle )
+	{
+		SetCapture( windowHandle );
+	}
+	void releaseMouse_IO( )
+	{
+		ReleaseCapture( );
+	}
 	namespace
 	{
 		LRESULT CALLBACK windowProc_IO( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam )
@@ -137,196 +144,200 @@ namespace hp_fp
 			}
 			case WM_CLOSE:
 			{
-				InputMessage msg( CloseMessage{ } );
-				//_messages.push( msg );
-				engine->running = false;
-				onClose_IO( *engine );
+				engine->onClose( *engine );
 				break;
 			}
 			case WM_ACTIVATEAPP:
 			{
-
 				break;
 			}
 			case WM_KEYDOWN:
 			case WM_SYSKEYDOWN:
 			{
-				/*if ( !_oldKeyStates[wParam] )
+				// if not repeated
+				if ( !( lParam & ( 1 << 30 ) ) )
 				{
-				InputMessage msg( InputMessage::Type::KeyDown );
-				msg.key.type = ( Key ) wParam;
-				msg.key.lCtrl = HIWORD( GetKeyState( VK_RCONTROL ) ) != 0;
-				msg.key.rCtrl = HIWORD( GetKeyState( VK_RCONTROL ) ) != 0;
-				msg.key.lAlt = HIWORD( GetKeyState( VK_LMENU ) ) != 0;
-				msg.key.rAlt = HIWORD( GetKeyState( VK_RMENU ) ) != 0;
-				msg.key.lShift = HIWORD( GetKeyState( VK_LSHIFT ) ) != 0;
-				msg.key.rShift = HIWORD( GetKeyState( VK_RSHIFT ) ) != 0;
-				_messages.push( msg );
-				_oldKeyStates[wParam] = true;
-				}*/
+					KeyMessage msg = KeyMessage{ static_cast<Key>( wParam ), KeyMods(
+						( HIWORD( GetKeyState( VK_LCONTROL ) ) != 0 ) ? KeyMods::L_CTRL : 0 |
+						( HIWORD( GetKeyState( VK_RCONTROL ) ) != 0 ) ? KeyMods::R_CTRL : 0 |
+						( HIWORD( GetKeyState( VK_LMENU ) ) != 0 ) ? KeyMods::L_ALT : 0 |
+						( HIWORD( GetKeyState( VK_RMENU ) ) != 0 ) ? KeyMods::R_ALT : 0 |
+						( HIWORD( GetKeyState( VK_LSHIFT ) ) != 0 ) ? KeyMods::L_SHIFT : 0 |
+						( HIWORD( GetKeyState( VK_RSHIFT ) ) != 0 ) ? KeyMods::R_SHIFT : 0
+						) };
+					engine->onKeyDown( *engine, std::move( msg ) );
+				}
 				break;
 			}
 			case WM_KEYUP:
 			case WM_SYSKEYUP:
 			{
-				/*InputMessage msg( InputMessage::Type::KeyUp );
-				msg.key.type = (Key) wParam;
-				msg.key.lCtrl = HIWORD( GetKeyState( VK_RCONTROL ) ) != 0;
-				msg.key.rCtrl = HIWORD( GetKeyState( VK_RCONTROL ) ) != 0;
-				msg.key.lAlt = HIWORD( GetKeyState( VK_LMENU ) ) != 0;
-				msg.key.rAlt = HIWORD( GetKeyState( VK_RMENU ) ) != 0;
-				msg.key.lShift = HIWORD( GetKeyState( VK_LSHIFT ) ) != 0;
-				msg.key.rShift = HIWORD( GetKeyState( VK_RSHIFT ) ) != 0;
-				_messages.push( msg );
-				_oldKeyStates[wParam] = false;*/
+				KeyMessage msg = KeyMessage{ static_cast<Key>( wParam ), KeyMods(
+					( HIWORD( GetKeyState( VK_LCONTROL ) ) != 0 ) ? KeyMods::L_CTRL : 0 |
+					( HIWORD( GetKeyState( VK_RCONTROL ) ) != 0 ) ? KeyMods::R_CTRL : 0 |
+					( HIWORD( GetKeyState( VK_LMENU ) ) != 0 ) ? KeyMods::L_ALT : 0 |
+					( HIWORD( GetKeyState( VK_RMENU ) ) != 0 ) ? KeyMods::R_ALT : 0 |
+					( HIWORD( GetKeyState( VK_LSHIFT ) ) != 0 ) ? KeyMods::L_SHIFT : 0 |
+					( HIWORD( GetKeyState( VK_RSHIFT ) ) != 0 ) ? KeyMods::R_SHIFT : 0
+					) };
+				engine->onKeyUp( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_CHAR:
 			{
-				/*InputMessage msg( InputMessage::Type::Text );
-				msg.text.unicode = wParam;
-				_messages.push( msg );*/
+				engine->onText( *engine, TextMessage{ wParam } );
 				break;
 			}
 			case WM_MOUSEMOVE:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseMove );
-				msg.mouseMove.x = LOWORD( lParam );
-				msg.mouseMove.y = HIWORD( lParam );
-				msg.mouseMove.ctrl = ( wParam & MK_CONTROL ) != 0;
-				msg.mouseMove.lButton = ( wParam & MK_LBUTTON ) != 0;
-				msg.mouseMove.mButton = ( wParam & MK_MBUTTON ) != 0;
-				msg.mouseMove.rButton = ( wParam & MK_RBUTTON ) != 0;
-				msg.mouseMove.shift = ( wParam & MK_SHIFT ) != 0;
-				msg.mouseMove.xButton1 = ( wParam & MK_XBUTTON1 ) != 0;
-				msg.mouseMove.xButton2 = ( wParam & MK_XBUTTON2 ) != 0;
-				_messages.push( msg );*/
+				MouseMoveMessage msg = MouseMoveMessage{ LOWORD( lParam ), HIWORD( lParam ), MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseMove( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_LBUTTONDOWN:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonDown );
-				msg.mouseButton.type = MouseButton::LeftButton;
-				msg.mouseButton.ctrl = ( wParam & MK_CONTROL ) != 0;
-				msg.mouseButton.lButton = ( wParam & MK_LBUTTON ) != 0;
-				msg.mouseButton.mButton = ( wParam & MK_MBUTTON ) != 0;
-				msg.mouseButton.rButton = ( wParam & MK_RBUTTON ) != 0;
-				msg.mouseButton.shift = ( wParam & MK_SHIFT ) != 0;
-				msg.mouseButton.xButton1 = ( wParam & MK_XBUTTON1 ) != 0;
-				msg.mouseButton.xButton2 = ( wParam & MK_XBUTTON2 ) != 0;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );
-				captureMouse( )*/;
-			break;
+				captureMouse_IO( handle );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), MouseButton::LeftButton, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonDown( *engine, std::move( msg ) );
+				break;
 			}
 			case WM_LBUTTONUP:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonUp );
-				msg.mouseButton.type = MouseButton::LeftButton;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );
-				releaseMouse( );*/
+				releaseMouse_IO( );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), MouseButton::LeftButton, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonUp( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_RBUTTONDOWN:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonDown );
-				msg.mouseButton.type = MouseButton::RightButton;
-				msg.mouseButton.ctrl = ( wParam & MK_CONTROL ) != 0;
-				msg.mouseButton.lButton = ( wParam & MK_LBUTTON ) != 0;
-				msg.mouseButton.mButton = ( wParam & MK_MBUTTON ) != 0;
-				msg.mouseButton.rButton = ( wParam & MK_RBUTTON ) != 0;
-				msg.mouseButton.shift = ( wParam & MK_SHIFT ) != 0;
-				msg.mouseButton.xButton1 = ( wParam & MK_XBUTTON1 ) != 0;
-				msg.mouseButton.xButton2 = ( wParam & MK_XBUTTON2 ) != 0;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );
-				captureMouse( );*/
+				captureMouse_IO( handle );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), MouseButton::RightButton, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonDown( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_RBUTTONUP:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonUp );
-				msg.mouseButton.type = MouseButton::RightButton;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );
-				releaseMouse( );*/
+				releaseMouse_IO( );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), MouseButton::RightButton, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonUp( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_MBUTTONDOWN:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonDown );
-				msg.mouseButton.type = MouseButton::MiddleButton;
-				msg.mouseButton.ctrl = ( wParam & MK_CONTROL ) != 0;
-				msg.mouseButton.lButton = ( wParam & MK_LBUTTON ) != 0;
-				msg.mouseButton.mButton = ( wParam & MK_MBUTTON ) != 0;
-				msg.mouseButton.rButton = ( wParam & MK_RBUTTON ) != 0;
-				msg.mouseButton.shift = ( wParam & MK_SHIFT ) != 0;
-				msg.mouseButton.xButton1 = ( wParam & MK_XBUTTON1 ) != 0;
-				msg.mouseButton.xButton2 = ( wParam & MK_XBUTTON2 ) != 0;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );
-				captureMouse( );*/
+				captureMouse_IO( handle );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), MouseButton::MiddleButton, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonDown( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_MBUTTONUP:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonUp );
-				msg.mouseButton.type = MouseButton::MiddleButton;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );
-				releaseMouse( );*/
+				releaseMouse_IO( );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), MouseButton::MiddleButton, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonUp( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_MOUSEWHEEL:
 			{
-				/*POINT screenPos;
+				POINT screenPos;
 				screenPos.x = static_cast<LONG>( LOWORD( lParam ) );
 				screenPos.y = static_cast<LONG>( HIWORD( lParam ) );
 				ScreenToClient( handle, &screenPos );
-				InputMessage msg( InputMessage::Type::MouseWheel );
-				msg.mouseWheel.ctrl = ( wParam & MK_CONTROL ) != 0;
-				msg.mouseWheel.lButton = ( wParam & MK_LBUTTON ) != 0;
-				msg.mouseWheel.mButton = ( wParam & MK_MBUTTON ) != 0;
-				msg.mouseWheel.rButton = ( wParam & MK_RBUTTON ) != 0;
-				msg.mouseWheel.shift = ( wParam & MK_SHIFT ) != 0;
-				msg.mouseWheel.xButton1 = ( wParam & MK_XBUTTON1 ) != 0;
-				msg.mouseWheel.xButton2 = ( wParam & MK_XBUTTON2 ) != 0;
-				msg.mouseWheel.x = static_cast<uint16_t>( screenPos.x );
-				msg.mouseWheel.y = static_cast<uint16_t>( screenPos.y );
-				msg.mouseWheel.delta = HIWORD( wParam ) / 120;
-				_messages.push( msg );*/
+				MouseWheelMessage msg = MouseWheelMessage{ static_cast<UInt16>( screenPos.x ), static_cast<UInt16>( screenPos.y ), HIWORD( wParam ) / 120, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseWheel( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_XBUTTONDOWN:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonDown );
-				msg.mouseButton.type = HIWORD( wParam ) == XBUTTON1 ? MouseButton::XButton1 : MouseButton::XButton2;
-				msg.mouseButton.ctrl = ( wParam & MK_CONTROL ) != 0;
-				msg.mouseButton.lButton = ( wParam & MK_LBUTTON ) != 0;
-				msg.mouseButton.mButton = ( wParam & MK_MBUTTON ) != 0;
-				msg.mouseButton.rButton = ( wParam & MK_RBUTTON ) != 0;
-				msg.mouseButton.shift = ( wParam & MK_SHIFT ) != 0;
-				msg.mouseButton.xButton1 = ( wParam & MK_XBUTTON1 ) != 0;
-				msg.mouseButton.xButton2 = ( wParam & MK_XBUTTON2 ) != 0;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );*/
+				captureMouse_IO( handle );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), HIWORD( wParam ) == XBUTTON1 ? MouseButton::XButton1 : MouseButton::XButton2, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonDown( *engine, std::move( msg ) );
 				break;
 			}
 			case WM_XBUTTONUP:
 			{
-				/*InputMessage msg( InputMessage::Type::MouseButtonUp );
-				msg.mouseButton.type = HIWORD( wParam ) == XBUTTON1 ? MouseButton::XButton1 : MouseButton::XButton2;
-				msg.mouseButton.x = LOWORD( lParam );
-				msg.mouseButton.y = HIWORD( lParam );
-				_messages.push( msg );*/
+				releaseMouse_IO( );
+				MouseButtonMessage msg = MouseButtonMessage{ LOWORD( lParam ), HIWORD( lParam ), HIWORD( wParam ) == XBUTTON1 ? MouseButton::XButton1 : MouseButton::XButton2, MouseMods(
+					( ( wParam & MK_CONTROL ) != 0 ) ? MouseMods::CTRL : 0 |
+					( ( wParam & MK_LBUTTON ) != 0 ) ? MouseMods::L_BUTTON : 0 |
+					( ( wParam & MK_MBUTTON ) != 0 ) ? MouseMods::M_BUTTON : 0 |
+					( ( wParam & MK_RBUTTON ) != 0 ) ? MouseMods::R_BUTTON : 0 |
+					( ( wParam & MK_SHIFT ) != 0 ) ? MouseMods::SHIFT : 0 |
+					( ( wParam & MK_XBUTTON1 ) != 0 ) ? MouseMods::X_BUTTON1 : 0 |
+					( ( wParam & MK_XBUTTON2 ) != 0 ) ? MouseMods::X_BUTTON2 : 0
+					) };
+				engine->onMouseButtonUp( *engine, std::move( msg ) );
 				break;
 			}
 			default:
