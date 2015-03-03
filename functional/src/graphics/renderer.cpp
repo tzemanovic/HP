@@ -47,14 +47,14 @@ namespace hp_fp
 		}
 		if ( FAILED( result ) )
 		{
-			DXTRACE_MSG( L"Failed to create the Direct3D device!" );
+			ERR( "Failed to create the Direct3D device!" );
 			return nothing<RendererMut>( );
 		}
 		// back buffer texture to link render target with back buffer
 		ID3D11Texture2D* backBufferTexture;
-		if ( FAILED( renderer.swapChain->GetBuffer( 0, _uuidof( ID3D11Texture2D ), (LPVOID*) &backBufferTexture ) ) )
+		if ( FAILED( renderer.swapChain->GetBuffer( 0, _uuidof( ID3D11Texture2D ), ( LPVOID* ) &backBufferTexture ) ) )
 		{
-			DXTRACE_MSG( L"Failed to get the swap chain back buffer!" );
+			ERR( "Failed to get the swap chain back buffer!" );
 			return nothing<RendererMut>( );
 		}
 		D3D11_TEXTURE2D_DESC depthDesc;
@@ -71,7 +71,7 @@ namespace hp_fp
 		depthDesc.MiscFlags = 0;
 		if ( FAILED( renderer.device->CreateTexture2D( &depthDesc, NULL, &renderer.depthStencilTexture ) ) )
 		{
-			DXTRACE_MSG( L"Failed to create depth stencil texture!" );
+			ERR( "Failed to create depth stencil texture!" );
 			return nothing<RendererMut>( );
 		}
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthViewDesc;
@@ -81,12 +81,12 @@ namespace hp_fp
 		depthViewDesc.Flags = 0;
 		if ( FAILED( renderer.device->CreateDepthStencilView( renderer.depthStencilTexture, &depthViewDesc, &renderer.depthStencilView ) ) )
 		{
-			DXTRACE_MSG( L"Failed to create depth stencil view!" );
+			ERR( "Failed to create depth stencil view!" );
 			return nothing<RendererMut>( );
 		}
 		if ( FAILED( renderer.device->CreateRenderTargetView( backBufferTexture, NULL, &renderer.renderTargetView ) ) )
 		{
-			DXTRACE_MSG( L"Failed to create render target view!" );
+			ERR( "Failed to create render target view!" );
 			HP_RELEASE( backBufferTexture );
 			return nothing<RendererMut>( );
 		}
@@ -94,8 +94,8 @@ namespace hp_fp
 		renderer.deviceContext->OMSetRenderTargets( 1, &renderer.renderTargetView, renderer.depthStencilView );
 		// setup the viewport
 		D3D11_VIEWPORT viewport;
-		viewport.Width = windowConfig.width;
-		viewport.Height = windowConfig.height;
+		viewport.Width = static_cast< FLOAT >( windowConfig.width );
+		viewport.Height = static_cast< FLOAT >( windowConfig.height );
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 		viewport.TopLeftX = 0.f;

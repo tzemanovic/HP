@@ -60,6 +60,12 @@
     <ClCompile Include="..\src\graphics\renderer.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\core\timer.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\timerMut.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\window\window.hpp">
@@ -106,6 +112,12 @@
     </ClInclude>
     <ClInclude Include="..\include\graphics\renderer.hpp">
       <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\timer.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\timerMut.hpp">
+      <Filter>include\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

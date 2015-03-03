@@ -11,7 +11,6 @@ namespace hp_fp
 		const UInt height;
 		const WindowStyle windowStyle;
 		const UInt bitsPerPx;
-
 		const WindowConfigImm setWidth( const UInt w ) const
 		{
 			return WindowConfigImm{ w, height, windowStyle, bitsPerPx };

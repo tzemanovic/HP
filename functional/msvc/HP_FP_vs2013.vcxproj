@@ -29,6 +29,8 @@
   <ItemGroup>
     <ClCompile Include="..\include\pch\pch.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
+    <ClCompile Include="..\src\core\timer.cpp" />
+    <ClCompile Include="..\src\core\timerMut.cpp" />
     <ClCompile Include="..\src\graphics\renderer.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
     <ClCompile Include="..\src\utils\stringUtils.cpp" />
@@ -40,6 +42,8 @@
     <ClInclude Include="..\include\adt\sum.hpp" />
     <ClInclude Include="..\include\core\engine.hpp" />
     <ClInclude Include="..\include\core\engineMut.hpp" />
+    <ClInclude Include="..\include\core\timer.hpp" />
+    <ClInclude Include="..\include\core\timerMut.hpp" />
     <ClInclude Include="..\include\graphics\renderer.hpp" />
     <ClInclude Include="..\include\graphics\rendererMut.hpp" />
     <ClInclude Include="..\include\hpFp.hpp" />

@@ -1,16 +1,18 @@
 #include <pch.hpp>
 #include <core/engine.hpp>
-#include <window/window.hpp>
+#include <core/timer.hpp>
 #include <adt/maybe.hpp>
+#include <graphics/renderer.hpp>
 #include <window/inputMessage.hpp>
+#include <window/window.hpp>
 namespace hp_fp
 {
 	EngineMut init( const String&& name )
 	{
-		return EngineMut{ name, true,
+		return EngineMut{ name, EngineState::Initialized,
 			[]( EngineMut& engine ) // onClose
 		{
-			engine.running = false;
+			engine.state = EngineState::Terminated;
 		}, []( EngineMut& engine, KeyMessage&& msg ) // onKeyDown
 		{
 
@@ -39,10 +41,22 @@ namespace hp_fp
 		Maybe<WindowMut> window = open_IO( engine, defaultWindowConfig_IO( ) );
 		ifThenElse( window, [&engine]( WindowMut& window )
 		{
-			while ( engine.running )
+			Maybe<RendererMut> renderer = init_IO( window.handle, defaultWindowConfig_IO( ) );
+			ifThenElse( renderer, [&engine, &window]( RendererMut& renderer )
 			{
-				processMessages_IO( window.handle );
-			}
+				engine.state = EngineState::Running;
+				TimerMut timer = initTimer_IO( );
+				while ( engine.state == EngineState::Running )
+				{
+					processMessages_IO( window.handle );
+					updateTimer_IO( timer );
+					//render_IO( timer );
+					//update_IO( timer );
+				}
+			}, []
+			{
+				ERR( "Failed to initialize renderer." );
+			} );
 		}, []
 		{
 			ERR( "Failed to open a window." );

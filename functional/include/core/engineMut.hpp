@@ -6,10 +6,16 @@ namespace hp_fp
 	struct MouseMoveMessage;
 	struct MouseWheelMessage;
 	struct TextMessage;
+	enum class EngineState : UInt8
+	{
+		Initialized,
+		Running,
+		Terminated
+	};
 	struct EngineMut
 	{
 		const String name;
-		bool running;
+		EngineState state;
 		void( *onClose )( EngineMut& engine );
 		void( *onKeyDown )( EngineMut& engine, KeyMessage&& msg );
 		void( *onKeyUp )( EngineMut& engine, KeyMessage&& msg );
