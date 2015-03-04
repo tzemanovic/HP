@@ -3,7 +3,6 @@
 #include <utils/stringUtils.hpp>
 #include <window/inputMessage.hpp>
 #include <window/window.hpp>
-#include <adt/io.hpp>
 #include <adt/maybe.hpp>
 namespace hp_fp
 {

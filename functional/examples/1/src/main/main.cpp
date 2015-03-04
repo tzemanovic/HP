@@ -1,16 +1,17 @@
 #include <pch/pch.hpp>
-
 #ifdef HP_DEBUG
 #include <vld.h>
 #endif
-
 #include <hpFp.hpp>
-
 using namespace hp_fp;
-
 int main( )
 {
 	EngineMut engine = init( "example1" );
+	ActorImm actor1{ };
+	SceneImm scene1{ };
+	scene1 = addActor( scene1, std::move( actor1 ) );
+	WorldImm world{ { scene1 } };
+	setWorld_IO( engine, std::move( world ) );
 	run_IO( engine );
 
 	/*InputMessage msg( TextMessage{'a'} );

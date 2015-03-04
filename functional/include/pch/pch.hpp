@@ -6,7 +6,6 @@
 // disable STL expections
 #define _HAS_EXCEPTIONS 0
 
-
 #if defined( _WIN32 ) || defined( __WIN32__ )
 // Windows
 #   define HP_PLATFORM_WIN32
@@ -21,7 +20,6 @@
 #else
 #   error This operation system is not supported
 #endif
-
 
 // redefine new for debugging purposes
 #if defined( _DEBUG ) || defined( DEBUG )
@@ -38,7 +36,6 @@
 #	define LOG( x )
 #endif
 
-
 // safe delete pointer
 #ifndef HP_DELETE
 #   define HP_DELETE( x ) delete x; x = nullptr;
@@ -52,19 +49,7 @@
 #   define HP_RELEASE( x ) if( x ) x->Release( ); x = nullptr;
 #endif
 
-
-#include <type_traits>
 #include <string>
-#include <tuple>
-#include <algorithm>
-#include <functional>
-
-//namespace std
-//{
-//	typedef type_info type_info;
-//}
-//#include <Mach7/match.hpp>
-
 
 #if defined( HP_PLATFORM_WIN32 )
 typedef unsigned char		 UInt8;
@@ -86,7 +71,6 @@ typedef UInt32				 UInt;
 typedef HWND		 WindowHandle;
 typedef std::string	 String;
 #endif
-
 
 namespace hp_fp
 {

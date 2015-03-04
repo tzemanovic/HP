@@ -1,4 +1,5 @@
 #pragma once
+#include <core/worldImm.hpp>
 namespace hp_fp
 {
 	struct KeyMessage;
@@ -16,6 +17,7 @@ namespace hp_fp
 	{
 		const String name;
 		EngineState state;
+		WorldImm* world;
 		void( *onClose )( EngineMut& engine );
 		void( *onKeyDown )( EngineMut& engine, KeyMessage&& msg );
 		void( *onKeyUp )( EngineMut& engine, KeyMessage&& msg );

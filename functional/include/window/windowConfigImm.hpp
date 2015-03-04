@@ -1,8 +1,7 @@
 #pragma once
 #include <window/windowStyle.hpp>
-
 // Generated using tools/immutableStruct.hs:
-// gen "WindowConfig" [("UInt", "width"), ("UInt", "height"), ("WindowStyle", "windowStyle"), ("UInt", "bitsPerPx")] ["windowStyle"]
+// gen "WindowConfig" [("UInt", "width"), ("UInt", "height"), ("WindowStyle", "windowStyle"), ("UInt", "bitsPerPx")] ["window/windowStyle.hpp"]
 namespace hp_fp
 {
 	struct WindowConfigImm

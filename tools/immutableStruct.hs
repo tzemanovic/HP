@@ -63,7 +63,7 @@ immutableStruct n vs i = "#pragma once\n" ++ includes i ++ "// Generated using t
   nn = n ++ "Imm"
   includes :: [Include] -> String
   includes [] = ""
-  includes i = foldl1 (++) (map (\x -> "#include \"" ++ x ++ ".hpp\"\n") i)
+  includes i = foldl1 (++) (map (\x -> "#include <" ++ x ++ ">\n") i)
   args :: Name -> [(VarType, VarName)] -> [Include] -> String
   args n vs i = "\"" ++ n ++ "\" [" ++ vArgs vs ++ "] " ++ includesList i
     where

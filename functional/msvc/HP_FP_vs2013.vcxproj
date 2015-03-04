@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClCompile Include="..\include\pch\pch.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
+    <ClCompile Include="..\src\core\scene.cpp" />
     <ClCompile Include="..\src\core\timer.cpp" />
     <ClCompile Include="..\src\core\timerMut.cpp" />
     <ClCompile Include="..\src\graphics\renderer.cpp" />
@@ -37,13 +38,20 @@
     <ClCompile Include="..\src\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\adt\io.hpp" />
+    <ClInclude Include="..\include\adt\list.hpp" />
+    <ClInclude Include="..\include\adt\map.hpp" />
     <ClInclude Include="..\include\adt\maybe.hpp" />
     <ClInclude Include="..\include\adt\sum.hpp" />
+    <ClInclude Include="..\include\adt\tree.hpp" />
+    <ClInclude Include="..\include\core\actors\actorImm.hpp" />
+    <ClInclude Include="..\include\core\actors\component.hpp" />
     <ClInclude Include="..\include\core\engine.hpp" />
     <ClInclude Include="..\include\core\engineMut.hpp" />
+    <ClInclude Include="..\include\core\scene.hpp" />
+    <ClInclude Include="..\include\core\sceneImm.hpp" />
     <ClInclude Include="..\include\core\timer.hpp" />
     <ClInclude Include="..\include\core\timerMut.hpp" />
+    <ClInclude Include="..\include\core\worldImm.hpp" />
     <ClInclude Include="..\include\graphics\renderer.hpp" />
     <ClInclude Include="..\include\graphics\rendererMut.hpp" />
     <ClInclude Include="..\include\hpFp.hpp" />

@@ -4,12 +4,11 @@
 #include <adt/maybe.hpp>
 #include <graphics/renderer.hpp>
 #include <window/inputMessage.hpp>
-#include <window/window.hpp>
 namespace hp_fp
 {
 	EngineMut init( const String&& name )
 	{
-		return EngineMut{ name, EngineState::Initialized,
+		return EngineMut{ name, EngineState::Initialized, nullptr,
 			[]( EngineMut& engine ) // onClose
 		{
 			engine.state = EngineState::Terminated;
@@ -36,12 +35,16 @@ namespace hp_fp
 
 		} };
 	}
-	void run_IO( EngineMut& engine )
+	void setWorld_IO( EngineMut& engine, WorldImm&& world )
 	{
-		Maybe<WindowMut> window = open_IO( engine, defaultWindowConfig_IO( ) );
-		ifThenElse( window, [&engine]( WindowMut& window )
+		engine.world = HP_NEW WorldImm( world );
+	}
+	void run_IO( EngineMut& engine, const WindowConfigImm& windowConfig )
+	{
+		Maybe<WindowMut> window = open_IO( engine, windowConfig );
+		ifThenElse( window, [&engine, &windowConfig]( WindowMut& window )
 		{
-			Maybe<RendererMut> renderer = init_IO( window.handle, defaultWindowConfig_IO( ) );
+			Maybe<RendererMut> renderer = init_IO( window.handle, windowConfig );
 			ifThenElse( renderer, [&engine, &window]( RendererMut& renderer )
 			{
 				engine.state = EngineState::Running;

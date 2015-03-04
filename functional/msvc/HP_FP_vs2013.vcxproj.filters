@@ -40,6 +40,12 @@
     <Filter Include="src\graphics">
       <UniqueIdentifier>{b6dcc112-4124-466b-9a5c-b3d6b21783a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\core\actors">
+      <UniqueIdentifier>{1a09b927-bec5-4006-9ff4-96c209e45ab3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\actors">
+      <UniqueIdentifier>{d0e06e8d-49ef-4bbb-b479-cdf3e48595a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -66,6 +72,9 @@
     <ClCompile Include="..\src\core\timerMut.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\core\scene.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\window\window.hpp">
@@ -87,9 +96,6 @@
       <Filter>include\utils</Filter>
     </ClInclude>
     <ClInclude Include="..\include\adt\maybe.hpp">
-      <Filter>include\adt</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\adt\io.hpp">
       <Filter>include\adt</Filter>
     </ClInclude>
     <ClInclude Include="..\include\window\inputMessage.hpp">
@@ -117,6 +123,30 @@
       <Filter>include\core</Filter>
     </ClInclude>
     <ClInclude Include="..\include\core\timerMut.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\list.hpp">
+      <Filter>include\adt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\map.hpp">
+      <Filter>include\adt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\worldImm.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\sceneImm.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actors\actorImm.hpp">
+      <Filter>include\core\actors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actors\component.hpp">
+      <Filter>include\core\actors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\tree.hpp">
+      <Filter>include\adt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\scene.hpp">
       <Filter>include\core</Filter>
     </ClInclude>
   </ItemGroup>
