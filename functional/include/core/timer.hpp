@@ -6,6 +6,6 @@ namespace hp_fp
 	void updateTimer_IO( TimerMut& timer );
 	namespace
 	{
-		const double getCurrentTimeMs_IO( );
+		const double getTimeMs_IO( );
 	}
 }

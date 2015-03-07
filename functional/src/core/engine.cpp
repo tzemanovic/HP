@@ -1,39 +1,14 @@
 #include <pch.hpp>
 #include <core/engine.hpp>
 #include <core/timer.hpp>
+#include <core/actors/actorInputMut.hpp>
 #include <adt/maybe.hpp>
 #include <graphics/renderer.hpp>
-#include <window/inputMessage.hpp>
 namespace hp_fp
 {
-	EngineMut init( const String&& name )
+	EngineMut init( String&& name )
 	{
-		return EngineMut{ name, EngineState::Initialized, nullptr,
-			[]( EngineMut& engine ) // onClose
-		{
-			engine.state = EngineState::Terminated;
-		}, []( EngineMut& engine, KeyMessage&& msg ) // onKeyDown
-		{
-
-		}, []( EngineMut& engine, KeyMessage&& msg ) // onKeyUp
-		{
-
-		}, []( EngineMut& engine, MouseButtonMessage&& msg ) // onMouseButtonDown
-		{
-
-		}, []( EngineMut& engine, MouseButtonMessage&& msg ) // onMouseButtonUp
-		{
-
-		}, []( EngineMut& engine, MouseMoveMessage&& msg ) // onMouseMoveDown
-		{
-
-		}, []( EngineMut& engine, MouseWheelMessage&& msg ) // onMouseWheelDown
-		{
-
-		}, []( EngineMut& engine, TextMessage&& msg ) // onText
-		{
-
-		} };
+		return EngineMut{ std::move( name ), EngineState::Initialized, { }, nullptr };
 	}
 	void setWorld_IO( EngineMut& engine, WorldImm&& world )
 	{
@@ -49,6 +24,7 @@ namespace hp_fp
 			{
 				engine.state = EngineState::Running;
 				TimerMut timer = initTimer_IO( );
+				ActorInputMut actorInput{ };
 				while ( engine.state == EngineState::Running )
 				{
 					// TODO: collect all the inputs with time into a signal state GameInput that will be wrapped in ActorInput
@@ -56,6 +32,9 @@ namespace hp_fp
 					// make Actors signal functions - one for update (from ActorInput to ActorOutput), one for rendering
 					processMessages_IO( window.handle );
 					updateTimer_IO( timer );
+					engine.gameInput.deltaMs = timer.deltaMs;
+					engine.gameInput.timeMs = timer.timeMs();
+					ActorInputMut actorInput{ engine.gameInput };
 					//render_IO( timer );
 					//update_IO( timer );
 				}

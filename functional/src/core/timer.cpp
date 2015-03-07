@@ -4,18 +4,18 @@ namespace hp_fp
 {
 	TimerMut initTimer_IO( )
 	{
-		return TimerMut{ 0.0, getCurrentTimeMs_IO( ), 0.0 };
+		return TimerMut{ 0.0, getTimeMs_IO( ), 0.0 };
 	}
 	void updateTimer_IO( TimerMut& timer )
 	{
-		double currentTimeMs = getCurrentTimeMs_IO( );
+		double currentTimeMs = getTimeMs_IO( );
 		timer.deltaMs = currentTimeMs - timer._lastTimeMs;
 		timer._lastTimeMs = currentTimeMs;
-		timer._currentTimeMs += timer.deltaMs;
+		timer._timeMs += timer.deltaMs;
 	}
 	namespace
 	{
-		const double getCurrentTimeMs_IO( )
+		const double getTimeMs_IO( )
 		{
 			// use only single thread to calculate time
 			HANDLE currentThread = GetCurrentThread( );

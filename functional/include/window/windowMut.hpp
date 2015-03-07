@@ -13,7 +13,7 @@ namespace hp_fp
 		WindowMut operator=( const WindowMut& ) = delete;
 		WindowMut operator=( WindowMut&& w )
 		{
-			return WindowMut{ w.handle, w.name };
+			return WindowMut{ std::move( w ) };
 		}
 		WindowHandle	handle;
 		const LPCWSTR	name;

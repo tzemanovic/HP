@@ -3,28 +3,30 @@
 // [  -  ][  0  ][  0  ][  +  ][  +  ]
 namespace hp_fp
 {
-	extern const double CURRENT_TIME_ADDITION;
+	extern const double TIME_ADDITION;
 	struct TimerMut
 	{
 		friend TimerMut initTimer_IO( );
 		friend void updateTimer_IO( TimerMut& timer );
 		TimerMut( const TimerMut& ) = delete;
 		TimerMut operator=( const TimerMut& ) = delete;
-		TimerMut( TimerMut&& r ) : deltaMs( std::move( r.deltaMs ) ), _currentTimeMs( std::move( r._currentTimeMs ) ), _lastTimeMs( std::move( r._lastTimeMs ) )
+		TimerMut( TimerMut&& r ) : deltaMs( std::move( r.deltaMs ) ),
+			_timeMs( std::move( r._timeMs ) ), _lastTimeMs( std::move( r._lastTimeMs ) )
 		{ }
 		TimerMut operator=( TimerMut&& r )
 		{
-			return TimerMut{ r.deltaMs, r._currentTimeMs, r._lastTimeMs };
+			return TimerMut{ r.deltaMs, r._timeMs, r._lastTimeMs };
 		}
 		double deltaMs;
-		double currentTimeMs( )
+		double timeMs( )
 		{
-			return _currentTimeMs - CURRENT_TIME_ADDITION;
+			return _timeMs - TIME_ADDITION;
 		}
 	private:
-		TimerMut( const double deltaMs, const double lastTimeMs, const double currentTimeMs ) : deltaMs( deltaMs ), _lastTimeMs( lastTimeMs ), _currentTimeMs( currentTimeMs + CURRENT_TIME_ADDITION )
+		TimerMut( const double deltaMs, const double lastTimeMs, const double timeMs )
+			: deltaMs( deltaMs ), _lastTimeMs( lastTimeMs ), _timeMs( timeMs + TIME_ADDITION )
 		{ }
-		double _currentTimeMs;
+		double _timeMs;
 		double _lastTimeMs;
 	};
 }

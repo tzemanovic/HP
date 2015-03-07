@@ -98,9 +98,6 @@
     <ClInclude Include="..\include\adt\maybe.hpp">
       <Filter>include\adt</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\window\inputMessage.hpp">
-      <Filter>include\window</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\adt\sum.hpp">
       <Filter>include\adt</Filter>
     </ClInclude>
@@ -148,6 +145,12 @@
     </ClInclude>
     <ClInclude Include="..\include\core\scene.hpp">
       <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\gameInputMut.hpp">
+      <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actors\actorInputMut.hpp">
+      <Filter>include\core\actors</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

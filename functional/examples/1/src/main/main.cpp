@@ -7,11 +7,11 @@ using namespace hp_fp;
 int main( )
 {
 	EngineMut engine = init( "example1" );
-	ActorImm actor1{ };
+	/*ActorImm actor1{ };
 	SceneImm scene1{ };
 	scene1 = addActor( scene1, std::move( actor1 ) );
 	WorldImm world{ { scene1 } };
-	setWorld_IO( engine, std::move( world ) );
+	setWorld_IO( engine, std::move( world ) );*/
 	run_IO( engine );
 
 	/*InputMessage msg( TextMessage{'a'} );
