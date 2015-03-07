@@ -51,6 +51,9 @@ namespace hp_fp
 				TimerMut timer = initTimer_IO( );
 				while ( engine.state == EngineState::Running )
 				{
+					// TODO: collect all the inputs with time into a signal state GameInput that will be wrapped in ActorInput
+					// ActorOutput will have Transform (mandatory), Sum type with Actor specific optional components such as Mesh or RigidBody, and Events that can change the dynamic collection of Actors
+					// make Actors signal functions - one for update (from ActorInput to ActorOutput), one for rendering
 					processMessages_IO( window.handle );
 					updateTimer_IO( timer );
 					//render_IO( timer );
