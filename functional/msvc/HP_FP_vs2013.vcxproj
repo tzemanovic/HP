@@ -38,6 +38,7 @@
     <ClCompile Include="..\src\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\adt\frp\sf.hpp" />
     <ClInclude Include="..\include\adt\list.hpp" />
     <ClInclude Include="..\include\adt\map.hpp" />
     <ClInclude Include="..\include\adt\maybe.hpp" />

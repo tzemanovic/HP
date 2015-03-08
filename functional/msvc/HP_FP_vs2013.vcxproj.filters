@@ -46,6 +46,9 @@
     <Filter Include="src\core\actors">
       <UniqueIdentifier>{d0e06e8d-49ef-4bbb-b479-cdf3e48595a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\adt\frp">
+      <UniqueIdentifier>{9af818df-1c96-48cd-99f1-98341e5a505e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="..\include\core\actors\actorInputMut.hpp">
       <Filter>include\core\actors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\frp\sf.hpp">
+      <Filter>include\adt\frp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
