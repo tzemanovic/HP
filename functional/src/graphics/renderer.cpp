@@ -52,7 +52,7 @@ namespace hp_fp
 		}
 		// back buffer texture to link render target with back buffer
 		ID3D11Texture2D* backBufferTexture;
-		if ( FAILED( renderer.swapChain->GetBuffer( 0, _uuidof( ID3D11Texture2D ), ( LPVOID* ) &backBufferTexture ) ) )
+		if ( FAILED( renderer.swapChain->GetBuffer( 0, _uuidof( ID3D11Texture2D ), (LPVOID*) &backBufferTexture ) ) )
 		{
 			ERR( "Failed to get the swap chain back buffer!" );
 			return nothing<RendererMut>( );
@@ -94,8 +94,8 @@ namespace hp_fp
 		renderer.deviceContext->OMSetRenderTargets( 1, &renderer.renderTargetView, renderer.depthStencilView );
 		// setup the viewport
 		D3D11_VIEWPORT viewport;
-		viewport.Width = static_cast< FLOAT >( windowConfig.width );
-		viewport.Height = static_cast< FLOAT >( windowConfig.height );
+		viewport.Width = static_cast<FLOAT>( windowConfig.width );
+		viewport.Height = static_cast<FLOAT>( windowConfig.height );
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 		viewport.TopLeftX = 0.f;
@@ -103,5 +103,15 @@ namespace hp_fp
 		renderer.deviceContext->RSSetViewports( 1, &viewport );
 		renderer.deviceContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		return just( std::move( renderer ) );
+	}
+	void preRender_IO( RendererMut& renderer )
+	{
+		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
+		renderer.deviceContext->ClearRenderTargetView( renderer.renderTargetView, ClearColor );
+		renderer.deviceContext->ClearDepthStencilView( renderer.depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+	}
+	void present_IO( RendererMut& renderer )
+	{
+		renderer.swapChain->Present( 0, 0 );
 	}
 }

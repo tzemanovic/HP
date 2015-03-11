@@ -3,6 +3,7 @@
 #include <vld.h>
 #endif
 #include <hpFp.hpp>
+#include <graphics/meshMat.hpp>
 using namespace hp_fp;
 int main( )
 {

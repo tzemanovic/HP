@@ -1,7 +1,5 @@
 #pragma once
-#include <D3D11.h>
-#include <D3D10.h>
-#include <D3Dcompiler.h>
+#include <graphics/directx.h>
 namespace hp_fp
 {
 	struct RendererMut

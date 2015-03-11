@@ -54,9 +54,14 @@
     <ClInclude Include="..\include\core\timer.hpp" />
     <ClInclude Include="..\include\core\timerMut.hpp" />
     <ClInclude Include="..\include\core\worldImm.hpp" />
+    <ClInclude Include="..\include\graphics\directx.h" />
+    <ClInclude Include="..\include\graphics\meshMat.hpp" />
+    <ClInclude Include="..\include\graphics\meshMatMut.hpp" />
     <ClInclude Include="..\include\graphics\renderer.hpp" />
     <ClInclude Include="..\include\graphics\rendererMut.hpp" />
     <ClInclude Include="..\include\hpFp.hpp" />
+    <ClInclude Include="..\include\math\color.hpp" />
+    <ClInclude Include="..\include\math\vec2.hpp" />
     <ClInclude Include="..\include\pch\pch.hpp" />
     <ClInclude Include="..\include\utils\stringUtils.hpp" />
     <ClInclude Include="..\include\window\gameInputMut.hpp" />

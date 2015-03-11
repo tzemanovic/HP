@@ -49,6 +49,9 @@
     <Filter Include="include\adt\frp">
       <UniqueIdentifier>{9af818df-1c96-48cd-99f1-98341e5a505e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\math">
+      <UniqueIdentifier>{ae990323-a6ba-4182-ac45-6ca8ff7b8b63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -157,6 +160,21 @@
     </ClInclude>
     <ClInclude Include="..\include\adt\frp\sf.hpp">
       <Filter>include\adt\frp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\meshMatMut.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\directx.h">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\vec2.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\color.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\meshMat.hpp">
+      <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

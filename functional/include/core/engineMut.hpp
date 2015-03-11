@@ -5,11 +5,7 @@
 // [  +  ][  0  ][  0  ][  0  ][  0  ]
 namespace hp_fp
 {
-	struct KeyMessage;
-	struct MouseButtonMessage;
-	struct MouseMoveMessage;
-	struct MouseWheelMessage;
-	struct TextMessage;
+	struct ActorInputMut;
 	enum class EngineState : UInt8
 	{
 		Initialized,
