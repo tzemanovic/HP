@@ -114,4 +114,56 @@ namespace hp_fp
 	{
 		renderer.swapChain->Present( 0, 0 );
 	}
+	bool createVertexBuffer_IO( RendererMut& renderer, ID3D11Buffer* vertexBuffer, UInt32 byteWidth,
+		const Vertex* initData )
+	{
+		D3D11_BUFFER_DESC bd;
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = byteWidth;
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		bd.MiscFlags = 0;
+		D3D11_SUBRESOURCE_DATA subresourceData;
+		subresourceData.pSysMem = initData;
+		subresourceData.SysMemPitch = 0;
+		subresourceData.SysMemSlicePitch = 0;
+		if ( SUCCEEDED( renderer.device->CreateBuffer( &bd, &subresourceData, &vertexBuffer ) ) )
+		{
+			return true;
+		}
+		return false;
+	}
+	bool createIndexBuffer_IO( RendererMut& renderer, ID3D11Buffer* indexBuffer, UInt32 byteWidth,
+		const Index* initData )
+	{
+		D3D11_BUFFER_DESC bd;
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = byteWidth;
+		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		bd.MiscFlags = 0;
+		D3D11_SUBRESOURCE_DATA subresourceData;
+		subresourceData.pSysMem = initData;
+		subresourceData.SysMemPitch = 0;
+		subresourceData.SysMemSlicePitch = 0;
+		if ( SUCCEEDED( renderer.device->CreateBuffer( &bd, &subresourceData, &indexBuffer ) ) )
+		{
+			return true;
+		}
+		return false;
+	}
+	void setVertexBuffers_IO( RendererMut& renderer, ID3D11Buffer* vertexBuffer, UInt32* stride,
+		UInt32* offset )
+	{
+		renderer.deviceContext->IASetVertexBuffers( 0, 1, &vertexBuffer, stride, offset );
+	}
+	void setIndexBuffer_IO( RendererMut& renderer, ID3D11Buffer* indexBuffer )
+	{
+		renderer.deviceContext->IASetIndexBuffer( indexBuffer, DXGI_FORMAT_R32_UINT, 0 );
+	}
+	void drawIndexed_IO( RendererMut& renderer, UInt32 indexCount, UInt32 startIndexLocation,
+		UInt32 baseVertexLocation )
+	{
+		renderer.deviceContext->DrawIndexed( indexCount, startIndexLocation, baseVertexLocation );
+	}
 }

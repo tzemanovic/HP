@@ -1,9 +1,10 @@
 #include <pch.hpp>
 #include <core/engine.hpp>
 #include <functional>
+#include <adt/maybe.hpp>
 #include <core/timer.hpp>
 #include <core/actors/actorInputMut.hpp>
-#include <adt/maybe.hpp>
+#include <graphics/mesh.hpp>
 #include <graphics/renderer.hpp>
 namespace hp_fp
 {
@@ -44,6 +45,18 @@ namespace hp_fp
 				engine.state = EngineState::Running;
 				TimerMut timer = initTimer_IO( );
 				ActorInputMut actorInput{ };
+
+				// should be function that takes renderer and returns rendering function
+				auto renderGun = []( RendererMut& renderer )
+				{
+					// use renderer to load the mesh and material and then pass ref to lambda
+					Maybe<MeshesMut> meshes = loadModelFromFile_IO( "Assets/Models/Characters/Knight/knight.fbx", 0.009f );
+					return [&]( ActorOutput& output )
+					{
+
+					};
+				};
+
 				while ( engine.state == EngineState::Running )
 				{
 					// TODO: collect all the inputs with time into a signal state GameInput that will be wrapped in ActorInput
@@ -61,10 +74,12 @@ namespace hp_fp
 					{
 						return ActorOutput{ input.gameInput.mouse.x * 0.1f, 0.0f };
 					};*/
+					
 					auto render = [&renderer]( ActorOutput& output )
 					{
 						preRender_IO( renderer );
-						std::cout << output.x << std::endl;
+
+						//std::cout << output.x << std::endl;
 						present_IO( renderer );
 					};
 

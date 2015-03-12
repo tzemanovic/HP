@@ -52,6 +52,9 @@
     <Filter Include="include\math">
       <UniqueIdentifier>{ae990323-a6ba-4182-ac45-6ca8ff7b8b63}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\math">
+      <UniqueIdentifier>{dd53695f-de13-46a5-bea2-e8726e96c147}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -80,6 +83,15 @@
     </ClCompile>
     <ClCompile Include="..\src\core\scene.cpp">
       <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\meshMat.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\mesh.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\vec3.cpp">
+      <Filter>src\math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +186,18 @@
       <Filter>include\math</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graphics\meshMat.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\vertex.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\vec3.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\meshMut.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\mesh.hpp">
       <Filter>include\graphics</Filter>
     </ClInclude>
   </ItemGroup>

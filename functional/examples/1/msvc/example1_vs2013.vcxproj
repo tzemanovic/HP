@@ -101,11 +101,11 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(DXSDK_DIR)Include;D:\_dev\_libs\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(SolutionDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;D:\_dev\_libs\Visual Leak Detector\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;D:\_dev\_libs\Visual Leak Detector\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(DXSDK_DIR)Include;D:\_dev\_libs\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(SolutionDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;D:\_dev\_libs\Visual Leak Detector\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;D:\_dev\_libs\Visual Leak Detector\lib\Win32;$(LibraryPath)</LibraryPath>
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
@@ -115,11 +115,11 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(SolutionDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(SolutionDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
@@ -129,11 +129,11 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(SolutionDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(SolutionDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>

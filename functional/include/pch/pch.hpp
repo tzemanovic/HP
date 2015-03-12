@@ -70,6 +70,7 @@ typedef UInt32				 UInt;
 
 typedef HWND		 WindowHandle;
 typedef std::string	 String;
+typedef UInt32		 Index;
 #endif
 
 namespace hp_fp
