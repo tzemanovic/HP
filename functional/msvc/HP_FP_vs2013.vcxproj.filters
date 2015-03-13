@@ -93,6 +93,18 @@
     <ClCompile Include="..\src\math\vec3.cpp">
       <Filter>src\math</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\math\vec4.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\mat4x4.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\plane.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\frustum.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\window\window.hpp">
@@ -199,6 +211,18 @@
     </ClInclude>
     <ClInclude Include="..\include\graphics\mesh.hpp">
       <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\mat4x4.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\vec4.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\plane.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\frustum.hpp">
+      <Filter>include\math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

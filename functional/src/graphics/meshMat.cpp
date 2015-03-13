@@ -164,4 +164,79 @@ namespace hp_fp
 			return true;
 		}
 	}
+	void setProjection( MeshMatMut& meshMat, const Mat4x4& mat )
+	{
+		meshMat.projectionMatrixVariable->SetMatrix( (float*) ( &mat ) );
+	}
+	void setView( MeshMatMut& meshMat, const Mat4x4& mat )
+	{
+		meshMat.viewMatrixVariable->SetMatrix( (float*) ( &mat ) );
+	}
+	void setWorld( MeshMatMut& meshMat, const Mat4x4& mat )
+	{
+		meshMat.worldMatrixVariable->SetMatrix( (float*) ( &mat ) );
+	}
+	void setAbientLightColor( MeshMatMut& meshMat, const Color& color )
+	{
+		meshMat.ambientLightColourVariable->SetFloatVector( (float*) ( &color ) );
+	}
+	void setDiffuseLightColor( MeshMatMut& meshMat, const Color& color )
+	{
+		meshMat.diffuseLightColourVariable->SetFloatVector( (float*) ( &color ) );
+	}
+	void setSpecularLightColor( MeshMatMut& meshMat, const Color& color )
+	{
+		meshMat.specularLightColourVariable->SetFloatVector( (float*) ( &color ) );
+	}
+	void setLightDirection( MeshMatMut& meshMat, const FVec3& dir )
+	{
+		meshMat.lightDirectionVariable->SetFloatVector( (float*) ( &dir ) );
+	}
+	void setCameraPosition( MeshMatMut& meshMat, const FVec3& dir )
+	{
+		meshMat.cameraPositionVariable->SetFloatVector( (float*) ( &dir ) );
+	}
+	void setTextureRepeat( MeshMatMut& meshMat, const FVec2& repeat )
+	{
+		meshMat.textureRepeat = repeat;
+	}
+	void setTextures( MeshMatMut& meshMat )
+	{
+		meshMat.diffuseTextureVariable->SetResource( meshMat.diffuseTexture );
+		meshMat.specularTextureVariable->SetResource( meshMat.specularTexture );
+		meshMat.bumpTextureVariable->SetResource( meshMat.bumpTexture );
+		meshMat.parallaxTextureVariable->SetResource( meshMat.parallaxTexture );
+		meshMat.envMapVariable->SetResource( meshMat.envMapTexture );
+
+		if ( meshMat.diffuseTexture )
+			meshMat.useDiffuseTextureVariable->SetBool( true );
+		if ( meshMat.specularTexture )
+			meshMat.useSpecularTextureVariable->SetBool( true );
+		if ( meshMat.bumpTexture )
+			meshMat.useBumpTextureVariable->SetBool( true );
+		if ( meshMat.parallaxTexture )
+			meshMat.useParallaxTextureVariable->SetBool( true );
+
+		meshMat.textureRepeatVariable->SetFloatVector( (float*) ( &meshMat.textureRepeat ) );
+	}
+	void setMaterials( MeshMatMut& meshMat )
+	{
+		meshMat.ambientMaterialVariable->SetFloatVector( (float*) ( meshMat.ambientMaterial ) );
+		meshMat.diffuseMaterialVariable->SetFloatVector( (float*) ( meshMat.diffuseMaterial ) );
+		meshMat.specularMaterialVariable->SetFloatVector( (float*) ( meshMat.specularMaterial ) );
+		meshMat.specularPowerVariable->SetFloat( meshMat.specularPower );
+	}
+	void bindInputLayout( RendererMut& renderer, MeshMatMut& meshMat )
+	{
+		renderer.deviceContext->IASetInputLayout( meshMat.inputLayout );
+	}
+	UInt32 getPassCount( MeshMatMut& meshMat )
+	{
+		return meshMat.techniqueDesc.Passes;
+	}
+	void applyPass( RendererMut& renderer, MeshMatMut& meshMat, UInt32 i )
+	{
+		meshMat.pass = meshMat.technique->GetPassByIndex( i );
+		meshMat.pass->Apply( 0, renderer.deviceContext );
+	}
 }

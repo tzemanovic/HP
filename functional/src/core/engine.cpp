@@ -5,6 +5,7 @@
 #include <core/timer.hpp>
 #include <core/actors/actorInputMut.hpp>
 #include <graphics/mesh.hpp>
+#include <graphics/meshMat.hpp>
 #include <graphics/renderer.hpp>
 namespace hp_fp
 {
@@ -16,7 +17,7 @@ namespace hp_fp
 	{
 		engine.world = HP_NEW WorldImm( world );
 	}
-	
+
 	template<typename A, typename B>
 	// sense - game input sample function
 	// actuate - process output sample
@@ -50,7 +51,72 @@ namespace hp_fp
 				auto renderGun = []( RendererMut& renderer )
 				{
 					// use renderer to load the mesh and material and then pass ref to lambda
-					Maybe<MeshesMut> meshes = loadModelFromFile_IO( "Assets/Models/Characters/Knight/knight.fbx", 0.009f );
+					Maybe<MeshesMut> meshes = loadModelFromFile_IO(
+						"Assets/Models/Characters/Knight/knight.fbx", 0.009f );
+					ifThenElse( meshes, [&renderer]( MeshesMut& meshes )
+					{
+						MeshMatMut meshMat = defaultMat( );
+						if ( init_IO( meshMat, renderer ) )
+						{
+							if ( loadTexture_IO( meshMat.diffuseTexture, renderer,
+								"Assets/Textures/Characters/Knight/T_Black_Knight_D.jpg" ) )
+							{
+								if ( loadTexture_IO( meshMat.bumpTexture, renderer,
+									"Assets/Textures/Characters/Knight/T_Black_Knight_N.jpg" ) )
+								{
+									return [&]( ActorOutput& output )
+									{
+										/*setProjection( meshMat, camera.getProjection( ) );
+										pMeshMaterial->VSetProjection( pCamera->GetProjection( ) );
+										pMeshMaterial->VSetView( pCamera->GetView( ) );
+										pMeshMaterial->VSetWorld( m_toWorld );
+
+										pMeshMaterial->VSetAbientLightColor( pScene->GetAmbientLightColor( ) );
+										pMeshMaterial->VSetDiffuseLightColor( pScene->GetDiffuseLightColor( ) );
+										pMeshMaterial->VSetSpecularLightColor( pScene->GetSpecularLightColor( ) );
+										pMeshMaterial->VSetLightDirection( pScene->GetLightDirection( ) );
+
+										pMeshMaterial->VSetCameraPosition( pCamera->GetWorldPosition( ) );
+
+										pMeshMaterial->VSetTextures( );
+										pMeshMaterial->VSetMaterials( );
+
+										pMeshMaterial->VBindInputLayout( );
+										for ( uint32 i = 0; i < pMeshMaterial->VGetPassCount( ); ++i )
+										{
+										pMeshMaterial->VApplyPass( i );
+										for ( uint32 j = 0; j < pMeshComponent->GetGeometryCount( ); ++j )
+										{
+										MeshGeometry* pMeshGeometry = pMeshComponent->GetGeometry( j );
+										pMeshGeometry->SetBuffers( );
+										g_pGame->GetRenderer( )->DrawIndexed( pMeshGeometry->GetIndexCount( ), 0, 0 );
+										}
+										}*/
+									};
+								}
+								else
+								{
+									ERR( "Failed to load T_Black_Knight_N.jpg texture" );
+								}
+							}
+							else
+							{
+								ERR( "Failed to load T_Black_Knight_D.jpg texture" );
+							}
+
+						}
+						else
+						{
+							ERR( "Failed to initalize knight.fbx material" );
+						}
+					}, [] // nothing<MeshesMut>
+					{
+						return [&]( ActorOutput& output )
+						{
+
+						};
+						ERR( "Failed to load knight.fbx model." );
+					} );
 					return [&]( ActorOutput& output )
 					{
 
@@ -72,9 +138,9 @@ namespace hp_fp
 					//engine.sf( actorInput );
 					/*auto sf = []( ActorInputMut& input )
 					{
-						return ActorOutput{ input.gameInput.mouse.x * 0.1f, 0.0f };
+					return ActorOutput{ input.gameInput.mouse.x * 0.1f, 0.0f };
 					};*/
-					
+
 					auto render = [&renderer]( ActorOutput& output )
 					{
 						preRender_IO( renderer );

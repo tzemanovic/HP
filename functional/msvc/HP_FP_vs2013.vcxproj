@@ -36,7 +36,11 @@
     <ClCompile Include="..\src\graphics\meshMat.cpp" />
     <ClCompile Include="..\src\graphics\renderer.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
+    <ClCompile Include="..\src\math\frustum.cpp" />
+    <ClCompile Include="..\src\math\mat4x4.cpp" />
+    <ClCompile Include="..\src\math\plane.cpp" />
     <ClCompile Include="..\src\math\vec3.cpp" />
+    <ClCompile Include="..\src\math\vec4.cpp" />
     <ClCompile Include="..\src\utils\stringUtils.cpp" />
     <ClCompile Include="..\src\window\window.cpp" />
   </ItemGroup>
@@ -67,8 +71,12 @@
     <ClInclude Include="..\include\graphics\vertex.hpp" />
     <ClInclude Include="..\include\hpFp.hpp" />
     <ClInclude Include="..\include\math\color.hpp" />
+    <ClInclude Include="..\include\math\frustum.hpp" />
+    <ClInclude Include="..\include\math\mat4x4.hpp" />
+    <ClInclude Include="..\include\math\plane.hpp" />
     <ClInclude Include="..\include\math\vec2.hpp" />
     <ClInclude Include="..\include\math\vec3.hpp" />
+    <ClInclude Include="..\include\math\vec4.hpp" />
     <ClInclude Include="..\include\pch\pch.hpp" />
     <ClInclude Include="..\include\utils\stringUtils.hpp" />
     <ClInclude Include="..\include\window\gameInputMut.hpp" />

@@ -55,6 +55,10 @@ namespace hp_fp
 		friend inline Vec3<B> operator * ( const float scalar, const Vec3<B>& vec );
 		template<typename B>
 		friend inline Vec3<B> operator * ( const Vec3<B>& vec, const float scalar );
+		template<typename B>
+		friend inline Vec3<B> cross( const Vec3<B>& vec1, const Vec3<B>& vec2 );
+		template<typename B>
+		friend inline B dot( const Vec3<B>& vec1, const Vec3<B>& vec2 );
 	};
 	template<typename A>
 	inline Vec3<A> operator * ( const float scalar, const Vec3<A>& vec )
@@ -65,6 +69,19 @@ namespace hp_fp
 	inline Vec3<A> operator * ( const Vec3<A>& vec, const float scalar )
 	{
 		return scalar * vec;
+	}
+	template<typename A>
+	inline Vec3<A> cross( const Vec3<A>& vec1, const Vec3<A>& vec2 )
+	{
+		return Vec3<A>(
+			vec1.y * vec2.z - vec1.z * vec2.y,
+			vec1.z * vec2.x - vec1.x * vec2.z,
+			vec1.x * vec2.y - vec1.y * vec2.x );
+	}
+	template<typename A>
+	inline A dot( const Vec3<A>& vec1, const Vec3<A>& vec2 )
+	{
+		return ( vec1.x ) * ( vec2.x ) + ( vec1.y ) * ( vec2.y ) + ( vec1.z ) * ( vec2.z );
 	}
 	typedef Vec3<UInt16> UInt16Vec3;
 	typedef Vec3<Int16> Int16Vec3;
