@@ -23,11 +23,6 @@ namespace hp_fp
 		{ }
 		static const Mat4x4 identity;
 		// not implemented yet
-		static inline Mat4x4* Identity( Mat4x4* pMat )
-		{
-			return &Mat4x4( );
-		}
-		// not implemented yet
 		inline Mat4x4 Inverse( ) const
 		{
 			return Mat4x4( );
@@ -41,4 +36,8 @@ namespace hp_fp
 			m[3][0] = pos.x, m[3][1] = pos.y; m[3][2] = pos.z; m[3][3] = 1.0f;
 		}
 	};
+	float determinant( const Mat4x4& mat );
+	Mat4x4 inverse( const Mat4x4& mat );
+	Mat4x4 matrixPerspectiveFovLH( const float fieldOfView, const float aspectRatio,
+		const float nearClipDist, const float farClipDist );
 }

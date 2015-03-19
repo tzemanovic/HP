@@ -1,5 +1,5 @@
 #include <pch.hpp>
-#include <utils/stringUtils.hpp>
+#include "../../include/utils/stringUtils.hpp"
 namespace hp_fp
 {
 	std::wstring s2ws( const std::string& s )

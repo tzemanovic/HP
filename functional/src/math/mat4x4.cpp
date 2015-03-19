@@ -1,6 +1,73 @@
 #include <pch.hpp>
-#include <math/mat4x4.hpp>
+#include "../../include/math/mat4x4.hpp"
 namespace hp_fp
 {
 	const Mat4x4 Mat4x4::identity( Mat4x4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ) );
+	float determinant( const Mat4x4& mat )
+	{
+		FVec4 v1, v2, v3;
+		v1.x = mat.m[0][0];
+		v1.y = mat.m[1][0];
+		v1.z = mat.m[2][0];
+		v1.w = mat.m[3][0];
+		v2.x = mat.m[0][1];
+		v2.y = mat.m[1][1];
+		v2.z = mat.m[2][1];
+		v2.w = mat.m[3][1];
+		v3.x = mat.m[0][2];
+		v3.y = mat.m[1][2];
+		v3.z = mat.m[2][2];
+		v3.w = mat.m[3][2];
+		FVec4 x = cross( v1, v2, v3 );
+		return -( mat.m[0][3] * x.x + mat.m[1][3] * x.y + mat.m[2][3] * x.z +
+			mat.m[3][3] * x.w );
+	}
+	Mat4x4 inverse( const Mat4x4& mat )
+	{
+		Mat4x4 invMat;
+		FVec4 vec[3];
+		int i, j;
+		float det = determinant( mat );
+		for ( i = 0; i < 4; ++i )
+		{
+			for ( j = 0; j < 4; ++j )
+			{
+				if ( i != j )
+				{
+					int a = ( j <= i ) ? j : j - 1;
+					vec[a].x = mat.m[j][0];
+					vec[a].y = mat.m[j][1];
+					vec[a].z = mat.m[j][2];
+					vec[a].w = mat.m[j][3];
+				}
+			}
+			FVec4 x = cross( vec[0], vec[1], vec[2] );
+			float cofactor;
+			for ( j = 0; j < 4; ++j )
+			{
+				switch ( j )
+				{
+				case 0: cofactor = x.x; break;
+				case 1: cofactor = x.y; break;
+				case 2: cofactor = x.z; break;
+				case 3: cofactor = x.w; break;
+				}
+				invMat.m[j][i] = pow( -1.0f, i ) * cofactor / det;
+			}
+		}
+		return invMat;
+	}
+	Mat4x4 matrixPerspectiveFovLH( const float fieldOfView, const float aspectRatio,
+		const float nearClipDist, const float farClipDist )
+	{
+		Mat4x4 perspective = Mat4x4::identity;
+		float tanFov = tan( fieldOfView / 2.0f );
+		perspective.m[0][0] = 1.0f / ( aspectRatio * tanFov );
+		perspective.m[1][1] = 1.0f / tanFov;
+		perspective.m[2][2] = farClipDist / ( farClipDist - nearClipDist );
+		perspective.m[2][3] = 1.0f;
+		perspective.m[3][2] = ( farClipDist *  -nearClipDist ) / ( farClipDist - nearClipDist );
+		perspective.m[3][3] = 0.0f;
+		return perspective;
+	}
 }

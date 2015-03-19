@@ -27,7 +27,7 @@
 
 // We could load multi-frame images (TIFF/GIF) into a texture array.
 // For now, we just load the first frame (note: DirectXTex supports multi-frame images)
-
+#include <pch.hpp>
 #include <assert.h>
 
 // VS 2010's stdint.h conflicts with intsafe.h

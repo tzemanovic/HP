@@ -1,16 +1,16 @@
 #include <pch.hpp>
 #include <algorithm>
-#include <graphics/meshMat.hpp>
-#include <graphics/rendererMut.hpp>
-#include <graphics/vertex.hpp>
-#include <utils/stringUtils.hpp>
+#include "../../include/graphics/meshMat.hpp"
+#include "../../include/graphics/renderer.hpp"
+#include "../../include/graphics/vertex.hpp"
+#include "../../include/utils/stringUtils.hpp"
 namespace hp_fp
 {
-	MeshMatMut defaultMat( )
+	MeshMat defaultMat( )
 	{
-		return MeshMatMut
+		return MeshMat
 		{
-			"assets/shaders/specular.fx",
+			"assets/shaders/parallax.fx",
 			"Render",
 			nullptr,
 			nullptr,
@@ -51,7 +51,7 @@ namespace hp_fp
 			25.0f
 		};
 	}
-	bool init_IO( MeshMatMut& meshMat, RendererMut& renderer )
+	bool init_IO( MeshMat& meshMat, Renderer& renderer )
 	{
 		if ( loadShader_IO( meshMat, renderer ) )
 		{
@@ -91,7 +91,7 @@ namespace hp_fp
 		}
 		return false;
 	}
-	bool loadTexture_IO( ID3D11ShaderResourceView* texture, RendererMut& renderer,
+	bool loadTexture_IO( ID3D11ShaderResourceView** texture, Renderer& renderer,
 		const String& filename )
 	{
 		String fileExt = filename.substr( filename.find( '.' ) + 1 );
@@ -100,7 +100,7 @@ namespace hp_fp
 		if ( fileExt.compare( "dds" ) == 0 )
 		{
 			if ( FAILED( DirectX::CreateDDSTextureFromFile( renderer.device,
-				wFilename.c_str( ), nullptr, &texture ) ) )
+				wFilename.c_str( ), nullptr, texture ) ) )
 			{
 				return false;
 			}
@@ -108,7 +108,7 @@ namespace hp_fp
 		else
 		{
 			if ( FAILED( DirectX::CreateWICTextureFromFile( renderer.device,
-				wFilename.c_str( ), nullptr, &texture ) ) )
+				wFilename.c_str( ), nullptr, texture ) ) )
 			{
 				return false;
 			}
@@ -117,7 +117,7 @@ namespace hp_fp
 	}
 	namespace
 	{
-		bool loadShader_IO( MeshMatMut& meshMat, RendererMut& renderer )
+		bool loadShader_IO( MeshMat& meshMat, Renderer& renderer )
 		{
 			ID3DBlob* buffer = NULL;
 			if ( !loadAndCompile_IO( meshMat, renderer, "fx_5_0", &buffer ) )
@@ -132,7 +132,7 @@ namespace hp_fp
 			}
 			return true;
 		}
-		bool loadAndCompile_IO( MeshMatMut& meshMat, RendererMut& renderer, const String& shaderModel,
+		bool loadAndCompile_IO( MeshMat& meshMat, Renderer& renderer, const String& shaderModel,
 			ID3DBlob** buffer )
 		{
 			std::wstring wFilePath = s2ws( meshMat.filename );
@@ -151,7 +151,7 @@ namespace hp_fp
 			HP_RELEASE( errorBuffer );
 			return true;
 		}
-		bool createVertexLayout_IO( MeshMatMut& meshMat, RendererMut& renderer )
+		bool createVertexLayout_IO( MeshMat& meshMat, Renderer& renderer )
 		{
 			UInt32 elementsCount = ARRAYSIZE( D3D11_LAYOUT );
 			D3DX11_PASS_DESC passDesc;
@@ -164,43 +164,43 @@ namespace hp_fp
 			return true;
 		}
 	}
-	void setProjection( MeshMatMut& meshMat, const Mat4x4& mat )
+	void setProjection( MeshMat& meshMat, const Mat4x4& mat )
 	{
 		meshMat.projectionMatrixVariable->SetMatrix( (float*) ( &mat ) );
 	}
-	void setView( MeshMatMut& meshMat, const Mat4x4& mat )
+	void setView( MeshMat& meshMat, const Mat4x4& mat )
 	{
 		meshMat.viewMatrixVariable->SetMatrix( (float*) ( &mat ) );
 	}
-	void setWorld( MeshMatMut& meshMat, const Mat4x4& mat )
+	void setWorld( MeshMat& meshMat, const Mat4x4& mat )
 	{
 		meshMat.worldMatrixVariable->SetMatrix( (float*) ( &mat ) );
 	}
-	void setAbientLightColor( MeshMatMut& meshMat, const Color& color )
+	void setAbientLightColor( MeshMat& meshMat, const Color& color )
 	{
 		meshMat.ambientLightColourVariable->SetFloatVector( (float*) ( &color ) );
 	}
-	void setDiffuseLightColor( MeshMatMut& meshMat, const Color& color )
+	void setDiffuseLightColor( MeshMat& meshMat, const Color& color )
 	{
 		meshMat.diffuseLightColourVariable->SetFloatVector( (float*) ( &color ) );
 	}
-	void setSpecularLightColor( MeshMatMut& meshMat, const Color& color )
+	void setSpecularLightColor( MeshMat& meshMat, const Color& color )
 	{
 		meshMat.specularLightColourVariable->SetFloatVector( (float*) ( &color ) );
 	}
-	void setLightDirection( MeshMatMut& meshMat, const FVec3& dir )
+	void setLightDirection( MeshMat& meshMat, const FVec3& dir )
 	{
 		meshMat.lightDirectionVariable->SetFloatVector( (float*) ( &dir ) );
 	}
-	void setCameraPosition( MeshMatMut& meshMat, const FVec3& dir )
+	void setCameraPosition( MeshMat& meshMat, const FVec3& dir )
 	{
 		meshMat.cameraPositionVariable->SetFloatVector( (float*) ( &dir ) );
 	}
-	void setTextureRepeat( MeshMatMut& meshMat, const FVec2& repeat )
+	void setTextureRepeat( MeshMat& meshMat, const FVec2& repeat )
 	{
 		meshMat.textureRepeat = repeat;
 	}
-	void setTextures( MeshMatMut& meshMat )
+	void setTextures( MeshMat& meshMat )
 	{
 		meshMat.diffuseTextureVariable->SetResource( meshMat.diffuseTexture );
 		meshMat.specularTextureVariable->SetResource( meshMat.specularTexture );
@@ -219,22 +219,22 @@ namespace hp_fp
 
 		meshMat.textureRepeatVariable->SetFloatVector( (float*) ( &meshMat.textureRepeat ) );
 	}
-	void setMaterials( MeshMatMut& meshMat )
+	void setMaterials( MeshMat& meshMat )
 	{
 		meshMat.ambientMaterialVariable->SetFloatVector( (float*) ( meshMat.ambientMaterial ) );
 		meshMat.diffuseMaterialVariable->SetFloatVector( (float*) ( meshMat.diffuseMaterial ) );
 		meshMat.specularMaterialVariable->SetFloatVector( (float*) ( meshMat.specularMaterial ) );
 		meshMat.specularPowerVariable->SetFloat( meshMat.specularPower );
 	}
-	void bindInputLayout( RendererMut& renderer, MeshMatMut& meshMat )
+	void bindInputLayout( Renderer& renderer, MeshMat& meshMat )
 	{
 		renderer.deviceContext->IASetInputLayout( meshMat.inputLayout );
 	}
-	UInt32 getPassCount( MeshMatMut& meshMat )
+	UInt32 getPassCount( MeshMat& meshMat )
 	{
 		return meshMat.techniqueDesc.Passes;
 	}
-	void applyPass( RendererMut& renderer, MeshMatMut& meshMat, UInt32 i )
+	void applyPass( Renderer& renderer, MeshMat& meshMat, UInt32 i )
 	{
 		meshMat.pass = meshMat.technique->GetPassByIndex( i );
 		meshMat.pass->Apply( 0, renderer.deviceContext );

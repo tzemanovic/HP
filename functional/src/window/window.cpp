@@ -1,11 +1,11 @@
 #include <pch.hpp>
-#include <core/engine.hpp>
-#include <utils/stringUtils.hpp>
-#include <window/window.hpp>
-#include <adt/maybe.hpp>
+#include "../../include/core/engine.hpp"
+#include "../../include/utils/stringUtils.hpp"
+#include "../../include/window/window.hpp"
+#include "../../include/adt/maybe.hpp"
 namespace hp_fp
 {
-	Maybe<WindowMut> open_IO( EngineMut& engine, const WindowConfigImm& windowConfig )
+	Maybe<WindowMut> open_IO( Engine& engine, const WindowConfigImm& windowConfig )
 	{
 		std::wstring windowNameW = s2ws( "HP_FP::" + engine.name );
 		WindowMut window{ nullptr, windowNameW.c_str( ) };
@@ -122,13 +122,13 @@ namespace hp_fp
 	{
 		LRESULT CALLBACK windowProc_IO( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam )
 		{
-			EngineMut* engine = reinterpret_cast<EngineMut*>( GetWindowLongPtr( handle, GWL_USERDATA ) );
+			Engine* engine = reinterpret_cast<Engine*>( GetWindowLongPtr( handle, GWL_USERDATA ) );
 			switch ( message )
 			{
 			case WM_CREATE:
 			{
 				CREATESTRUCT *cs = reinterpret_cast<CREATESTRUCT*>( lParam );
-				engine = reinterpret_cast<EngineMut*>( cs->lpCreateParams );
+				engine = reinterpret_cast<Engine*>( cs->lpCreateParams );
 				SetLastError( 0 );
 				if ( SetWindowLongPtr( handle, GWL_USERDATA, reinterpret_cast<LONG_PTR>( engine ) ) == 0 )
 				{

@@ -4,9 +4,9 @@
 namespace hp_fp
 {
 	template<typename A> struct Maybe;
-	struct EngineMut;
+	struct Engine;
 
-	Maybe<WindowMut> open_IO( EngineMut& engine, const WindowConfigImm& windowConfig );
+	Maybe<WindowMut> open_IO( Engine& engine, const WindowConfigImm& windowConfig );
 	const WindowConfigImm defaultWindowConfig_IO( );
 	void setWindowVisibility_IO( WindowHandle windowHandle, bool visible );
 	void switchToFullscreen_IO( WindowHandle windowHandle, const WindowConfigImm& windowConfig );

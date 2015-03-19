@@ -1,12 +1,15 @@
 #include <pch.hpp>
-#include <core/timer.hpp>
+#include "../../include/core/timer.hpp"
 namespace hp_fp
 {
-	TimerMut initTimer_IO( )
+	// http://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
+	// start timer at 2^32 to gain best precision
+	const double TIME_ADDITION = 4294967296;
+	Timer initTimer_IO( )
 	{
-		return TimerMut{ 0.0, getTimeMs_IO( ), 0.0 };
+		return Timer{ 0.0, getTimeMs_IO( ), 0.0 };
 	}
-	void updateTimer_IO( TimerMut& timer )
+	void updateTimer_IO( Timer& timer )
 	{
 		double currentTimeMs = getTimeMs_IO( );
 		timer.deltaMs = currentTimeMs - timer._lastTimeMs;

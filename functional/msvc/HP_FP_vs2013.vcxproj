@@ -27,11 +27,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.cpp" />
+    <ClCompile Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.cpp" />
     <ClCompile Include="..\include\pch\pch.cpp" />
+    <ClCompile Include="..\src\core\actor\actor.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
-    <ClCompile Include="..\src\core\scene.cpp" />
     <ClCompile Include="..\src\core\timer.cpp" />
-    <ClCompile Include="..\src\core\timerMut.cpp" />
     <ClCompile Include="..\src\graphics\mesh.cpp" />
     <ClCompile Include="..\src\graphics\meshMat.cpp" />
     <ClCompile Include="..\src\graphics\renderer.cpp" />
@@ -45,29 +46,22 @@
     <ClCompile Include="..\src\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.h" />
+    <ClInclude Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.h" />
     <ClInclude Include="..\include\adt\frp\sf.hpp" />
     <ClInclude Include="..\include\adt\list.hpp" />
     <ClInclude Include="..\include\adt\map.hpp" />
     <ClInclude Include="..\include\adt\maybe.hpp" />
     <ClInclude Include="..\include\adt\sum.hpp" />
     <ClInclude Include="..\include\adt\tree.hpp" />
-    <ClInclude Include="..\include\core\actors\actorImm.hpp" />
-    <ClInclude Include="..\include\core\actors\actorInputMut.hpp" />
-    <ClInclude Include="..\include\core\actors\component.hpp" />
+    <ClInclude Include="..\include\core\actor\actor.hpp" />
+    <ClInclude Include="..\include\core\actor\component.hpp" />
     <ClInclude Include="..\include\core\engine.hpp" />
-    <ClInclude Include="..\include\core\engineMut.hpp" />
-    <ClInclude Include="..\include\core\scene.hpp" />
-    <ClInclude Include="..\include\core\sceneImm.hpp" />
     <ClInclude Include="..\include\core\timer.hpp" />
-    <ClInclude Include="..\include\core\timerMut.hpp" />
-    <ClInclude Include="..\include\core\worldImm.hpp" />
     <ClInclude Include="..\include\graphics\directx.h" />
     <ClInclude Include="..\include\graphics\mesh.hpp" />
     <ClInclude Include="..\include\graphics\meshMat.hpp" />
-    <ClInclude Include="..\include\graphics\meshMatMut.hpp" />
-    <ClInclude Include="..\include\graphics\meshMut.hpp" />
     <ClInclude Include="..\include\graphics\renderer.hpp" />
-    <ClInclude Include="..\include\graphics\rendererMut.hpp" />
     <ClInclude Include="..\include\graphics\vertex.hpp" />
     <ClInclude Include="..\include\hpFp.hpp" />
     <ClInclude Include="..\include\math\color.hpp" />
@@ -156,30 +150,31 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(ProjectDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(ProjectDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(ProjectDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(ProjectDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(ProjectDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(ProjectDir)..\3rdParty\FBX-SDK\2015.1\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -197,6 +192,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

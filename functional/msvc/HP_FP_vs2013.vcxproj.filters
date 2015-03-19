@@ -40,12 +40,6 @@
     <Filter Include="src\graphics">
       <UniqueIdentifier>{b6dcc112-4124-466b-9a5c-b3d6b21783a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="include\core\actors">
-      <UniqueIdentifier>{1a09b927-bec5-4006-9ff4-96c209e45ab3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\core\actors">
-      <UniqueIdentifier>{d0e06e8d-49ef-4bbb-b479-cdf3e48595a8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="include\adt\frp">
       <UniqueIdentifier>{9af818df-1c96-48cd-99f1-98341e5a505e}</UniqueIdentifier>
     </Filter>
@@ -54,6 +48,21 @@
     </Filter>
     <Filter Include="src\math">
       <UniqueIdentifier>{dd53695f-de13-46a5-bea2-e8726e96c147}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\DirectXTex">
+      <UniqueIdentifier>{14c36f27-1796-45b8-8fe6-d1914c11cf64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\DirectXTex\DDSTextureLoader">
+      <UniqueIdentifier>{62081572-90b3-4449-91c3-ed88ec694389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\DirectXTex\WICTextureLoader">
+      <UniqueIdentifier>{08827afe-fe7d-4424-a2f6-fd8fe1652faf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\actor">
+      <UniqueIdentifier>{d0e06e8d-49ef-4bbb-b479-cdf3e48595a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\core\actor">
+      <UniqueIdentifier>{1a09b927-bec5-4006-9ff4-96c209e45ab3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -78,12 +87,6 @@
     <ClCompile Include="..\src\core\timer.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\core\timerMut.cpp">
-      <Filter>src\core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\core\scene.cpp">
-      <Filter>src\core</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\graphics\meshMat.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
@@ -104,6 +107,15 @@
     </ClCompile>
     <ClCompile Include="..\src\math\frustum.cpp">
       <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.cpp">
+      <Filter>include\graphics\DirectXTex\DDSTextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.cpp">
+      <Filter>include\graphics\DirectXTex\WICTextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\actor\actor.cpp">
+      <Filter>src\core\actor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -134,22 +146,13 @@
     <ClInclude Include="..\include\hpFp.hpp">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\core\engineMut.hpp">
-      <Filter>include\core</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\core\engine.hpp">
       <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\graphics\rendererMut.hpp">
-      <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graphics\renderer.hpp">
       <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\include\core\timer.hpp">
-      <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\core\timerMut.hpp">
       <Filter>include\core</Filter>
     </ClInclude>
     <ClInclude Include="..\include\adt\list.hpp">
@@ -158,35 +161,14 @@
     <ClInclude Include="..\include\adt\map.hpp">
       <Filter>include\adt</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\core\worldImm.hpp">
-      <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\core\sceneImm.hpp">
-      <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\core\actors\actorImm.hpp">
-      <Filter>include\core\actors</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\core\actors\component.hpp">
-      <Filter>include\core\actors</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\adt\tree.hpp">
       <Filter>include\adt</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\core\scene.hpp">
-      <Filter>include\core</Filter>
     </ClInclude>
     <ClInclude Include="..\include\window\gameInputMut.hpp">
       <Filter>include\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\core\actors\actorInputMut.hpp">
-      <Filter>include\core\actors</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\adt\frp\sf.hpp">
       <Filter>include\adt\frp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\graphics\meshMatMut.hpp">
-      <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\include\graphics\directx.h">
       <Filter>include\graphics</Filter>
@@ -206,9 +188,6 @@
     <ClInclude Include="..\include\math\vec3.hpp">
       <Filter>include\math</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graphics\meshMut.hpp">
-      <Filter>include\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\graphics\mesh.hpp">
       <Filter>include\graphics</Filter>
     </ClInclude>
@@ -223,6 +202,18 @@
     </ClInclude>
     <ClInclude Include="..\include\math\frustum.hpp">
       <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.h">
+      <Filter>include\graphics\DirectXTex\DDSTextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.h">
+      <Filter>include\graphics\DirectXTex\WICTextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actor\actor.hpp">
+      <Filter>include\core\actor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actor\component.hpp">
+      <Filter>include\core\actor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

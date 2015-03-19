@@ -5,14 +5,28 @@
 #include <hpFp.hpp>
 #include <graphics/meshMat.hpp>
 using namespace hp_fp;
+std::function<ActorOutput( ActorInput& )> knightSf( const float x0, const float y0 )
+{
+	return [=]( ActorInput& input )
+	{
+		return ActorOutput{ Mat4x4::identity, input.cameraProjection,
+			input.cameraView, input.cameraWorldPos };
+	};
+}
 int main( )
 {
-	EngineMut engine = init( "example1" );
-	/*ActorImm actor1{ };
-	SceneImm scene1{ };
-	scene1 = addActor( scene1, std::move( actor1 ) );
-	WorldImm world{ { scene1 } };
-	setWorld_IO( engine, std::move( world ) );*/
+	ActorsDef actors{
+		"assets/models/characters/knight/knight.fbx", // modelFilename
+		0.009f, // modelScale
+		"assets/textures/characters/knight/T_Black_Knight_D.jpg", // diffuseTextureFilename
+		"", // specularTextureFilename
+		"assets/textures/characters/knight/T_Black_Knight_N.jpg", // bumpTextureFilename
+		"", // parallaxTextureFilename
+		"", // evnMapTextureFilename
+		knightSf( 0.0f, 1.0f ), // sf
+		{ }
+	};
+	Engine engine = init( "example1", std::move( actors ) );
 	run_IO( engine );
 
 	/*InputMessage msg( TextMessage{'a'} );

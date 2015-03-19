@@ -60,5 +60,22 @@ namespace hp_fp
 	{
 		return scalar * vec;
 	}
+	template<typename A>
+	inline Vec4<A> cross( const Vec4<A>& vec1, const Vec4<A>& vec2, const Vec4<A>& vec3 )
+	{
+		return Vec4<A>(
+			vec1.y * ( vec2.z * vec3.w - vec2.w * vec3.z )
+			- vec1.z * ( vec2.y * vec3.w - vec2.w * vec3.y )
+			+ vec1.w * ( vec2.y * vec3.z - vec2.z * vec3.y ),
+			-vec1.x * ( vec2.z * vec3.w - vec2.w * vec3.z )
+			+ vec1.z * ( vec2.x * vec3.w - vec2.w * vec3.x )
+			- vec1.w * ( vec2.x * vec3.z - vec2.z * vec3.x ),
+			vec1.x * ( vec2.y * vec3.w - vec2.w * vec3.y )
+			- vec1.y * ( vec2.x * vec3.w - vec2.w * vec3.x )
+			+ vec1.w * ( vec2.x * vec3.y - vec2.y * vec3.x ),
+			-vec1.x * ( vec2.y * vec3.z - vec2.z * vec3.y )
+			+ vec1.y * ( vec2.x * vec3.z - vec2.z * vec3.x )
+			- vec1.z * ( vec2.x * vec3.y - vec2.y * vec3.x ) );
+	}
 	typedef Vec4<float> FVec4;
 }

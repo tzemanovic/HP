@@ -55,10 +55,6 @@ namespace hp_fp
 		friend inline Vec3<B> operator * ( const float scalar, const Vec3<B>& vec );
 		template<typename B>
 		friend inline Vec3<B> operator * ( const Vec3<B>& vec, const float scalar );
-		template<typename B>
-		friend inline Vec3<B> cross( const Vec3<B>& vec1, const Vec3<B>& vec2 );
-		template<typename B>
-		friend inline B dot( const Vec3<B>& vec1, const Vec3<B>& vec2 );
 	};
 	template<typename A>
 	inline Vec3<A> operator * ( const float scalar, const Vec3<A>& vec )

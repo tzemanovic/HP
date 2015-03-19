@@ -1,50 +1,51 @@
 #include <pch.hpp>
 #include <algorithm>
 #include <fbxsdk.h>
-#include <graphics/mesh.hpp>
-#include <graphics/renderer.hpp>
+#pragma comment(lib, "libfbxsdk-md.lib")
+#include "../../include/graphics/mesh.hpp"
+#include "../../include/graphics/renderer.hpp"
 namespace hp_fp
 {
-	void addVertex_IO( MeshMut& mesh, const Vertex vertex )
+	void addVertex_IO( Mesh& mesh, const Vertex vertex )
 	{
 		mesh.vertices.push_back( vertex );
 	}
-	void addIndex_IO( MeshMut& mesh, const Index index )
+	void addIndex_IO( Mesh& mesh, const Index index )
 	{
 		mesh.indices.push_back( index );
 	}
-	bool createBuffers_IO( RendererMut& renderer, MeshMut& mesh )
+	bool createBuffers_IO( Renderer& renderer, Mesh& mesh )
 	{
-		if ( createVertexBuffer_IO( renderer, mesh.vertexBuffer, sizeof( Vertex ) * mesh.vertices.size( ), &mesh.vertices.at( 0 ) ) )
+		if ( createVertexBuffer_IO( renderer, &mesh.vertexBuffer, sizeof( Vertex ) * mesh.vertices.size( ), &mesh.vertices.at( 0 ) ) )
 		{
-			if ( createIndexBuffer_IO( renderer, mesh.indexBuffer, sizeof( Index ) * mesh.indices.size( ), &mesh.indices.at( 0 ) ) )
+			if ( createIndexBuffer_IO( renderer, &mesh.indexBuffer, sizeof( Index ) * mesh.indices.size( ), &mesh.indices.at( 0 ) ) )
 			{
 				return true;
 			}
 		}
 		return false;
 	}
-	void setBuffers_IO( RendererMut& renderer, MeshMut& mesh )
+	void setBuffers_IO( Renderer& renderer, Mesh& mesh )
 	{
 		UInt32 stride = sizeof( Vertex );
 		UInt32 offset = 0;
-		setVertexBuffers_IO( renderer, mesh.vertexBuffer, &stride, &offset );
-		setIndexBuffer_IO( renderer, mesh.indexBuffer );
+		setVertexBuffers_IO( renderer, &mesh.vertexBuffer, &stride, &offset );
+		setIndexBuffer_IO( renderer, &mesh.indexBuffer );
 	}
-	Maybe<MeshesMut> loadModelFromFile_IO( String&& filename, const float scale )
+	Maybe<Meshes> loadModelFromFile_IO( const String& filename, const float scale )
 	{
 		String fileExt = filename.substr( filename.find( '.' ) + 1 );
 		std::transform( fileExt.begin( ), fileExt.end( ), fileExt.begin( ), ::tolower );
 		if ( fileExt.compare( "fbx" ) == 0 )
 		{
-			return loadModelFromFBXFile_IO( std::move( filename ), scale );
+			return loadModelFromFBXFile_IO( filename, scale );
 		}
-		return nothing<MeshesMut>( );
+		return nothing<Meshes>( );
 	}
-	MeshesMut cubeMesh( const FVec3& dimensions )
+	Meshes cubeMesh( const FVec3& dimensions )
 	{
-		MeshesMut meshes;
-		MeshMut mesh;
+		Meshes meshes;
+		Mesh mesh;
 		float halfWidth = dimensions.x / 2.f;
 		float halfHeight = dimensions.y / 2.f;
 		float halfLength = dimensions.z / 2.f;
@@ -103,13 +104,13 @@ namespace hp_fp
 	}
 	namespace
 	{
-		void addMesh_IO( MeshesMut& meshes, MeshMut&& mesh )
+		void addMesh_IO( Meshes& meshes, Mesh&& mesh )
 		{
 			meshes.meshes.push_back( mesh );
 		}
-		Maybe<MeshesMut> loadModelFromFBXFile_IO( String&& filename, const float scale )
+		Maybe<Meshes> loadModelFromFBXFile_IO( const String& filename, const float scale )
 		{
-			MeshesMut meshes;
+			Meshes meshes;
 			static FbxManager* manager = FbxManager::Create( );
 			static FbxIOSettings* settings = FbxIOSettings::Create( manager, IOSROOT );
 			manager->SetIOSettings( settings );
@@ -117,7 +118,7 @@ namespace hp_fp
 			static FbxGeometryConverter converter( manager );
 			if ( !importer->Initialize( filename.c_str( ), -1, manager->GetIOSettings( ) ) )
 			{
-				return nothing<MeshesMut>( );
+				return nothing<Meshes>( );
 			}
 			FbxScene* scene = FbxScene::Create( manager, "myScene" );
 			FbxAxisSystem axisSystem = scene->GetGlobalSettings( ).GetAxisSystem( );
@@ -139,7 +140,7 @@ namespace hp_fp
 							fbxMesh = (FbxMesh*) ( nodeAttribute );
 							if ( fbxMesh )
 							{
-								MeshMut mesh;
+								Mesh mesh;
 								FbxVector4* fbxVertices = fbxMesh->GetControlPoints( );
 								UInt32 vertexCount = fbxMesh->GetControlPointsCount( );
 								UInt32 indexCount = fbxMesh->GetPolygonVertexCount( );
@@ -200,7 +201,7 @@ namespace hp_fp
 				}
 				return just( std::move( meshes ) );
 			}
-			return nothing<MeshesMut>( );
+			return nothing<Meshes>( );
 		}
 		void computeTangentsAndBinormals_IO( Vertex* vertices, UInt32 vertexCount, UInt32* indices,
 			UInt32 indexCount )
