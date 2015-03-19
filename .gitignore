@@ -1,50 +1,25 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
-# MSVC
-*.sdf
-*.suo
-
-# My directories
+functional/3rdParty/**/*.idb
+functional/3rdParty/**/*.log
+functional/3rdParty/**/*.obj
+functional/3rdParty/**/*.pch
+functional/3rdParty/**/*.pdb
+functional/3rdParty/**/*.tlog
 functional/lib/
 functional/bin/
-functional/3rd/
 functional/temp/
 functional/assets/
 functional/doc/out/
 functional/msvc/ipch/
+functional/msvc/*.sdf
+functional/msvc/*.suo
+functional/msvc/*.opensdf
 
 imperative/lib/
 imperative/bin/
-imperative/3rd/
 imperative/temp/
 imperative/assets/
 imperative/doc/out/
 imperative/msvc/ipch/
-*.opensdf
+imperative/msvc/*.sdf
+imperative/msvc/*.suo
+imperative/msvc/*.opensdf
