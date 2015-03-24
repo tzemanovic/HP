@@ -113,7 +113,8 @@ PS_INPUT VS(VS_INPUT input)
 	float4 worldPos = mul(input.pos,matWorld);
 	
 	output.normal = normalize(mul(input.normal, matWorld));
-	output.cameraDirection = mul(normalize(cameraPosition.xyz-worldPos.xyz), matWorld);	
+	output.cameraDirection = normalize(cameraPosition.xyz-worldPos.xyz);	
+	//output.cameraDirection = mul(normalize(cameraPosition.xyz-worldPos.xyz), matWorld);
 	output.lightDir = normalize(lightDirection.xyz);		
 	output.tangent = normalize(mul(input.tangent, matWorld));
 	output.binormal = normalize(mul(input.binormal, matWorld));

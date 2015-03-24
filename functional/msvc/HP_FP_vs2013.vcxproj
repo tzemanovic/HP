@@ -30,16 +30,20 @@
     <ClCompile Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.cpp" />
     <ClCompile Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.cpp" />
     <ClCompile Include="..\include\pch\pch.cpp" />
+    <ClCompile Include="..\src\adt\frp\sfs.cpp" />
     <ClCompile Include="..\src\core\actor\actor.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
+    <ClCompile Include="..\src\core\resources.cpp" />
     <ClCompile Include="..\src\core\timer.cpp" />
-    <ClCompile Include="..\src\graphics\mesh.cpp" />
-    <ClCompile Include="..\src\graphics\meshMat.cpp" />
+    <ClCompile Include="..\src\graphics\camera.cpp" />
+    <ClCompile Include="..\src\graphics\model.cpp" />
+    <ClCompile Include="..\src\graphics\material.cpp" />
     <ClCompile Include="..\src\graphics\renderer.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
     <ClCompile Include="..\src\math\frustum.cpp" />
     <ClCompile Include="..\src\math\mat4x4.cpp" />
     <ClCompile Include="..\src\math\plane.cpp" />
+    <ClCompile Include="..\src\math\quat.cpp" />
     <ClCompile Include="..\src\math\vec3.cpp" />
     <ClCompile Include="..\src\math\vec4.cpp" />
     <ClCompile Include="..\src\utils\stringUtils.cpp" />
@@ -49,18 +53,22 @@
     <ClInclude Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.h" />
     <ClInclude Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.h" />
     <ClInclude Include="..\include\adt\frp\sf.hpp" />
+    <ClInclude Include="..\include\adt\frp\sf2.hpp" />
+    <ClInclude Include="..\include\adt\frp\s.hpp" />
+    <ClInclude Include="..\include\adt\frp\sfs.hpp" />
     <ClInclude Include="..\include\adt\list.hpp" />
     <ClInclude Include="..\include\adt\map.hpp" />
     <ClInclude Include="..\include\adt\maybe.hpp" />
     <ClInclude Include="..\include\adt\sum.hpp" />
     <ClInclude Include="..\include\adt\tree.hpp" />
     <ClInclude Include="..\include\core\actor\actor.hpp" />
-    <ClInclude Include="..\include\core\actor\component.hpp" />
     <ClInclude Include="..\include\core\engine.hpp" />
+    <ClInclude Include="..\include\core\resources.hpp" />
     <ClInclude Include="..\include\core\timer.hpp" />
-    <ClInclude Include="..\include\graphics\directx.h" />
-    <ClInclude Include="..\include\graphics\mesh.hpp" />
-    <ClInclude Include="..\include\graphics\meshMat.hpp" />
+    <ClInclude Include="..\include\graphics\camera.hpp" />
+    <ClInclude Include="..\include\graphics\directx.hpp" />
+    <ClInclude Include="..\include\graphics\model.hpp" />
+    <ClInclude Include="..\include\graphics\material.hpp" />
     <ClInclude Include="..\include\graphics\renderer.hpp" />
     <ClInclude Include="..\include\graphics\vertex.hpp" />
     <ClInclude Include="..\include\hpFp.hpp" />
@@ -68,11 +76,13 @@
     <ClInclude Include="..\include\math\frustum.hpp" />
     <ClInclude Include="..\include\math\mat4x4.hpp" />
     <ClInclude Include="..\include\math\plane.hpp" />
+    <ClInclude Include="..\include\math\quat.hpp" />
     <ClInclude Include="..\include\math\vec2.hpp" />
     <ClInclude Include="..\include\math\vec3.hpp" />
     <ClInclude Include="..\include\math\vec4.hpp" />
     <ClInclude Include="..\include\pch\pch.hpp" />
     <ClInclude Include="..\include\utils\stringUtils.hpp" />
+    <ClInclude Include="..\include\utils\typeId.hpp" />
     <ClInclude Include="..\include\window\gameInputMut.hpp" />
     <ClInclude Include="..\include\window\window.hpp" />
     <ClInclude Include="..\include\window\windowConfigImm.hpp" />
@@ -115,7 +125,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
@@ -161,7 +171,7 @@
     <OutDir>$(ProjectDir)..\lib\$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
     <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(ProjectDir)..\include\pch;$(ProjectDir)..\include;$(ProjectDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
@@ -183,17 +193,18 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -201,10 +212,11 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>x64;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -223,6 +235,7 @@
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -230,6 +243,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -238,11 +254,12 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>x64;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -255,14 +272,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>Create</PrecompiledHeader>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -270,6 +288,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
@@ -278,11 +299,12 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>x64;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -10,8 +10,8 @@ namespace hp_fp
 		WindowMut( const WindowMut& ) = delete;
 		WindowMut( WindowMut&& w ) : handle( std::move( w.handle ) ), name( std::move( w.name ) )
 		{ }
-		WindowMut operator=( const WindowMut& ) = delete;
-		WindowMut operator=( WindowMut&& w )
+		WindowMut operator = ( const WindowMut& ) = delete;
+		WindowMut operator = ( WindowMut&& w )
 		{
 			return WindowMut{ std::move( w ) };
 		}

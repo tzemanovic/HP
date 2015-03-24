@@ -147,11 +147,11 @@ namespace hp_fp
 			mouse( std::move( gi.mouse ) ), text( std::move( gi.text ) ),
 			deltaMs( std::move( gi.deltaMs ) ), timeMs( std::move( gi.timeMs ) )
 		{ }
-		GameInputMut operator=( const GameInputMut& gi )
+		GameInputMut operator = ( const GameInputMut& gi )
 		{
 			return GameInputMut{ gi };
 		}
-		GameInputMut operator=( GameInputMut&& gi )
+		GameInputMut operator = ( GameInputMut&& gi )
 		{
 			return GameInputMut{ std::move( gi ) };
 		}
@@ -164,6 +164,14 @@ namespace hp_fp
 			return states[static_cast<size_t>( k )];
 		}
 		bool& operator[]( MouseButton k )
+		{
+			return states[255 + static_cast<size_t>( k )];
+		}
+		bool operator[]( Key k ) const
+		{
+			return states[static_cast<size_t>( k )];
+		}
+		bool operator[]( MouseButton k ) const
 		{
 			return states[255 + static_cast<size_t>( k )];
 		}

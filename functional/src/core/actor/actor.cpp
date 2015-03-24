@@ -1,115 +1,85 @@
 #include <pch.hpp>
 #include "../../include/core/actor/actor.hpp"
+#include "../../include/core/resources.hpp"
 namespace hp_fp
 {
-	// Should be function that takes renderer and returns rendering function.
-	// Have to specify lambda's return type to std::function because of the issue
-	// with return type deduction (http://stackoverflow.com/questions/12639578/c11-lambda-returning-lambda)
-	std::function<void( Renderer&, ActorOutput& )>  renderFunction_IO( Meshes& meshes,
-		MeshMat& meshMat )
+	ActorTypeDef actorModelDef( ActorModelDef&& m )
 	{
-		// TODO: fix the copy construction deallocation
-		return [=]( Renderer& renderer, ActorOutput& output ) mutable
-		{
-			//std::cout << output.x - 96.0f << std::endl;
-			//TODO: these are all IO
-			setProjection( meshMat, output.cameraProjection );
-			setView( meshMat, output.cameraView );
-			setWorld( meshMat, output.localTransTo );
-			setCameraPosition( meshMat, output.cameraWorldPos );
-			setAbientLightColor( meshMat, Color( 0.1f, 0.1f, 0.1f, 0.6f ) );
-			setDiffuseLightColor( meshMat, Color( 1.0f, 0.95f, 0.4f, 0.4f ) );
-			setSpecularLightColor( meshMat, Color( 1.0f, 1.0f, 1.0f, 0.3f ) );
-			setLightDirection( meshMat, FVec3( -0.5f, -1.0f, 0.1f ) );
-			setTextures( meshMat );
-			setMaterials( meshMat );
-			bindInputLayout( renderer, meshMat );
-			for ( UInt32 i = 0; i < getPassCount( meshMat ); ++i )
-			{
-				applyPass( renderer, meshMat, i );
-				for ( UInt32 j = 0; j < meshes.meshes.size( ); ++j )
-				{
-					setBuffers_IO( renderer, meshes.meshes[j] );
-					drawIndexed_IO( renderer, meshes.meshes[j].indices.size( ), 0, 0 );
-				}
-			}
-		};
-	};
-	std::function<void( Renderer&, ActorOutput& )> initActorRenderFunction_IO( Renderer& renderer, const ActorsDef& actorDef )
+		ActorTypeDef def;
+		def.actor = m;
+		def._typeId = typeId<ActorModelDef>( );
+		return def;
+	}
+	ActorTypeDef actorCameraDef( ActorCameraDef&& c )
 	{
-		static std::function<void( Renderer&, ActorOutput& )> doNothing = []( Renderer& renderer,
-			ActorOutput& output )
+		ActorTypeDef def;
+		def.camera = c;
+		def._typeId = typeId<ActorCameraDef>( );
+		return def;
+	}
+	std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )>
+		initActorRenderFunction_IO( Renderer& renderer, Resources& resources,
+		const ActorDef_S& actorDef )
+	{
+		static std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )> doNothing =
+			[]( Renderer&, const ActorOutput_S&, const Mat4x4& )
 		{ };
-		Maybe<Meshes> meshes = loadModelFromFile_IO( actorDef.modelFilename,
-			actorDef.modelScale );
-		return ifThenElse( meshes, [&renderer, &actorDef]( Meshes& meshes )
+		if ( actorDef.type.is<ActorModelDef>( ) )
 		{
-			bool buffersCreated = true;
-			for ( auto& mesh : meshes.meshes )
+			Maybe<ActorResources> res = getActorResources_IO( renderer, resources,
+				actorDef.type.actor );
+			return ifThenElse( res, []( ActorResources& res )
 			{
-				buffersCreated &= createBuffers_IO( renderer, mesh );
-			}
-			if ( buffersCreated )
+				return renderActor_IO( res );
+			}, []
 			{
-				MeshMat meshMat = defaultMat( );
-				if ( init_IO( meshMat, renderer ) )
+				return doNothing;
+			} );
+		}
+		else if ( actorDef.type.is<ActorCameraDef>( ) )
+		{
+			return actorDef.type.camera.render( actorDef.type.camera, renderer.windowConfig );
+			//return actorDef.type.camera.render;
+		}
+		return doNothing;
+	}
+	Mat4x4 trasformMatFromActorState( const ActorState_S& actorState )
+	{
+		return rotSclPosToMat4x4( actorState.rot.val, actorState.scl.val, actorState.pos.val );
+	}
+	namespace
+	{
+		// Have to specify lambda's return type to std::function because of the issue
+		// with return type deduction (http://stackoverflow.com/questions/12639578/c11-lambda-returning-lambda)
+		std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )>  renderActor_IO(
+			ActorResources& res )
+		{
+			return [res]( Renderer& renderer, const ActorOutput_S& output,
+				const Mat4x4& transform ) mutable
+			{
+				const Camera& cam = getCamera( renderer.cameraBuffer );
+				setProjection_IO( res.material, cam.projection );
+				setView_IO( res.material, inverse( cam.transform ) );
+				setWorld_IO( res.material,
+					trasformMatFromActorState( output.state.val ) * transform );
+				setCameraPosition_IO( res.material, cam.transform.GetPosition( ) );
+				setAbientLightColor_IO( res.material, Color( 0.1f, 0.1f, 0.1f, 0.6f ) );
+				setDiffuseLightColor_IO( res.material, Color( 1.0f, 0.95f, 0.4f, 0.4f ) );
+				setSpecularLightColor_IO( res.material, Color( 1.0f, 1.0f, 1.0f, 0.3f ) );
+				setLightDirection_IO( res.material, FVec3{ -0.5f, -1.0f, 0.1f } );
+				setTextures_IO( res.material );
+				setMaterials_IO( res.material );
+				bindInputLayout_IO( renderer, res.material );
+				for ( UInt32 i = 0; i < getPassCount( res.material ); ++i )
 				{
-					bool texturesLoaded = true;
-					if ( actorDef.diffuseTextureFilename != "" )
+					applyPass_IO( renderer, res.material, i );
+					for ( UInt32 j = 0; j < res.model.meshes.size( ); ++j )
 					{
-						if ( !loadTexture_IO( &meshMat.diffuseTexture, renderer,
-							actorDef.diffuseTextureFilename ) )
-						{
-							texturesLoaded = false;
-							ERR( "Failed to load \"" + actorDef.diffuseTextureFilename + "\" texture." );
-						}
-					}
-					if ( actorDef.specularTextureFilename != "" )
-					{
-						if ( !loadTexture_IO( &meshMat.specularTexture, renderer,
-							actorDef.specularTextureFilename ) )
-						{
-							texturesLoaded = false;
-							ERR( "Failed to load \"" + actorDef.specularTextureFilename + "\" texture." );
-						}
-					}
-					if ( actorDef.bumpTextureFilename != "" )
-					{
-						if ( !loadTexture_IO( &meshMat.bumpTexture, renderer,
-							actorDef.bumpTextureFilename ) )
-						{
-							texturesLoaded = false;
-							ERR( "Failed to load \"" + actorDef.bumpTextureFilename + "\" texture." );
-						}
-					}
-					if ( actorDef.parallaxTextureFilename != "" )
-					{
-						if ( !loadTexture_IO( &meshMat.parallaxTexture, renderer,
-							actorDef.parallaxTextureFilename ) )
-						{
-							texturesLoaded = false;
-							ERR( "Failed to load \"" + actorDef.parallaxTextureFilename + "\" texture." );
-						}
-					}
-					if ( texturesLoaded )
-					{
-						return renderFunction_IO( meshes, meshMat );
+						setBuffers_IO( renderer, res.model.meshes[j] );
+						drawIndexed_IO( renderer, res.model.meshes[j].indices.size( ), 0, 0 );
 					}
 				}
-				else
-				{
-					ERR( "Failed to initalize \"" + actorDef.modelFilename + "\"'s material." );
-				}
-			}
-			else
-			{
-				ERR( "Failed to initalize \"" + actorDef.modelFilename + "\"'s buffers." );
-			}
-			return doNothing;
-		}, [&actorDef] // nothing<Meshes>
-		{
-			ERR( "Failed to load \"" + actorDef.modelFilename + "\" model." );
-			return doNothing;
-		} );
+			};
+		};
 	}
 }

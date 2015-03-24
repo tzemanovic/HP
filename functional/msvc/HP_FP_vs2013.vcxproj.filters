@@ -64,6 +64,12 @@
     <Filter Include="include\core\actor">
       <UniqueIdentifier>{1a09b927-bec5-4006-9ff4-96c209e45ab3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\adt">
+      <UniqueIdentifier>{ea92ed78-855e-43d8-966c-91b99da5a3f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\adt\frp">
+      <UniqueIdentifier>{424332d8-ba57-40c4-9d63-b220a0e08e8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -86,12 +92,6 @@
     </ClCompile>
     <ClCompile Include="..\src\core\timer.cpp">
       <Filter>src\core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\graphics\meshMat.cpp">
-      <Filter>src\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\graphics\mesh.cpp">
-      <Filter>src\graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\math\vec3.cpp">
       <Filter>src\math</Filter>
@@ -116,6 +116,24 @@
     </ClCompile>
     <ClCompile Include="..\src\core\actor\actor.cpp">
       <Filter>src\core\actor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\quat.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\model.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\material.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\resources.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\camera.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\adt\frp\sfs.cpp">
+      <Filter>src\adt\frp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,26 +188,17 @@
     <ClInclude Include="..\include\adt\frp\sf.hpp">
       <Filter>include\adt\frp</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graphics\directx.h">
-      <Filter>include\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\math\vec2.hpp">
       <Filter>include\math</Filter>
     </ClInclude>
     <ClInclude Include="..\include\math\color.hpp">
       <Filter>include\math</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\graphics\meshMat.hpp">
-      <Filter>include\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\graphics\vertex.hpp">
       <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\include\math\vec3.hpp">
       <Filter>include\math</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\graphics\mesh.hpp">
-      <Filter>include\graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\include\math\mat4x4.hpp">
       <Filter>include\math</Filter>
@@ -212,8 +221,35 @@
     <ClInclude Include="..\include\core\actor\actor.hpp">
       <Filter>include\core\actor</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\core\actor\component.hpp">
-      <Filter>include\core\actor</Filter>
+    <ClInclude Include="..\include\math\quat.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\resources.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\model.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\material.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\utils\typeId.hpp">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\camera.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\directx.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\frp\sf2.hpp">
+      <Filter>include\adt\frp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\frp\s.hpp">
+      <Filter>include\adt\frp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\frp\sfs.hpp">
+      <Filter>include\adt\frp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

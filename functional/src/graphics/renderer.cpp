@@ -4,12 +4,14 @@ namespace hp_fp
 {
 	Maybe<Renderer> init_IO( WindowHandle windowHandle, const WindowConfigImm& windowConfig )
 	{
-		Renderer renderer{ D3D_DRIVER_TYPE_NULL, D3D_FEATURE_LEVEL_11_0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		Renderer renderer{ D3D_DRIVER_TYPE_NULL, D3D_FEATURE_LEVEL_11_0, windowConfig };
 		// driver types for fallback
-		D3D_DRIVER_TYPE driverTypes[] = { D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP, D3D_DRIVER_TYPE_SOFTWARE };
+		D3D_DRIVER_TYPE driverTypes[] = { D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP,
+			D3D_DRIVER_TYPE_SOFTWARE };
 		UInt8 totalDriverTypes = ARRAYSIZE( driverTypes );
 		// fallback feature levels
-		D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
+		D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0 };
 		UInt8 totalFeatureLevels = ARRAYSIZE( featureLevels );
 		// swap chain description
 		DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -36,9 +38,10 @@ namespace hp_fp
 		// loop through driver types and attempt to create device
 		for ( driver; driver < totalDriverTypes; ++driver )
 		{
-			result = D3D11CreateDeviceAndSwapChain( 0, driverTypes[driver], 0, creationFlags, featureLevels,
-				totalFeatureLevels, D3D11_SDK_VERSION, &swapChainDesc, &renderer.swapChain, &renderer.device, &renderer.featureLevel,
-				&renderer.deviceContext );
+			result = D3D11CreateDeviceAndSwapChain( 0, driverTypes[driver], 0,
+				creationFlags, featureLevels, totalFeatureLevels, D3D11_SDK_VERSION,
+				&swapChainDesc, &renderer.swapChain, &renderer.device,
+				&renderer.featureLevel, &renderer.deviceContext );
 			if ( SUCCEEDED( result ) )
 			{
 				renderer.driverType = driverTypes[driver];
@@ -52,7 +55,8 @@ namespace hp_fp
 		}
 		// back buffer texture to link render target with back buffer
 		ID3D11Texture2D* backBufferTexture;
-		if ( FAILED( renderer.swapChain->GetBuffer( 0, _uuidof( ID3D11Texture2D ), (LPVOID*) &backBufferTexture ) ) )
+		if ( FAILED( renderer.swapChain->GetBuffer( 0, _uuidof( ID3D11Texture2D ),
+			(LPVOID*) &backBufferTexture ) ) )
 		{
 			ERR( "Failed to get the swap chain back buffer!" );
 			return nothing<Renderer>( );
@@ -69,7 +73,8 @@ namespace hp_fp
 		depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		depthDesc.CPUAccessFlags = 0;
 		depthDesc.MiscFlags = 0;
-		if ( FAILED( renderer.device->CreateTexture2D( &depthDesc, NULL, &renderer.depthStencilTexture ) ) )
+		if ( FAILED( renderer.device->CreateTexture2D( &depthDesc, NULL,
+			&renderer.depthStencilTexture ) ) )
 		{
 			ERR( "Failed to create depth stencil texture!" );
 			return nothing<Renderer>( );
@@ -79,19 +84,22 @@ namespace hp_fp
 		depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthViewDesc.Texture2D.MipSlice = 0;
 		depthViewDesc.Flags = 0;
-		if ( FAILED( renderer.device->CreateDepthStencilView( renderer.depthStencilTexture, &depthViewDesc, &renderer.depthStencilView ) ) )
+		if ( FAILED( renderer.device->CreateDepthStencilView( renderer.depthStencilTexture,
+			&depthViewDesc, &renderer.depthStencilView ) ) )
 		{
 			ERR( "Failed to create depth stencil view!" );
 			return nothing<Renderer>( );
 		}
-		if ( FAILED( renderer.device->CreateRenderTargetView( backBufferTexture, NULL, &renderer.renderTargetView ) ) )
+		if ( FAILED( renderer.device->CreateRenderTargetView( backBufferTexture, NULL,
+			&renderer.renderTargetView ) ) )
 		{
 			ERR( "Failed to create render target view!" );
 			HP_RELEASE( backBufferTexture );
 			return nothing<Renderer>( );
 		}
 		HP_RELEASE( backBufferTexture );
-		renderer.deviceContext->OMSetRenderTargets( 1, &renderer.renderTargetView, renderer.depthStencilView );
+		renderer.deviceContext->OMSetRenderTargets( 1, &renderer.renderTargetView,
+			renderer.depthStencilView );
 		// setup the viewport
 		D3D11_VIEWPORT viewport;
 		viewport.Width = static_cast<FLOAT>( windowConfig.width );
@@ -107,15 +115,18 @@ namespace hp_fp
 	void preRender_IO( Renderer& renderer )
 	{
 		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
-		renderer.deviceContext->ClearRenderTargetView( renderer.renderTargetView, ClearColor );
-		renderer.deviceContext->ClearDepthStencilView( renderer.depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+		renderer.deviceContext->ClearRenderTargetView( renderer.renderTargetView,
+			ClearColor );
+		renderer.deviceContext->ClearDepthStencilView( renderer.depthStencilView,
+			D3D11_CLEAR_DEPTH, 1.0f, 0 );
 	}
 	void present_IO( Renderer& renderer )
 	{
+		swap_IO( renderer.cameraBuffer );
 		renderer.swapChain->Present( 0, 0 );
 	}
-	bool createVertexBuffer_IO( Renderer& renderer, ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
-		const Vertex* initData )
+	bool createVertexBuffer_IO( Renderer& renderer, ID3D11Buffer** vertexBuffer,
+		UInt32 byteWidth, const Vertex* initData )
 	{
 		D3D11_BUFFER_DESC bd;
 		bd.Usage = D3D11_USAGE_DEFAULT;
@@ -133,8 +144,8 @@ namespace hp_fp
 		}
 		return false;
 	}
-	bool createIndexBuffer_IO( Renderer& renderer, ID3D11Buffer** indexBuffer, UInt32 byteWidth,
-		const Index* initData )
+	bool createIndexBuffer_IO( Renderer& renderer, ID3D11Buffer** indexBuffer,
+		UInt32 byteWidth, const Index* initData )
 	{
 		D3D11_BUFFER_DESC bd;
 		bd.Usage = D3D11_USAGE_DEFAULT;

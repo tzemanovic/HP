@@ -9,11 +9,13 @@ namespace hp_fp
 		template<typename B, typename C, typename D> friend auto ifThenElse( const Maybe<B>& maybe, C ifJust, D ifNothing ) -> decltype( ifJust( *maybe._a ) );
 		Maybe( const Maybe<A>& ) = delete;
 		Maybe( Maybe&& m ) : _a( std::move( m._a ) )
-		{ }
-		Maybe<A> operator=( const Maybe<A>& ) = delete;
-		Maybe<A> operator=( Maybe<A>&& m )
 		{
-			return Maybe<A>( m );
+			m._a = nullptr;
+		}
+		Maybe<A> operator = ( const Maybe<A>& ) = delete;
+		Maybe<A> operator = ( Maybe<A>&& m )
+		{
+			return Maybe<A>( std::move( m ) );
 		}
 		~Maybe( )
 		{

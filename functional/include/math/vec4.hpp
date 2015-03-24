@@ -1,5 +1,5 @@
 #pragma once
-#include <math/vec3.hpp>
+#include "vec3.hpp"
 namespace hp_fp
 {
 	template<typename A>

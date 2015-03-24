@@ -1,8 +1,8 @@
 #pragma once
-#include <graphics/directx.h>
-#include <math/color.hpp>
-#include <math/vec2.hpp>
-#include <math/vec3.hpp>
+#include "directx.hpp"
+#include "../math/color.hpp"
+#include "../math/vec2.hpp"
+#include "../math/vec3.hpp"
 namespace hp_fp
 {
 	struct Vertex

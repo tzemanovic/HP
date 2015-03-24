@@ -18,11 +18,11 @@
 #	endif
 #   include <Windows.h>
 #else
-#   error This operation system is not supported
+#   error This operating system is not supported
 #endif
 
 // redefine new for debugging purposes
-#if defined( _DEBUG ) || defined( DEBUG )
+#if defined( _LOG )
 #	define HP_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__ )
 #   define HP_DEBUG
 #	include <iostream>
@@ -77,4 +77,10 @@ namespace hp_fp
 {
 	extern const double PI;
 	extern const double TWO_PI;
+	extern const double DEG_TO_RAD;
+	extern const double RAD_TO_DEG;
+	extern const float PI_F;
+	extern const float TWO_PI_F;
+	extern const float DEG_TO_RAD_F;
+	extern const float RAD_TO_DEG_F;
 }

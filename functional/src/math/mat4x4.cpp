@@ -60,7 +60,7 @@ namespace hp_fp
 	Mat4x4 matrixPerspectiveFovLH( const float fieldOfView, const float aspectRatio,
 		const float nearClipDist, const float farClipDist )
 	{
-		Mat4x4 perspective = Mat4x4::identity;
+		Mat4x4 perspective;
 		float tanFov = tan( fieldOfView / 2.0f );
 		perspective.m[0][0] = 1.0f / ( aspectRatio * tanFov );
 		perspective.m[1][1] = 1.0f / tanFov;
@@ -69,5 +69,56 @@ namespace hp_fp
 		perspective.m[3][2] = ( farClipDist *  -nearClipDist ) / ( farClipDist - nearClipDist );
 		perspective.m[3][3] = 0.0f;
 		return perspective;
+	}
+	Mat4x4 rotToMat4x4( const FQuat& rot )
+	{
+		Mat4x4 mat;
+		mat.m[0][0] = 1.0f - 2.0f * ( rot.y * rot.y + rot.z * rot.z );
+		mat.m[0][1] = 2.0f * ( rot.x *rot.y + rot.z * rot.w );
+		mat.m[0][2] = 2.0f * ( rot.x * rot.z - rot.y * rot.w );
+		mat.m[1][0] = 2.0f * ( rot.x * rot.y - rot.z * rot.w );
+		mat.m[1][1] = 1.0f - 2.0f * ( rot.x * rot.x + rot.z * rot.z );
+		mat.m[1][2] = 2.0f * ( rot.y *rot.z + rot.x *rot.w );
+		mat.m[2][0] = 2.0f * ( rot.x * rot.z + rot.y * rot.w );
+		mat.m[2][1] = 2.0f * ( rot.y *rot.z - rot.x *rot.w );
+		mat.m[2][2] = 1.0f - 2.0f * ( rot.x * rot.x + rot.y * rot.y );
+		return mat;
+	}
+	Mat4x4 posToMat4x4( const FVec3& pos )
+	{
+		Mat4x4 mat;
+		mat.m[3][0] = pos.x;
+		mat.m[3][1] = pos.y;
+		mat.m[3][2] = pos.z;
+		return mat;
+	}
+	Mat4x4 sclToMat4x4( const FVec3& scl )
+	{
+		Mat4x4 mat;
+		mat.m[0][0] = scl.x;
+		mat.m[1][1] = scl.y;
+		mat.m[2][2] = scl.z;
+		return mat;
+	}
+	Mat4x4 rotSclPosToMat4x4( const FQuat& rot, const FVec3& scl, const FVec3& pos )
+	{
+		Mat4x4 mat;
+		mat.m[0][0] = 1.0f - 2.0f * ( rot.y * rot.y + rot.z * rot.z );
+		mat.m[0][1] = 2.0f * ( rot.x *rot.y + rot.z * rot.w );
+		mat.m[0][2] = 2.0f * ( rot.x * rot.z - rot.y * rot.w );
+		mat.m[1][0] = 2.0f * ( rot.x * rot.y - rot.z * rot.w );
+		mat.m[1][1] = 1.0f - 2.0f * ( rot.x * rot.x + rot.z * rot.z );
+		mat.m[1][2] = 2.0f * ( rot.y *rot.z + rot.x *rot.w );
+		mat.m[2][0] = 2.0f * ( rot.x * rot.z + rot.y * rot.w );
+		mat.m[2][1] = 2.0f * ( rot.y *rot.z - rot.x *rot.w );
+		mat.m[2][2] = 1.0f - 2.0f * ( rot.x * rot.x + rot.y * rot.y );
+		mat.m[3][0] = pos.x;
+		mat.m[3][1] = pos.y;
+		mat.m[3][2] = pos.z;
+		mat.m[0][0] *= scl.x;
+		mat.m[1][1] *= scl.y;
+		mat.m[2][2] *= scl.z;
+		return mat;
+
 	}
 }

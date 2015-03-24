@@ -101,8 +101,8 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)Include;D:\_dev\_libs\Visual Leak Detector\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;$(SolutionDir)..\3rdParty\Effects11\Bin\Desktop_2013\$(PlatformName)\$(Configuration);D:\_dev\_libs\Visual Leak Detector\lib\Win32;$(FBXSDK_DIR)\lib\vs2013\x86\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)Include;C:\Program Files (x86)\Visual Leak Detector\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(FBXSDK_DIR)\lib\vs2013\x86\debug;$(DXSDK_DIR)Lib\x86;$(SolutionDir)..\3rdParty\Effects11\Bin\Desktop_2013\$(PlatformName)\$(Configuration);C:\Program Files (x86)\Visual Leak Detector\lib\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)Include;D:\_dev\_libs\Visual Leak Detector\include;$(IncludePath)</IncludePath>
@@ -116,7 +116,7 @@
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;$(SolutionDir)..\3rdParty\Effects11\Bin\Desktop_2013\$(PlatformName)\$(Configuration);$(FBXSDK_DIR)\lib\vs2013\x84\release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(FBXSDK_DIR)\lib\vs2013\x86\release;$(DXSDK_DIR)Lib\x86;$(SolutionDir)..\3rdParty\Effects11\Bin\Desktop_2013\$(PlatformName)\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
@@ -130,7 +130,7 @@
     <OutDir>$(SolutionDir)..\bin\$(ProjectName)$(PlatformName)$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\temp\$(ProjectName)$(PlatformName)$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(DXSDK_DIR)Lib\x86;$(SolutionDir)..\3rdParty\Effects11\Bin\Desktop_2013\$(PlatformName)\$(Configuration);$(FBXSDK_DIR)\lib\vs2013\x84\release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\lib\$(PlatformName)$(Configuration);$(FBXSDK_DIR)\lib\vs2013\x86\release;$(DXSDK_DIR)Lib\x86;$(SolutionDir)..\3rdParty\Effects11\Bin\Desktop_2013\$(PlatformName)\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <IncludePath>$(SolutionDir)..\include;$(SolutionDir)..\3rdParty;$(FBXSDK_DIR)\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
@@ -148,12 +148,13 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Visual Leak Detector\lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(SolutionName).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -169,7 +170,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;libfbxsdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -183,13 +184,15 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;libfbxsdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionName).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -209,27 +212,29 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;libfbxsdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <Optimization>Full</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;libfbxsdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionName).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -249,7 +254,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;libfbxsdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionName).lib;d3d11.lib;d3d10.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

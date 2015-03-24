@@ -3,55 +3,241 @@
 #include <vld.h>
 #endif
 #include <hpFp.hpp>
-#include <graphics/meshMat.hpp>
+#include <graphics/material.hpp>
+#include <math/frustum.hpp>
+//#include <adt/frp/sf.hpp>
+#include <adt/frp/sf2.hpp>
+#include <adt/frp/sfs.hpp>
 using namespace hp_fp;
-std::function<ActorOutput( ActorInput& )> knightSf( const float x0, const float y0 )
+//SF<ActorInput, ActorOutput> ballSF2( )
+//{
+//	return arr<ActorInput, ActorOutput>( []( const Signal<ActorInput>& input )
+//	{
+//		ActorState state = input.val.state;
+//		//FVec3 pos = add( state.pos ) < integral( ) <= state.vel;
+//		FVec3 pos = ( add( state.pos ) < integral( ) <= state.vel )
+//			.f( Signal < void > { input.deltaMs } ).val;
+//		//integral( ) <= state.vel;
+//		return ActorOutput{ state };
+//	} );
+//}
+SF<ActorInput_S, ActorOutput_S> ballSF_S( )
 {
-	return [=]( ActorInput& input )
+	return arr<ActorInput_S, ActorOutput_S>( []( const S<ActorInput_S>& input )
 	{
-		return ActorOutput{ Mat4x4::identity, input.cameraProjection,
-			input.cameraView, input.cameraWorldPos };
+		S<ActorState_S> state = input.val.state;
+		state.val.pos = add( state.val.pos ) < integral( ) < state.val.vel;
+		//FVec3 pos = add( state.pos ) < integral( ) <= state.vel;
+		/*FVec3 pos = ( add( state.val.pos ) < integral( ) <= state.vel )
+			.f( Signal < void > { input.deltaMs } ).val;*/
+		return ActorOutput_S{ state };
+	} );
+}
+std::function<ActorOutput( const ActorInput& )> ballSF( )
+{
+	return []( const ActorInput& input )
+	{
+		ActorState outState = input.state;
+		static const float speed = 0.001f;
+		static const float rotSpeed = 0.001f;
+		if ( input.gameInput[Key::W] )
+		{
+			outState.vel.z += speed;
+		}
+		if ( input.gameInput[Key::S] )
+		{
+			outState.vel.z -= speed;
+		}
+		float rotZ = 0.0f;
+		if ( input.gameInput[Key::A] )
+		{
+			rotZ -= input.gameInput.deltaMs * rotSpeed;
+		}
+		if ( input.gameInput[Key::D] )
+		{
+			rotZ += input.gameInput.deltaMs * rotSpeed;
+		}
+		outState.vel -= outState.vel * 0.1f;
+		outState.pos = input.state.pos + outState.vel * input.gameInput.deltaMs;
+		// TODO: overload (operator =) on the actorOutput values to evaluate SFs?
+		/*integral( ) <= outState.vel;
+		constant( outState.vel ) > integral( );*/
+		outState.rot = input.state.rot * eulerRadToQuat( FVec3{ 0.0f, rotZ, 0.0f } );
+		return ActorOutput{ outState };
+	};
+}
+// TODO: move into default SFs header
+std::function<ActorOutput( const ActorInput& )> staticActorSF( )
+{
+	return []( const ActorInput& input )
+	{
+		return ActorOutput{ input.state };
+	};
+}
+SF<ActorInput_S, ActorOutput_S> staticActorSF_S( )
+{
+	return arr<ActorInput_S, ActorOutput_S>( []( const S<ActorInput_S>& input )
+	{
+		return ActorOutput_S{ input.val.state };
+	} );
+}
+InitCamRenderSF cameraRenderSF( )
+{
+	return []( const ActorCameraDef& cameraDef, const WindowConfigImm& windowConfig )
+		-> CamRenderSF
+	{
+		const Frustum frustum = init( static_cast<float>( PI ) / 4.f,
+			static_cast<float>( windowConfig.width ) / windowConfig.height,
+			cameraDef.nearClipDist, cameraDef.farClipDist );
+		const Mat4x4 projection = matrixPerspectiveFovLH( frustum.fieldOfView,
+			frustum.aspectRatio, frustum.nearClipDist, frustum.farClipDist );
+		return[projection]( Renderer& renderer, const ActorOutput_S& output,
+			const Mat4x4& transform ) mutable
+		{
+			setCamera_IO( renderer.cameraBuffer, { projection,
+				trasformMatFromActorState( output.state.val ) * transform } );
+		};
 	};
 }
 int main( )
 {
-	ActorsDef actors{
-		"assets/models/characters/knight/knight.fbx", // modelFilename
-		0.009f, // modelScale
-		"assets/textures/characters/knight/T_Black_Knight_D.jpg", // diffuseTextureFilename
-		"", // specularTextureFilename
-		"assets/textures/characters/knight/T_Black_Knight_N.jpg", // bumpTextureFilename
-		"", // parallaxTextureFilename
-		"", // evnMapTextureFilename
-		knightSf( 0.0f, 1.0f ), // sf
-		{ }
+	std::vector<ActorDef> actors
+	{
+		{
+			actorModelDef( {
+				loadedModelDef( { // model
+					"assets/models/basketball/basketball.fbx", // filename
+					0.02f // scale
+				} ),
+				{ // material
+					"assets/textures/basketball/basketball-diffuse.jpg", // diffuseTextureFilename
+					"", // specularTextureFilename
+					"assets/textures/basketball/basketball-bump.jpg", // bumpTextureFilename
+					"", // parallaxTextureFilename
+					"" // evnMapTextureFilename
+				}
+			} ),
+			{ // startingState
+				{ 0.0f, 0.45f, 0.0f }, // pos
+				{ 0.0f, 0.0f, 0.0f }, // vel
+				{ 1.0f, 1.0f, 1.0f }, // scl
+				FQuat::identity // rot
+			},
+			ballSF( ), // sf
+			{ // children
+				{
+					actorCameraDef( {
+						0.001f, // nearClipDist
+						1000.0f, // farClipDist
+						cameraRenderSF( ) // render
+					} ),
+					{ // startingState
+						{ 0.0f, 2.0f, -7.0f }, // pos
+						{ 0.0f, 0.0f, 0.0f }, // vel
+						{ 1.0f, 1.0f, 1.0f }, // scl
+						FQuat::identity // rot
+					},
+					staticActorSF( ), // sf
+					{ } // children
+				}
+			}
+		},
+		{
+			actorModelDef( {
+				builtInModelDef( { // model
+					BuiltInModelType::Box, // type
+					{ 500.0f, 0.1f, 500.0f } // scale
+				} ),
+				{ // material
+					"assets/textures/ground/ground6_color.jpg", // diffuseTextureFilename
+					"assets/textures/ground/ground6_spec.jpg", // specularTextureFilename
+					"assets/textures/ground/ground6_normal.jpg", // bumpTextureFilename
+					"", //"assets/textures/ground/ground6_height.jpg", // parallaxTextureFilename
+					"", // evnMapTextureFilename
+					{ 250.0f, 250.0f } // textureRepeat
+				}
+			} ),
+			{ // startingState
+				{ 0.0f, 0.0f, 0.0f }, // pos
+				{ 0.0f, 0.0f, 0.0f }, // vel
+				{ 1.0f, 1.0f, 1.0f }, // scl
+				FQuat::identity // rot
+			},
+			staticActorSF( ), // sf
+			{ } // children
+		}
 	};
-	Engine engine = init( "example1", std::move( actors ) );
+
+
+	std::vector<ActorDef_S> actors_S
+	{
+		{
+			actorModelDef( {
+				loadedModelDef( { // model
+					"assets/models/basketball/basketball.fbx", // filename
+					0.02f // scale
+				} ),
+				{ // material
+					"assets/textures/basketball/basketball-diffuse.jpg", // diffuseTextureFilename
+					"", // specularTextureFilename
+					"assets/textures/basketball/basketball-bump.jpg", // bumpTextureFilename
+					"", // parallaxTextureFilename
+					"" // evnMapTextureFilename
+				}
+			} ),
+			{ // startingState
+				{ 0.0f, 0.45f, 0.0f }, // pos
+				{ 0.0f, 0.0f, 0.0f }, // vel
+				{ 1.0f, 1.0f, 1.0f }, // scl
+				FQuat::identity // rot
+			},
+			ballSF_S( ), // sf
+			{ // children
+				{
+					actorCameraDef( {
+						0.001f, // nearClipDist
+						1000.0f, // farClipDist
+						cameraRenderSF( ) // render
+					} ),
+					{ // startingState
+						{ 0.0f, 2.0f, -7.0f }, // pos
+						{ 0.0f, 0.0f, 0.0f }, // vel
+						{ 1.0f, 1.0f, 1.0f }, // scl
+						FQuat::identity // rot
+					},
+					staticActorSF_S( ), // sf
+					{ } // children
+				}
+			}
+		},
+		{
+			actorModelDef( {
+				builtInModelDef( { // model
+					BuiltInModelType::Box, // type
+					{ 500.0f, 0.1f, 500.0f } // scale
+				} ),
+				{ // material
+					"assets/textures/ground/ground6_color.jpg", // diffuseTextureFilename
+					"assets/textures/ground/ground6_spec.jpg", // specularTextureFilename
+					"assets/textures/ground/ground6_normal.jpg", // bumpTextureFilename
+					"", //"assets/textures/ground/ground6_height.jpg", // parallaxTextureFilename
+					"", // evnMapTextureFilename
+					{ 250.0f, 250.0f } // textureRepeat
+				}
+			} ),
+			{ // startingState
+				{ 0.0f, 0.0f, 0.0f }, // pos
+				{ 0.0f, 0.0f, 0.0f }, // vel
+				{ 1.0f, 1.0f, 1.0f }, // scl
+				FQuat::identity // rot
+			},
+			staticActorSF_S( ), // sf
+			{ } // children
+		}
+	};
+
+
+	Engine engine = init( "example1", std::move( actors_S ) );
 	run_IO( engine );
-
-	/*InputMessage msg( TextMessage{'a'} );
-	std::cout << msg.size << std::endl;
-	InputMessage msg2( CloseMessage{ } );
-	std::cout << msg2.size << std::endl;
-	InputMessage msg3( KeyMessage{ Key::A, false, true, false, false, false, false } );
-	std::cout << msg3.size << std::endl;
-	std::cout << UInt8( reinterpret_cast< KeyMessage& >( msg3.data ).type ) << std::endl;
-	std::cout << reinterpret_cast< KeyMessage& >( msg3.data ).lAlt << std::endl;
-	std::cout << reinterpret_cast< KeyMessage& >( msg3.data ).lCtrl << std::endl;
-	std::cout << reinterpret_cast< KeyMessage& >( msg3.data ).lShift << std::endl;
-	std::cout << reinterpret_cast< KeyMessage& >( msg3.data ).rAlt << std::endl;
-	std::cout << reinterpret_cast< KeyMessage& >( msg3.data ).rCtrl << std::endl;
-	std::cout << reinterpret_cast< KeyMessage& >( msg3.data ).rShift << std::endl;
-	InputMessage msg4( KeyMessage{ Key::B, true, false, false, false, false, false } );
-	std::cout << msg4.size << std::endl;
-	auto k = KeyMessage{ Key::B, true, false, false, false, false, false };
-	std::cout << sizeof(k) << std::endl;;
-
-	Sum<int, float, short> a( 32 );
-	std::cout << a.size << std::endl;
-	Sum<int, float, short> a1( 1 );
-	std::cout << a1.size << std::endl;
-	Sum<int, float, short> a2( 1.0f );
-	std::cout << a2.size << std::endl;*/
 	return 0;
 }

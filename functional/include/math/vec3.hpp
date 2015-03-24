@@ -6,14 +6,15 @@ namespace hp_fp
 	{
 	public:
 		A x, y, z;
+		static const Vec3<A> zero;
 		static const Vec3<A> right;
 		static const Vec3<A> up;
 		static const Vec3<A> forward;
-		Vec3( const A x = 0, const A y = 0, const A z = 0 ) : x( x ), y( y ), z( z )
-		{ }
+		/*Vec3( const A x = 0, const A y = 0, const A z = 0 ) : x( x ), y( y ), z( z )
+		{ }*/
 		static inline Vec3<A> normalize( const Vec3<A>& vec )
 		{
-			Vec3<A> normVec;
+			Vec3<A> normVec{ };
 			float length = Vec3<A>::length( vec );
 			if ( length == 0.0f )
 			{
@@ -31,11 +32,11 @@ namespace hp_fp
 		}
 		Vec3<A> operator + ( const Vec3<A>& vec ) const
 		{
-			return Vec3<A>( x + vec.x, y + vec.y, z + vec.z );
+			return Vec3 < A > { x + vec.x, y + vec.y, z + vec.z };
 		}
 		Vec3<A> operator - ( const Vec3<A>& vec ) const
 		{
-			return Vec3<A>( x - vec.x, y - vec.y, z - vec.z );
+			return Vec3 < A > { x - vec.x, y - vec.y, z - vec.z };
 		}
 		Vec3<A>& operator += ( const Vec3<A>& vec )
 		{
@@ -51,6 +52,22 @@ namespace hp_fp
 			z -= vec.z;
 			return *this;
 		}
+		bool operator == ( const Vec3<A>& v ) const
+		{
+			return x == v.x && y == v.y && z == v.z;
+		}
+		bool operator < ( const Vec3<A>& v ) const
+		{
+			if ( x == v.x )
+			{
+				if ( y == v.y )
+				{
+					return  z < v.z;
+				}
+				return y < v.y;
+			}
+			return x < v.x;
+		}
 		template<typename B>
 		friend inline Vec3<B> operator * ( const float scalar, const Vec3<B>& vec );
 		template<typename B>
@@ -59,7 +76,7 @@ namespace hp_fp
 	template<typename A>
 	inline Vec3<A> operator * ( const float scalar, const Vec3<A>& vec )
 	{
-		return Vec3<A>( vec.x * scalar, vec.y * scalar, vec.z * scalar );
+		return Vec3 < A > { vec.x * scalar, vec.y * scalar, vec.z * scalar };
 	}
 	template<typename A>
 	inline Vec3<A> operator * ( const Vec3<A>& vec, const float scalar )
@@ -69,10 +86,10 @@ namespace hp_fp
 	template<typename A>
 	inline Vec3<A> cross( const Vec3<A>& vec1, const Vec3<A>& vec2 )
 	{
-		return Vec3<A>(
+		return Vec3 < A > {
 			vec1.y * vec2.z - vec1.z * vec2.y,
-			vec1.z * vec2.x - vec1.x * vec2.z,
-			vec1.x * vec2.y - vec1.y * vec2.x );
+				vec1.z * vec2.x - vec1.x * vec2.z,
+				vec1.x * vec2.y - vec1.y * vec2.x };
 	}
 	template<typename A>
 	inline A dot( const Vec3<A>& vec1, const Vec3<A>& vec2 )
