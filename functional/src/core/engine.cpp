@@ -59,12 +59,14 @@ namespace hp_fp
 						signal( actor.state.val.pos.val, deltaMs ),
 						signal( actor.state.val.vel.val, deltaMs ),
 						signal( actor.state.val.scl.val, deltaMs ),
-						signal( actor.state.val.rot.val, deltaMs )
+						signal( actor.state.val.rot.val, deltaMs ),
+						signal( actor.state.val.modelRot.val, deltaMs )
 					}, deltaMs )
 				};
+				// render previous states first then run SF to be in sync with cam
+				actor.render_IO( renderer, actor.state.val, parentLocalTransform );
 				auto actorOutput = actor.sf( signal( actorInput, deltaMs ) );
 				actor.state = actorOutput.val.state;
-				actor.render_IO( renderer, actorOutput.val, parentLocalTransform );
 				renderActors_IO( renderer, actor.children, gameInput, deltaMs,
 					trasformMatFromActorState( actor.state.val ) );
 			}
@@ -80,7 +82,8 @@ namespace hp_fp
 					signal( actorDef.startingState.pos, 0.0 ),
 					signal( actorDef.startingState.vel, 0.0 ),
 					signal( actorDef.startingState.scl, 0.0 ),
-					signal( actorDef.startingState.rot, 0.0 )
+					signal( actorDef.startingState.rot, 0.0 ),
+					signal( actorDef.startingState.modelRot, 0.0 )
 				};
 				actors.push_back( Actor{ signal( startingState, 0.0 ), actorDef.sf,
 					initActorRenderFunction_IO( renderer, resources, actorDef ),

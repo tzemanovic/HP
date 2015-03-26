@@ -17,12 +17,12 @@ namespace hp_fp
 		def._typeId = typeId<ActorCameraDef>( );
 		return def;
 	}
-	std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>
+	std::function<void( Renderer&, const ActorState&, const Mat4x4& )>
 		initActorRenderFunction_IO( Renderer& renderer, Resources& resources,
 		const ActorDef& actorDef )
 	{
-		static std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )> doNothing =
-			[]( Renderer&, const ActorOutput&, const Mat4x4& )
+		static std::function<void( Renderer&, const ActorState&, const Mat4x4& )> doNothing =
+			[]( Renderer&, const ActorState&, const Mat4x4& )
 		{ };
 		if ( actorDef.type.is<ActorModelDef>( ) )
 		{
@@ -39,7 +39,6 @@ namespace hp_fp
 		else if ( actorDef.type.is<ActorCameraDef>( ) )
 		{
 			return actorDef.type.camera.render( actorDef.type.camera, renderer.windowConfig );
-			//return actorDef.type.camera.render;
 		}
 		return doNothing;
 	}
@@ -47,21 +46,26 @@ namespace hp_fp
 	{
 		return rotSclPosToMat4x4( actorState.rot.val, actorState.scl.val, actorState.pos.val );
 	}
+	Mat4x4 modelTrasformMatFromActorState( const ActorState& actorState )
+	{
+		return rotSclPosToMat4x4( actorState.modelRot.val * actorState.rot.val,
+			actorState.scl.val, actorState.pos.val );
+	}
 	namespace
 	{
 		// Have to specify lambda's return type to std::function because of the issue
 		// with return type deduction (http://stackoverflow.com/questions/12639578/c11-lambda-returning-lambda)
-		std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>  renderActor_IO(
+		std::function<void( Renderer&, const ActorState&, const Mat4x4& )>  renderActor_IO(
 			ActorResources& res )
 		{
-			return [res]( Renderer& renderer, const ActorOutput& output,
+			return [res]( Renderer& renderer, const ActorState& actorState,
 				const Mat4x4& transform ) mutable
 			{
 				const Camera& cam = getCamera( renderer.cameraBuffer );
 				setProjection_IO( res.material, cam.projection );
 				setView_IO( res.material, inverse( cam.transform ) );
 				setWorld_IO( res.material,
-					trasformMatFromActorState( output.state.val ) * transform );
+					modelTrasformMatFromActorState( actorState ) * transform );
 				setCameraPosition_IO( res.material, pos( cam.transform ) );
 				setAbientLightColor_IO( res.material, Color( 0.1f, 0.1f, 0.1f, 0.6f ) );
 				setDiffuseLightColor_IO( res.material, Color( 1.0f, 0.95f, 0.4f, 0.4f ) );

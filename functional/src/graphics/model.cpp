@@ -212,8 +212,8 @@ namespace hp_fp
 			}
 			for ( UInt32 i = 0; i < vertexCount; ++i )
 			{
-				vertices[i].tangent = FVec3::normalize( tangents[i] );
-				vertices[i].binormal = FVec3::normalize( binormals[i] );
+				vertices[i].tangent = normalize( tangents[i] );
+				vertices[i].binormal = normalize( binormals[i] );
 			}
 			HP_DELETE_ARRAY( tangents );
 			HP_DELETE_ARRAY( binormals );

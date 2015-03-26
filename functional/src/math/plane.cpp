@@ -7,7 +7,7 @@ namespace hp_fp
 		FVec3 edge1, edge2, normal;
 		edge1 = p1 - p0;
 		edge2 = p2 - p0;
-		normal = FVec3::normalize( cross( edge1, edge2 ) );
+		normal = normalize( cross( edge1, edge2 ) );
 		return normalize( planeFromPointNormal( p0, normal ) );
 	}
 	Plane normalize( const Plane& plane )

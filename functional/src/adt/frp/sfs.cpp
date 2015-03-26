@@ -14,7 +14,7 @@ namespace hp_fp
 	SF<FVec3, FVec3> rotate( const S<FQuat>& rot )
 	{
 		return SF < FVec3, FVec3 > {
-			[&rot]( const S<FVec3>& b )
+			[&rot]( const S<FVec3>& b ) -> S < FVec3 >
 			{
 				return signal( std::forward<FVec3>( rotate( b.val, rot.val ) ), b.deltaMs );
 			}

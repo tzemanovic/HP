@@ -18,6 +18,7 @@ namespace hp_fp
 		FVec3 vel;
 		FVec3 scl;
 		FQuat rot;
+		FQuat modelRot;
 	};
 	struct ActorState
 	{
@@ -25,6 +26,7 @@ namespace hp_fp
 		S<FVec3> vel;
 		S<FVec3> scl;
 		S<FQuat> rot;
+		S<FQuat> modelRot;
 	};
 	struct ActorInput
 	{
@@ -40,7 +42,7 @@ namespace hp_fp
 		ModelDef model;
 		MaterialDef material;
 	};
-	typedef std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )> CamRenderFn;
+	typedef std::function<void( Renderer&, const ActorState&, const Mat4x4& )> CamRenderFn;
 	struct ActorCameraDef;
 	typedef CamRenderFn( *InitCamRenderFn )( const ActorCameraDef&, const WindowConfig& );
 	struct ActorCameraDef
@@ -78,20 +80,21 @@ namespace hp_fp
 	{
 		S<ActorState> state;
 		SF<ActorInput, ActorOutput> sf;
-		std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )> render_IO;
+		std::function<void( Renderer&, const ActorState&, const Mat4x4& )> render_IO;
 		std::vector<Actor> children;
 	};
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
 	ActorTypeDef actorModelDef( ActorModelDef&& m );
 	ActorTypeDef actorCameraDef( ActorCameraDef&& c );
-	std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>
+	std::function<void( Renderer&, const ActorState&, const Mat4x4& )>
 		initActorRenderFunction_IO( Renderer& renderer, Resources& resources,
 		const ActorDef& actorDef );
 	Mat4x4 trasformMatFromActorState( const ActorState& actorState );
+	Mat4x4 modelTrasformMatFromActorState( const ActorState& actorState );
 	namespace
 	{
-		std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>  renderActor_IO(
+		std::function<void( Renderer&, const ActorState&, const Mat4x4& )>  renderActor_IO(
 			ActorResources& res );
 	}
 }

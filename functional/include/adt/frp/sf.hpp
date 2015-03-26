@@ -28,7 +28,7 @@ namespace hp_fp
 			return compose( *this, sf );
 		}
 		template<typename C>
-		// compose two SF ( sf >>> *this )
+		// compose two SF ( this <<< sf )
 		SF<C, B> operator < ( SF<C, A>& sf )
 		{
 			return compose( sf, *this );
@@ -43,7 +43,7 @@ namespace hp_fp
 		{
 			return f( a );
 		}
-		// compose SF and constant value ( a >>> *this )
+		// compose SF and constant value ( a >>> this )
 		SF<void, B> operator < ( const A& a )
 		{
 			return compose<void, A, B>( constant( a ), *this );
@@ -52,7 +52,7 @@ namespace hp_fp
 	template<typename B>
 	struct SF < void, B >
 	{
-		std::function<S<B>( const S<void>& a )> f;
+		std::function<S<B>( const S<void>& )> f;
 		template<typename C>
 		// compose two SF ( *this >>> sf )
 		SF<void, C> operator > ( SF<B, C> sf )
@@ -63,7 +63,7 @@ namespace hp_fp
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
 	template<typename A, typename B>
-	SF<A, B> arr( B( *f )( const A& a ) )
+	SF<A, B> arr( std::function<B( const A& )> f )
 	{
 		return SF < A, B > {
 			[f]( const S<A>& a )
@@ -73,7 +73,7 @@ namespace hp_fp
 		};
 	}
 	template<typename A, typename B>
-	SF<A, B> arr( B( *f )( const S<A>& a ) )
+	SF<A, B> arr( std::function<B( const S<A>& )> f )
 	{
 		return SF < A, B > {
 			[f]( const S<A>& a )
@@ -83,9 +83,9 @@ namespace hp_fp
 		};
 	}
 	template<typename A, typename B, typename C>
-	SF<A, B> compose( const SF<A, B>& fst, const SF<B, C>& snd )
+	SF<A, C> compose( const SF<A, B>& fst, const SF<B, C>& snd )
 	{
-		return SF < A, B > {
+		return SF < A, C > {
 			[fst, snd]( const S<A>& a )
 			{
 				return snd.f( signal( fst.f( a ).val, a.deltaMs ) );
