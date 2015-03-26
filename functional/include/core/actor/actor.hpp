@@ -1,26 +1,25 @@
 #pragma once
 #include <functional>
 #include <vector>
-#include "../../adt/sum.hpp"
-#include "../../adt/frp/sf2.hpp"
+#include "../../adt/frp/sf.hpp"
 #include "../../graphics/material.hpp"
 #include "../../graphics/model.hpp"
 #include "../../graphics/renderer.hpp"
 #include "../../math/mat4x4.hpp"
 #include "../../math/quat.hpp"
-#include "../../window/gameInputMut.hpp"
+#include "../../window/gameInput.hpp"
 namespace hp_fp
 {
 	struct Resources;
 	struct ActorResources;
-	struct ActorState
+	struct ActorStartingState
 	{
 		FVec3 pos;
 		FVec3 vel;
 		FVec3 scl;
 		FQuat rot;
 	};
-	struct ActorState_S
+	struct ActorState
 	{
 		S<FVec3> pos;
 		S<FVec3> vel;
@@ -29,35 +28,26 @@ namespace hp_fp
 	};
 	struct ActorInput
 	{
-		GameInputMut gameInput;
-		ActorState state;
-	};
-	struct ActorInput_S
-	{
-		S<GameInputMut> gameInput;
-		S<ActorState_S> state;
+		S<GameInput> gameInput;
+		S<ActorState> state;
 	};
 	struct ActorOutput
 	{
-		ActorState state;
-	};
-	struct ActorOutput_S
-	{
-		S<ActorState_S> state;
+		S<ActorState> state;
 	};
 	struct ActorModelDef
 	{
 		ModelDef model;
 		MaterialDef material;
 	};
-	typedef std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )> CamRenderSF;
+	typedef std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )> CamRenderFn;
 	struct ActorCameraDef;
-	typedef CamRenderSF( *InitCamRenderSF )( const ActorCameraDef&, const WindowConfigImm& );
+	typedef CamRenderFn( *InitCamRenderFn )( const ActorCameraDef&, const WindowConfig& );
 	struct ActorCameraDef
 	{
 		float nearClipDist;
 		float farClipDist;
-		InitCamRenderSF render;
+		InitCamRenderFn render;
 	};
 	struct ActorTypeDef
 	{
@@ -80,36 +70,28 @@ namespace hp_fp
 	struct ActorDef
 	{
 		ActorTypeDef type;
-		ActorState startingState;
-		std::function<ActorOutput( const ActorInput& )> sf;
+		ActorStartingState startingState;
+		SF<ActorInput, ActorOutput> sf;
 		std::vector<ActorDef> children;
-	};
-	struct ActorDef_S
-	{
-		ActorTypeDef type;
-		ActorState startingState;
-		SF<ActorInput_S, ActorOutput_S> sf;
-		std::vector<ActorDef_S> children;
 	};
 	struct Actor
 	{
-		S<ActorState_S> state;
-		//std::function<ActorOutput( const ActorInput& )> sf;
-		SF<ActorInput_S, ActorOutput_S> sf;
-		std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )> render_IO;
+		S<ActorState> state;
+		SF<ActorInput, ActorOutput> sf;
+		std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )> render_IO;
 		std::vector<Actor> children;
 	};
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
 	ActorTypeDef actorModelDef( ActorModelDef&& m );
 	ActorTypeDef actorCameraDef( ActorCameraDef&& c );
-	std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )>
+	std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>
 		initActorRenderFunction_IO( Renderer& renderer, Resources& resources,
-		const ActorDef_S& actorDef );
-	Mat4x4 trasformMatFromActorState( const ActorState_S& actorState );
+		const ActorDef& actorDef );
+	Mat4x4 trasformMatFromActorState( const ActorState& actorState );
 	namespace
 	{
-		std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )>  renderActor_IO(
+		std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>  renderActor_IO(
 			ActorResources& res );
 	}
 }

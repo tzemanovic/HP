@@ -3,13 +3,14 @@
 #include "directx.hpp"
 #include "vertex.hpp"
 #include "../adt/maybe.hpp"
-#include "../window/windowConfigImm.hpp"
+#include "../window/window.hpp"
 namespace hp_fp
 {
+	struct WindowConfig;
 	struct Renderer
 	{
 		Renderer( D3D_DRIVER_TYPE driverType, D3D_FEATURE_LEVEL featureLevel,
-			const WindowConfigImm& windowConfig ) : driverType( driverType ),
+			const WindowConfig& windowConfig ) : driverType( driverType ),
 			featureLevel( featureLevel ), device( nullptr ), deviceContext( nullptr ),
 			swapChain( nullptr ), renderTargetView( nullptr ),
 			depthStencilView( nullptr ), depthStencilTexture( nullptr ),
@@ -34,11 +35,11 @@ namespace hp_fp
 		ID3D11DepthStencilView* depthStencilView;
 		ID3D11Texture2D* depthStencilTexture;
 		CameraBuffer cameraBuffer;
-		WindowConfigImm windowConfig;
+		WindowConfig windowConfig;
 	};
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
-	Maybe<Renderer> init_IO( WindowHandle windowHandle, const WindowConfigImm& windowConfig );
+	Maybe<Renderer> init_IO( WindowHandle windowHandle, const WindowConfig& windowConfig );
 	void preRender_IO( Renderer& renderer );
 	void present_IO( Renderer& renderer );
 	bool createVertexBuffer_IO( Renderer& renderer, ID3D11Buffer** vertexBuffer, UInt32 byteWidth,

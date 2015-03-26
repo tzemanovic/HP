@@ -24,6 +24,34 @@ namespace hp_fp
 	typedef Quat<float> FQuat;
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
-	FQuat eulerDegToQuat( const FVec3& vec );
-	FQuat eulerRadToQuat( const FVec3& vec );
+	template<typename A>
+	Quat<A> eulerDegToQuat( const Vec3<A>& vec )
+	{
+		return eulerRadToQuat( vec * DEG_TO_RAD_F );
+	}
+	template<typename A>
+	Quat<A> eulerRadToQuat( const Vec3<A>& vec )
+	{
+		Quat<A> quat;
+		quat.x = sin( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * sin( vec.z / 2.0f ) +
+			cos( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * cos( vec.z / 2.0f );
+		quat.y = sin( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * cos( vec.z / 2.0f ) -
+			cos( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * sin( vec.z / 2.0f );
+		quat.z = cos( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * sin( vec.z / 2.0f ) -
+			sin( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * cos( vec.z / 2.0f );
+		quat.w = cos( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * cos( vec.z / 2.0f ) +
+			sin( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * sin( vec.z / 2.0f );
+		return quat;
+	}
+	template<typename A>
+	Quat<A> conjugate( const Quat<A>& quat )
+	{
+		return Quat < A > {-quat.x, -quat.y, -quat.z, quat.w};
+	}
+	template<typename A>
+	Vec3<A> rotate( const Vec3<A>& vec, const Quat<A>& quat )
+	{
+		auto rotated = conjugate( quat ) * Quat < A > {vec.x, vec.y, vec.z, 1.0f} *quat;
+		return Vec3 < A > {rotated.x, rotated.y, rotated.z};
+	};
 }

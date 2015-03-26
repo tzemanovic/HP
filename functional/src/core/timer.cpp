@@ -18,7 +18,7 @@ namespace hp_fp
 	}
 	namespace
 	{
-		const double getTimeMs_IO( )
+		double getTimeMs_IO( )
 		{
 			// use only single thread to calculate time
 			HANDLE currentThread = GetCurrentThread( );

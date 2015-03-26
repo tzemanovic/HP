@@ -1,5 +1,6 @@
 #pragma once
 #include <core/engine.hpp>
-#include <window/window.hpp>
 #include <adt/maybe.hpp>
 #include <adt/sum.hpp>
+#include <adt/frp/sfs.hpp>
+#include <math/frustum.hpp>

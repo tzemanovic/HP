@@ -4,13 +4,14 @@ namespace hp_fp
 	template<typename A>
 	struct S
 	{
+		// TODO: change to std::function<A(const float)> f;
 		A val;
-		double deltaMs;
+		float deltaMs;
 	};
 	template<>
 	struct S < void >
 	{
-		double deltaMs;
+		float deltaMs;
 	};
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
@@ -25,12 +26,12 @@ namespace hp_fp
 		return S < A > { std::move( a ) };
 	}
 	template<typename A>
-	S<A> signal( const A& a, const double deltaMs )
+	S<A> signal( const A& a, const float deltaMs )
 	{
 		return S < A > { a, deltaMs };
 	}
 	template<typename A>
-	S<A> signal( const A&& a, const double deltaMs )
+	S<A> signal( const A&& a, const float deltaMs )
 	{
 		return S < A > { std::move( a ), deltaMs };
 

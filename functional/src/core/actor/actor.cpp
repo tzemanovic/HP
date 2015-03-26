@@ -17,12 +17,12 @@ namespace hp_fp
 		def._typeId = typeId<ActorCameraDef>( );
 		return def;
 	}
-	std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )>
+	std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>
 		initActorRenderFunction_IO( Renderer& renderer, Resources& resources,
-		const ActorDef_S& actorDef )
+		const ActorDef& actorDef )
 	{
-		static std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )> doNothing =
-			[]( Renderer&, const ActorOutput_S&, const Mat4x4& )
+		static std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )> doNothing =
+			[]( Renderer&, const ActorOutput&, const Mat4x4& )
 		{ };
 		if ( actorDef.type.is<ActorModelDef>( ) )
 		{
@@ -43,7 +43,7 @@ namespace hp_fp
 		}
 		return doNothing;
 	}
-	Mat4x4 trasformMatFromActorState( const ActorState_S& actorState )
+	Mat4x4 trasformMatFromActorState( const ActorState& actorState )
 	{
 		return rotSclPosToMat4x4( actorState.rot.val, actorState.scl.val, actorState.pos.val );
 	}
@@ -51,10 +51,10 @@ namespace hp_fp
 	{
 		// Have to specify lambda's return type to std::function because of the issue
 		// with return type deduction (http://stackoverflow.com/questions/12639578/c11-lambda-returning-lambda)
-		std::function<void( Renderer&, const ActorOutput_S&, const Mat4x4& )>  renderActor_IO(
+		std::function<void( Renderer&, const ActorOutput&, const Mat4x4& )>  renderActor_IO(
 			ActorResources& res )
 		{
-			return [res]( Renderer& renderer, const ActorOutput_S& output,
+			return [res]( Renderer& renderer, const ActorOutput& output,
 				const Mat4x4& transform ) mutable
 			{
 				const Camera& cam = getCamera( renderer.cameraBuffer );
@@ -62,7 +62,7 @@ namespace hp_fp
 				setView_IO( res.material, inverse( cam.transform ) );
 				setWorld_IO( res.material,
 					trasformMatFromActorState( output.state.val ) * transform );
-				setCameraPosition_IO( res.material, cam.transform.GetPosition( ) );
+				setCameraPosition_IO( res.material, pos( cam.transform ) );
 				setAbientLightColor_IO( res.material, Color( 0.1f, 0.1f, 0.1f, 0.6f ) );
 				setDiffuseLightColor_IO( res.material, Color( 1.0f, 0.95f, 0.4f, 0.4f ) );
 				setSpecularLightColor_IO( res.material, Color( 1.0f, 1.0f, 1.0f, 0.3f ) );

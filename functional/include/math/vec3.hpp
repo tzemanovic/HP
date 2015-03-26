@@ -73,6 +73,13 @@ namespace hp_fp
 		template<typename B>
 		friend inline Vec3<B> operator * ( const Vec3<B>& vec, const float scalar );
 	};
+	typedef Vec3<UInt16> UInt16Vec3;
+	typedef Vec3<Int16> Int16Vec3;
+	typedef Vec3<UInt32> UInt32Vec3;
+	typedef Vec3<Int32> Int32Vec3;
+	typedef Vec3<float> FVec3;
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
 	template<typename A>
 	inline Vec3<A> operator * ( const float scalar, const Vec3<A>& vec )
 	{
@@ -96,9 +103,4 @@ namespace hp_fp
 	{
 		return ( vec1.x ) * ( vec2.x ) + ( vec1.y ) * ( vec2.y ) + ( vec1.z ) * ( vec2.z );
 	}
-	typedef Vec3<UInt16> UInt16Vec3;
-	typedef Vec3<Int16> Int16Vec3;
-	typedef Vec3<UInt32> UInt32Vec3;
-	typedef Vec3<Int32> Int32Vec3;
-	typedef Vec3<float> FVec3;
 }

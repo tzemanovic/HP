@@ -2,7 +2,7 @@
 #include "plane.hpp"
 namespace hp_fp
 {
-	enum class FrustumSides : UInt8
+	enum struct FrustumSides : UInt8
 	{
 		Near, Far, Top, Right, Bottom, Left, Count
 	};

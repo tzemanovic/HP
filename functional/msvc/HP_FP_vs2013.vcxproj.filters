@@ -81,9 +81,6 @@
     <ClCompile Include="..\src\window\window.cpp">
       <Filter>src\window</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\utils\stringUtils.cpp">
-      <Filter>src\utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\core\engine.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
@@ -135,6 +132,9 @@
     <ClCompile Include="..\src\adt\frp\sfs.cpp">
       <Filter>src\adt\frp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\utils\string.cpp">
+      <Filter>src\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\window\window.hpp">
@@ -142,18 +142,6 @@
     </ClInclude>
     <ClInclude Include="..\include\pch\pch.hpp">
       <Filter>include\pch</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\window\windowStyle.hpp">
-      <Filter>include\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\window\windowConfigImm.hpp">
-      <Filter>include\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\window\windowMut.hpp">
-      <Filter>include\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\utils\stringUtils.hpp">
-      <Filter>include\utils</Filter>
     </ClInclude>
     <ClInclude Include="..\include\adt\maybe.hpp">
       <Filter>include\adt</Filter>
@@ -181,12 +169,6 @@
     </ClInclude>
     <ClInclude Include="..\include\adt\tree.hpp">
       <Filter>include\adt</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\window\gameInputMut.hpp">
-      <Filter>include\window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\adt\frp\sf.hpp">
-      <Filter>include\adt\frp</Filter>
     </ClInclude>
     <ClInclude Include="..\include\math\vec2.hpp">
       <Filter>include\math</Filter>
@@ -242,14 +224,20 @@
     <ClInclude Include="..\include\graphics\directx.hpp">
       <Filter>include\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\adt\frp\sf2.hpp">
-      <Filter>include\adt\frp</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\adt\frp\s.hpp">
       <Filter>include\adt\frp</Filter>
     </ClInclude>
     <ClInclude Include="..\include\adt\frp\sfs.hpp">
       <Filter>include\adt\frp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\adt\frp\sf.hpp">
+      <Filter>include\adt\frp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\gameInput.hpp">
+      <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\utils\string.hpp">
+      <Filter>include\utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

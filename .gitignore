@@ -14,6 +14,12 @@ functional/msvc/*.sdf
 functional/msvc/*.suo
 functional/msvc/*.opensdf
 
+imperative/3rdParty/**/*.idb
+imperative/3rdParty/**/*.log
+imperative/3rdParty/**/*.obj
+imperative/3rdParty/**/*.pch
+imperative/3rdParty/**/*.pdb
+imperative/3rdParty/**/*.tlog
 imperative/lib/
 imperative/bin/
 imperative/temp/

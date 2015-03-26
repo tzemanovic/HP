@@ -16,6 +16,51 @@
     <Filter Include="include\window">
       <UniqueIdentifier>{0684d5fb-cfe6-4a91-bbb8-48c2ac9e5c8b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\core">
+      <UniqueIdentifier>{9d9f8927-acf1-43ea-849e-8b8214373c44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core">
+      <UniqueIdentifier>{f81f9934-0b6a-46e3-b4ea-cd7aa56a93c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\utils">
+      <UniqueIdentifier>{ea8f5014-7b28-4df7-8205-dca6d8f22f88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\window">
+      <UniqueIdentifier>{3999c737-7780-43a9-b736-6a12628bbb3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\utils">
+      <UniqueIdentifier>{604f3e6b-602a-4383-8e8f-4a0e4e89a99b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics">
+      <UniqueIdentifier>{08b73663-a6d2-4dc5-b529-779521cdd13d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\DirectXTex">
+      <UniqueIdentifier>{81b78365-3cbb-4563-b863-076e67746679}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\DirectXTex\DDSTextureLoader">
+      <UniqueIdentifier>{bcb8e53f-6584-4a25-af71-1eb40704050d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\graphics\DirectXTex\WICTextureLoader">
+      <UniqueIdentifier>{b4ed6b66-44c2-4cf7-862b-15434ebff89b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics">
+      <UniqueIdentifier>{7ce4902d-7cd5-4ad7-8e85-b01fe8ae1340}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\math">
+      <UniqueIdentifier>{1c175065-a6c2-4e94-82ea-39c486b4234a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\math">
+      <UniqueIdentifier>{de42f419-3d3c-4c8d-acea-b5bb6dc48d94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\core\actor">
+      <UniqueIdentifier>{32eb11be-34e1-41d0-9544-e2f45e093ca4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\actor">
+      <UniqueIdentifier>{b136fff9-c7fb-4d05-9772-f1700c8786e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\core\actor\component">
+      <UniqueIdentifier>{de66f235-266e-4442-bb3f-846fc6131084}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -24,6 +69,48 @@
     <ClCompile Include="..\include\pch\pch.cpp">
       <Filter>include\pch</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\core\engine.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\window\window.cpp">
+      <Filter>src\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utils\string.cpp">
+      <Filter>src\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.cpp">
+      <Filter>include\graphics\DirectXTex\DDSTextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.cpp">
+      <Filter>include\graphics\DirectXTex\WICTextureLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\renderer.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\timer.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\frustum.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\mat4x4.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\plane.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\quat.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\vec3.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\math\vec4.cpp">
+      <Filter>src\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\actor\actor.cpp">
+      <Filter>src\core\actor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\pch\pch.hpp">
@@ -31,6 +118,84 @@
     </ClInclude>
     <ClInclude Include="..\include\window\window.hpp">
       <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\engine.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\window\gameInput.hpp">
+      <Filter>include\window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\hpIp.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\utils\typeId.hpp">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\utils\string.hpp">
+      <Filter>include\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\renderer.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\vertex.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\directx.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.h">
+      <Filter>include\graphics\DirectXTex\DDSTextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.h">
+      <Filter>include\graphics\DirectXTex\WICTextureLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\camera.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\material.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\model.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\resources.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\timer.hpp">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\vec3.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\vec2.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\vec4.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\color.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\quat.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\plane.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\frustum.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\mat4x4.hpp">
+      <Filter>include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actor\actor.hpp">
+      <Filter>include\core\actor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actor\component\iComponent.hpp">
+      <Filter>include\core\actor\component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actor\component\transformComponent.hpp">
+      <Filter>include\core\actor\component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

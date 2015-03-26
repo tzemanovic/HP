@@ -9,7 +9,7 @@
 namespace hp_fp
 {
 	struct Renderer;
-	enum class BuiltInModelType : UInt8
+	enum struct BuiltInModelType : UInt8
 	{
 		Box, Count
 	};

@@ -1,14 +1,14 @@
 #include <pch.hpp>
 #include "../../include/core/engine.hpp"
-#include "../../include/utils/stringUtils.hpp"
+#include "../../include/utils/string.hpp"
 #include "../../include/window/window.hpp"
 #include "../../include/adt/maybe.hpp"
 namespace hp_fp
 {
-	Maybe<WindowMut> open_IO( Engine& engine, const WindowConfigImm& windowConfig )
+	Maybe<Window> open_IO( Engine& engine, const WindowConfig& windowConfig )
 	{
 		std::wstring windowNameW = s2ws( "HP_FP::" + engine.name );
-		WindowMut window{ nullptr, windowNameW.c_str( ) };
+		Window window{ nullptr, windowNameW.c_str( ) };
 		if ( isOnlyInstance_IO( window.name ) )
 		{
 			// window class details
@@ -51,7 +51,7 @@ namespace hp_fp
 				if ( window.handle == nullptr )
 				{
 					ERR( GetLastError( ) );
-					return nothing<WindowMut>( );
+					return nothing<Window>( );
 				}
 				if ( windowConfig.windowStyle == WindowStyle::Fullscreen )
 				{
@@ -61,14 +61,14 @@ namespace hp_fp
 		}
 		return just( std::move( window ) );
 	}
-	const WindowConfigImm defaultWindowConfig_IO( )
+	WindowConfig defaultWindowConfig_IO( )
 	{
 		DEVMODE mode;
 		mode.dmSize = sizeof( mode );
 		EnumDisplaySettings( nullptr, ENUM_CURRENT_SETTINGS, &mode );
-		return WindowConfigImm{ mode.dmPelsWidth, mode.dmPelsHeight, WindowStyle::Default, mode.dmBitsPerPel };
+		return WindowConfig{ mode.dmPelsWidth, mode.dmPelsHeight, WindowStyle::Default, mode.dmBitsPerPel };
 	}
-	void setWindowVisibility_IO( WindowHandle windowHandle, bool visible )
+	void setWindowVisibility_IO( WindowHandle windowHandle, const bool visible )
 	{
 		ShowWindow( windowHandle, visible ? SW_SHOW : SW_HIDE );
 		if ( visible )
@@ -78,7 +78,7 @@ namespace hp_fp
 			SetActiveWindow( windowHandle );
 		}
 	}
-	void switchToFullscreen_IO( WindowHandle windowHandle, const WindowConfigImm& windowConfig )
+	void switchToFullscreen_IO( WindowHandle windowHandle, const WindowConfig& windowConfig )
 	{
 		// set display settings
 		DEVMODE devMode;

@@ -3,6 +3,10 @@
 namespace hp_fp
 {
 	const Mat4x4 Mat4x4::identity( Mat4x4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ) );
+	FVec3 pos( const Mat4x4& mat )
+	{
+		return FVec3{ mat.m[3][0], mat.m[3][1], mat.m[3][2] };
+	}
 	float determinant( const Mat4x4& mat )
 	{
 		FVec4 v1, v2, v3;

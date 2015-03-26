@@ -3,7 +3,7 @@
 #include "../../include/graphics/material.hpp"
 #include "../../include/graphics/renderer.hpp"
 #include "../../include/graphics/vertex.hpp"
-#include "../../include/utils/stringUtils.hpp"
+#include "../../include/utils/string.hpp"
 namespace hp_fp
 {
 	Material defaultMat( )

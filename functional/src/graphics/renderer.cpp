@@ -2,7 +2,7 @@
 #include "../../include/graphics/renderer.hpp"
 namespace hp_fp
 {
-	Maybe<Renderer> init_IO( WindowHandle windowHandle, const WindowConfigImm& windowConfig )
+	Maybe<Renderer> init_IO( WindowHandle windowHandle, const WindowConfig& windowConfig )
 	{
 		Renderer renderer{ D3D_DRIVER_TYPE_NULL, D3D_FEATURE_LEVEL_11_0, windowConfig };
 		// driver types for fallback

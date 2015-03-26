@@ -39,18 +39,10 @@ namespace hp_fp
 			}
 			return result;
 		}
-		// TODO: replace with pure functions
-		inline const FVec3 GetPosition( ) const
-		{
-			return FVec3{ m[3][0], m[3][1], m[3][2] };
-		}
-		inline void SetPosition( const FVec3 pos )
-		{
-			m[3][0] = pos.x, m[3][1] = pos.y; m[3][2] = pos.z; m[3][3] = 1.0f;
-		}
 	};
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
+	FVec3 pos( const Mat4x4& mat );
 	float determinant( const Mat4x4& mat );
 	Mat4x4 inverse( const Mat4x4& mat );
 	Mat4x4 matrixPerspectiveFovLH( const float fieldOfView, const float aspectRatio,
