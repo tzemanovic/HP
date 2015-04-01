@@ -7,10 +7,6 @@ namespace hp_fp
 		Mat4x4 projection;
 		Mat4x4 transform;
 	};
-	/*Camera defaultCamera( )
-	{
-	return Camera{};
-	}*/
 	struct CameraBuffer
 	{
 	private:

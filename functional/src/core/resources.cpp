@@ -6,42 +6,40 @@ namespace hp_fp
 	Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
 		const LoadedModelDef& modelDef )
 	{
-		if ( resources.loadedModels.count( modelDef ) > 0 )
+		if ( resources.loadedModels.count( modelDef ) == 0 )
 		{
-			return resources.loadedModels.at( modelDef );
+			resources.loadedModels.emplace( modelDef, loadModelFromFile_IO( renderer,
+				modelDef.filename, modelDef.scale ) );
 		}
-		resources.loadedModels.emplace( modelDef, loadModelFromFile_IO( renderer,
-			modelDef.filename, modelDef.scale ) );
 		return resources.loadedModels.at( modelDef );
 	}
 	Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
 		const BuiltInModelDef& modelDef )
 	{
-		if ( resources.builtInModels.count( modelDef ) > 0 )
+		if ( resources.builtInModels.count( modelDef ) == 0 )
 		{
-			return resources.builtInModels.at( modelDef );
-		}
-		switch ( modelDef.type )
-		{
-		case BuiltInModelType::Box:
-		{
-			resources.builtInModels.emplace( modelDef, cubeMesh_IO( renderer, modelDef.scale ) );
-		}
-		break;
-		default:
-			WAR( "Missing built-In model for type " +
-				std::to_string( static_cast<UInt8>( modelDef.type ) ) + "." );
+			switch ( modelDef.type )
+			{
+			case BuiltInModelType::Box:
+			{
+				resources.builtInModels.emplace( modelDef,
+					cubeMesh_IO( renderer, modelDef.dimensions ) );
+			}
+			break;
+			default:
+				WAR( "Missing built-In model for type " +
+					std::to_string( static_cast<UInt8>( modelDef.type ) ) + "." );
+			}
 		}
 		return resources.builtInModels.at( modelDef );
 	}
 	Maybe<Material>& getMaterial_IO( Renderer& renderer, Resources& resources,
 		const MaterialDef& materialDef )
 	{
-		if ( resources.materials.count( materialDef ) > 0 )
+		if ( resources.materials.count( materialDef ) == 0 )
 		{
-			return resources.materials.at( materialDef );
+			resources.materials.emplace( materialDef, loadMaterial_IO( renderer, materialDef ) );
 		}
-		resources.materials.emplace( materialDef, loadMaterial_IO( renderer, materialDef ) );
 		return resources.materials.at( materialDef );
 	}
 	Maybe<ActorResources> getActorResources_IO( Renderer& renderer, Resources& resources,

@@ -61,6 +61,9 @@
     <Filter Include="include\core\actor\component">
       <UniqueIdentifier>{de66f235-266e-4442-bb3f-846fc6131084}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\core\actor\component">
+      <UniqueIdentifier>{f0593995-70ce-4e16-b20e-59f0cdff3bbd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
@@ -110,6 +113,27 @@
     </ClCompile>
     <ClCompile Include="..\src\core\actor\actor.cpp">
       <Filter>src\core\actor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\model.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\actor\component\modelComponent.cpp">
+      <Filter>src\core\actor\component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\resources.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\material.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\graphics\camera.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\actor\component\cameraComponent.cpp">
+      <Filter>src\core\actor\component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\actor\component\transformComponent.cpp">
+      <Filter>src\core\actor\component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +219,15 @@
       <Filter>include\core\actor\component</Filter>
     </ClInclude>
     <ClInclude Include="..\include\core\actor\component\transformComponent.hpp">
+      <Filter>include\core\actor\component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actor\component\modelComponent.hpp">
+      <Filter>include\core\actor\component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\graphics\mesh.hpp">
+      <Filter>include\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\core\actor\component\cameraComponent.hpp">
       <Filter>include\core\actor\component</Filter>
     </ClInclude>
   </ItemGroup>

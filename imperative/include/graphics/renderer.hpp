@@ -1,9 +1,11 @@
 #pragma once
+#include "camera.hpp"
 #include "directx.hpp"
 #include "vertex.hpp"
 #include "../window/window.hpp"
 namespace hp_ip
 {
+	class Mesh;
 	class Renderer
 	{
 	public:
@@ -16,14 +18,15 @@ namespace hp_ip
 		bool init( WindowHandle windowHandle );
 		void preRender( );
 		void present( );
-		bool createVertexBuffer_IO( ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
+		bool createVertexBuffer( ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
 			const Vertex* initData );
-		bool createIndexBuffer_IO( ID3D11Buffer** indexBuffer, UInt32 byteWidth,
+		bool createIndexBuffer( ID3D11Buffer** indexBuffer, UInt32 byteWidth,
 			const Index* initData );
-		void setVertexBuffers_IO( ID3D11Buffer** vertexBuffer, UInt32* stride,
+		void setVertexBuffers( ID3D11Buffer** vertexBuffer, UInt32* stride,
 			UInt32* offset );
-		void setIndexBuffer_IO( ID3D11Buffer** indexBuffer );
-		void drawIndexed_IO( UInt32 indexCount, UInt32 startIndexLocation,
+		void setIndexBuffer( ID3D11Buffer** indexBuffer );
+		void setBuffers( Mesh& mesh );
+		void drawIndexed( UInt32 indexCount, UInt32 startIndexLocation,
 			UInt32 baseVertexLocation );
 	private:
 		D3D_DRIVER_TYPE _driverType;
@@ -34,6 +37,28 @@ namespace hp_ip
 		ID3D11RenderTargetView* _pRenderTargetView;
 		ID3D11DepthStencilView* _pDepthStencilView;
 		ID3D11Texture2D* _pDepthStencilTexture;
+		CameraBuffer _cameraBuffer;
 		WindowConfig _windowConfig;
+	public:
+		ID3D11Device* device( )
+		{
+			return _pDevice;
+		}
+		ID3D11DeviceContext* deviceContext( )
+		{
+			return _pDeviceContext;
+		}
+		const WindowConfig& windowConfig( ) const
+		{
+			return _windowConfig;
+		}
+		void setCamera( Camera&& camera )
+		{
+			_cameraBuffer.setCamera( std::forward<Camera>( camera ) );
+		}
+		const Camera& getCamera( )
+		{
+			return _cameraBuffer.getCamera( );
+		}
 	};
 }

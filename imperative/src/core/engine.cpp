@@ -13,7 +13,7 @@ namespace hp_ip
 			{
 				for ( auto& actor : _actors )
 				{
-					actor.init( );
+					actor.init( _resources, _pRenderer );
 				}
 				Timer timer;
 				while ( _pWindow->isOpen( ) )
@@ -21,7 +21,15 @@ namespace hp_ip
 					_pWindow->processMessages( );
 					double deltaMs = timer.update( );
 					_pRenderer->preRender( );
+					for ( auto& actor : _actors )
+					{
+						actor.render( _pRenderer );
+					}
 					_pRenderer->present( );
+					for ( auto& actor : _actors )
+					{
+						actor.update( static_cast<float>( deltaMs ) );
+					}
 				}
 			}
 			else

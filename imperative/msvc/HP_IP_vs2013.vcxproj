@@ -31,8 +31,15 @@
     <ClCompile Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.cpp" />
     <ClCompile Include="..\include\pch\pch.cpp" />
     <ClCompile Include="..\src\core\actor\actor.cpp" />
+    <ClCompile Include="..\src\core\actor\component\cameraComponent.cpp" />
+    <ClCompile Include="..\src\core\actor\component\modelComponent.cpp" />
+    <ClCompile Include="..\src\core\actor\component\transformComponent.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
+    <ClCompile Include="..\src\core\resources.cpp" />
     <ClCompile Include="..\src\core\timer.cpp" />
+    <ClCompile Include="..\src\graphics\camera.cpp" />
+    <ClCompile Include="..\src\graphics\material.cpp" />
+    <ClCompile Include="..\src\graphics\model.cpp" />
     <ClCompile Include="..\src\graphics\renderer.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
     <ClCompile Include="..\src\math\frustum.cpp" />
@@ -48,7 +55,9 @@
     <ClInclude Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.h" />
     <ClInclude Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.h" />
     <ClInclude Include="..\include\core\actor\actor.hpp" />
+    <ClInclude Include="..\include\core\actor\component\cameraComponent.hpp" />
     <ClInclude Include="..\include\core\actor\component\iComponent.hpp" />
+    <ClInclude Include="..\include\core\actor\component\modelComponent.hpp" />
     <ClInclude Include="..\include\core\actor\component\transformComponent.hpp" />
     <ClInclude Include="..\include\core\engine.hpp" />
     <ClInclude Include="..\include\core\resources.hpp" />
@@ -56,6 +65,7 @@
     <ClInclude Include="..\include\graphics\camera.hpp" />
     <ClInclude Include="..\include\graphics\directx.hpp" />
     <ClInclude Include="..\include\graphics\material.hpp" />
+    <ClInclude Include="..\include\graphics\mesh.hpp" />
     <ClInclude Include="..\include\graphics\model.hpp" />
     <ClInclude Include="..\include\graphics\renderer.hpp" />
     <ClInclude Include="..\include\graphics\vertex.hpp" />
@@ -177,7 +187,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_LOG%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>

@@ -16,16 +16,16 @@ namespace hp_fp
 	struct BuiltInModelDef
 	{
 		BuiltInModelType type;
-		FVec3 scale;
+		FVec3 dimensions;
 		bool operator == ( const BuiltInModelDef& m ) const
 		{
-			return type == m.type && scale == m.scale;
+			return type == m.type && dimensions == m.dimensions;
 		}
 		bool operator < ( const BuiltInModelDef& m ) const
 		{
 			if ( type == m.type )
 			{
-				return  scale < m.scale;
+				return  dimensions < m.dimensions;
 			}
 			return type < m.type;
 		}

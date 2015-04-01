@@ -4,36 +4,65 @@ namespace hp_fp
 	template<typename A>
 	struct S
 	{
-		// TODO: change to std::function<A(const float)> f;
-		A val;
-		float deltaMs;
-	};
-	template<>
-	struct S < void >
-	{
-		float deltaMs;
+		S( std::function<A( const float )> f ) : f( f )
+		{ }
+		S( const S& s ) : f( s.f )
+		{ }
+		S( S&& s ) : f( std::move( s.f ) )
+		{ }
+		S operator = ( const S& s )
+		{
+			return S{ s };
+		}
+		S operator = ( S&& s )
+		{
+			return S{ std::move( s ) };
+		}
+		std::function<A( const float )> f;
+		A operator () ( const float deltaMs ) const
+		{
+			return f( deltaMs );
+		}
+		A operator < ( const float deltaMs ) const
+		{
+			return f( deltaMs );
+		}
+		A apply( const float deltaMs ) const
+		{
+			return f( deltaMs );
+		}
 	};
 	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
 
 	template<typename A>
+	S<A> constant( const A& a )
+	{
+		return S < A >
+		{
+			[a]( const float deltaMs ) -> A
+			{
+				return a;
+			}
+		};
+	}
+	/*template<typename A>
 	S<A> signal( const A& a )
 	{
-		return S < A > { a };
+	return S < A > { a };
 	}
 	template<typename A>
 	S<A> signal( const A&& a )
 	{
-		return S < A > { std::move( a ) };
+	return S < A > { std::move( a ) };
 	}
 	template<typename A>
 	S<A> signal( const A& a, const float deltaMs )
 	{
-		return S < A > { a, deltaMs };
+	return S < A > { a, deltaMs };
 	}
 	template<typename A>
 	S<A> signal( const A&& a, const float deltaMs )
 	{
-		return S < A > { std::move( a ), deltaMs };
-
-	}
+	return S < A > { std::move( a ), deltaMs };
+	}*/
 }

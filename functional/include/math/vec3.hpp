@@ -118,14 +118,10 @@ namespace hp_fp
 		return length( vec );
 	}
 	template<typename A>
-	Vec3<A> clampMag( const Vec3<A>& vec, const float min, const float max )
+	Vec3<A> clampMag( const Vec3<A>& vec, const float max )
 	{
 		float magnitude = mag( vec );
-		if ( magnitude < min )
-		{
-			return vec / magnitude * min;
-		}
-		else if ( magnitude > max )
+		if ( magnitude > max )
 		{
 			return vec / magnitude * max;
 		}

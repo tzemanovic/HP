@@ -52,6 +52,7 @@
   <ItemGroup>
     <ClInclude Include="..\3rdParty\DirectXTex\DDSTextureLoader\DDSTextureLoader.h" />
     <ClInclude Include="..\3rdParty\DirectXTex\WICTextureLoader\WICTextureLoader.h" />
+    <ClInclude Include="..\include\adt\frp\e.hpp" />
     <ClInclude Include="..\include\adt\frp\sf.hpp" />
     <ClInclude Include="..\include\adt\frp\s.hpp" />
     <ClInclude Include="..\include\adt\frp\sfs.hpp" />

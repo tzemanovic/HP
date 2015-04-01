@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include "actor/actor.hpp"
 #include "resources.hpp"
+#include "actor/actor.hpp"
 #include "../graphics/renderer.hpp"
 #include "../window/gameInput.hpp"
 #include "../window/window.hpp"

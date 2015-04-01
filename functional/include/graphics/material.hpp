@@ -72,7 +72,9 @@ namespace hp_fp
 			textureRepeatVariable( nullptr ), cameraPositionVariable( nullptr ),
 			ambientMaterial( ambientMaterial ), diffuseMaterial( diffuseMaterial ),
 			specularMaterial( specularMaterial ), specularPower( specularPower )
-		{ }
+		{
+			ZeroMemory( &techniqueDesc, sizeof( D3D10_TECHNIQUE_DESC ) );
+		}
 		Material( const Material& ) = delete;
 		Material( Material&&  m ) : filename( std::move( m.filename ) ),
 			techniqueName( std::move( m.techniqueName ) ), effect( std::move( m.effect ) ),

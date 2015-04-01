@@ -54,21 +54,15 @@ namespace hp_fp
 			for ( auto& actor : actors )
 			{
 				ActorInput actorInput{
-					signal( gameInput, deltaMs ),
-					signal( ActorState{
-						signal( actor.state.val.pos.val, deltaMs ),
-						signal( actor.state.val.vel.val, deltaMs ),
-						signal( actor.state.val.scl.val, deltaMs ),
-						signal( actor.state.val.rot.val, deltaMs ),
-						signal( actor.state.val.modelRot.val, deltaMs )
-					}, deltaMs )
+					gameInput,
+					actor.state
 				};
 				// render previous states first then run SF to be in sync with cam
-				actor.render_IO( renderer, actor.state.val, parentLocalTransform );
-				auto actorOutput = actor.sf( signal( actorInput, deltaMs ) );
-				actor.state = actorOutput.val.state;
+				actor.render_IO( renderer, actor.state, parentLocalTransform );
+				auto actorOutput = actor.sf < actorInput < deltaMs;
+				actor.state = actorOutput.state;
 				renderActors_IO( renderer, actor.children, gameInput, deltaMs,
-					trasformMatFromActorState( actor.state.val ) );
+					trasformMatFromActorState( actor.state ) );
 			}
 		}
 		std::vector<Actor> initActors_IO( Renderer& renderer, Resources& resources,
@@ -79,13 +73,13 @@ namespace hp_fp
 			for ( auto& actorDef : actorsDef )
 			{
 				ActorState startingState{
-					signal( actorDef.startingState.pos, 0.0 ),
-					signal( actorDef.startingState.vel, 0.0 ),
-					signal( actorDef.startingState.scl, 0.0 ),
-					signal( actorDef.startingState.rot, 0.0 ),
-					signal( actorDef.startingState.modelRot, 0.0 )
+					actorDef.startingState.pos,
+					actorDef.startingState.vel,
+					actorDef.startingState.scl,
+					actorDef.startingState.rot,
+					actorDef.startingState.modelRot
 				};
-				actors.push_back( Actor{ signal( startingState, 0.0 ), actorDef.sf,
+				actors.push_back( Actor{ startingState, actorDef.sf,
 					initActorRenderFunction_IO( renderer, resources, actorDef ),
 					initActors_IO( renderer, resources, std::move( actorDef.children ) ) } );
 			}

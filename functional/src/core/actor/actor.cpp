@@ -44,12 +44,12 @@ namespace hp_fp
 	}
 	Mat4x4 trasformMatFromActorState( const ActorState& actorState )
 	{
-		return rotSclPosToMat4x4( actorState.rot.val, actorState.scl.val, actorState.pos.val );
+		return rotSclPosToMat4x4( actorState.rot, actorState.scl, actorState.pos );
 	}
 	Mat4x4 modelTrasformMatFromActorState( const ActorState& actorState )
 	{
-		return rotSclPosToMat4x4( actorState.modelRot.val * actorState.rot.val,
-			actorState.scl.val, actorState.pos.val );
+		return rotSclPosToMat4x4( actorState.modelRot * actorState.rot,
+			actorState.scl, actorState.pos );
 	}
 	namespace
 	{

@@ -1,5 +1,6 @@
 #include <pch.hpp>
 #include "../../include/graphics/renderer.hpp"
+#include "../../include/graphics/mesh.hpp"
 namespace hp_ip
 {
 	bool Renderer::init( WindowHandle windowHandle )
@@ -121,9 +122,10 @@ namespace hp_ip
 	}
 	void Renderer::present( )
 	{
+		_cameraBuffer.swap( );
 		_pSwapChain->Present( 0, 0 );
 	}
-	bool Renderer::createVertexBuffer_IO( ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
+	bool Renderer::createVertexBuffer( ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
 		const Vertex* initData )
 	{
 		D3D11_BUFFER_DESC bd;
@@ -142,7 +144,7 @@ namespace hp_ip
 		}
 		return false;
 	}
-	bool Renderer::createIndexBuffer_IO( ID3D11Buffer** indexBuffer, UInt32 byteWidth,
+	bool Renderer::createIndexBuffer( ID3D11Buffer** indexBuffer, UInt32 byteWidth,
 		const Index* initData )
 	{
 		D3D11_BUFFER_DESC bd;
@@ -161,17 +163,24 @@ namespace hp_ip
 		}
 		return false;
 	}
-	void Renderer::setVertexBuffers_IO( ID3D11Buffer** vertexBuffer, UInt32* stride,
+	void Renderer::setVertexBuffers( ID3D11Buffer** vertexBuffer, UInt32* stride,
 		UInt32* offset )
 	{
 		_pDeviceContext->IASetVertexBuffers( 0, 1, vertexBuffer, stride, offset );
 	}
-	void Renderer::setIndexBuffer_IO( ID3D11Buffer** indexBuffer )
+	void Renderer::setIndexBuffer( ID3D11Buffer** indexBuffer )
 	{
 		_pDeviceContext->IASetIndexBuffer( *indexBuffer, DXGI_FORMAT_R32_UINT, 0 );
 	}
-	void Renderer::drawIndexed_IO( UInt32 indexCount, UInt32 startIndexLocation,
-	UInt32 baseVertexLocation )
+	void Renderer::setBuffers( Mesh& mesh )
+	{
+		UInt32 stride = sizeof( Vertex );
+		UInt32 offset = 0;
+		setVertexBuffers( &mesh._vertexBuffer, &stride, &offset );
+		setIndexBuffer( &mesh._indexBuffer );
+	}
+	void Renderer::drawIndexed( UInt32 indexCount, UInt32 startIndexLocation,
+		UInt32 baseVertexLocation )
 	{
 		_pDeviceContext->DrawIndexed( indexCount, startIndexLocation, baseVertexLocation );
 	}

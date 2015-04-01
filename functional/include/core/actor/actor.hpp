@@ -22,20 +22,20 @@ namespace hp_fp
 	};
 	struct ActorState
 	{
-		S<FVec3> pos;
-		S<FVec3> vel;
-		S<FVec3> scl;
-		S<FQuat> rot;
-		S<FQuat> modelRot;
+		FVec3 pos;
+		FVec3 vel;
+		FVec3 scl;
+		FQuat rot;
+		FQuat modelRot;
 	};
 	struct ActorInput
 	{
-		S<GameInput> gameInput;
-		S<ActorState> state;
+		GameInput gameInput;
+		ActorState state;
 	};
 	struct ActorOutput
 	{
-		S<ActorState> state;
+		ActorState state;
 	};
 	struct ActorModelDef
 	{
@@ -78,7 +78,7 @@ namespace hp_fp
 	};
 	struct Actor
 	{
-		S<ActorState> state;
+		ActorState state;
 		SF<ActorInput, ActorOutput> sf;
 		std::function<void( Renderer&, const ActorState&, const Mat4x4& )> render_IO;
 		std::vector<Actor> children;

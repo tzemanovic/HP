@@ -154,23 +154,23 @@ namespace hp_fp
 		{
 			return GameInput{ std::move( gi ) };
 		}
-		bool& operator[]( size_t i )
+		bool& operator[]( const size_t i )
 		{
 			return states[i];
 		}
-		bool& operator[]( Key k )
+		bool& operator[]( const Key k )
 		{
 			return states[static_cast<size_t>( k )];
 		}
-		bool& operator[]( MouseButton k )
+		bool& operator[]( const MouseButton k )
 		{
 			return states[255 + static_cast<size_t>( k )];
 		}
-		bool operator[]( Key k ) const
+		bool operator[]( const Key k ) const
 		{
 			return states[static_cast<size_t>( k )];
 		}
-		bool operator[]( MouseButton k ) const
+		bool operator[]( const MouseButton k ) const
 		{
 			return states[255 + static_cast<size_t>( k )];
 		}

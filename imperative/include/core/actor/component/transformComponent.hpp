@@ -1,15 +1,43 @@
 #pragma once
 #include "iComponent.hpp"
+#include "../../../math/mat4x4.hpp"
 #include "../../../math/quat.hpp"
 namespace hp_ip
 {
-	class transformComponent : public iComponent
+	class TransformComponent : public iComponent
 	{
+	public:
+		TransformComponent( const FVec3& pos, const FVec3& vel, const FVec3& scl,
+			const FQuat& rot = FQuat::identity, const FQuat& modelRot = FQuat::identity,
+			const Mat4x4& parentTransform = Mat4x4::identity )
+			: iComponent( ComponentType::Transform ), _pos( pos ), _vel( vel ),
+			_scl( scl ), _rot( rot ), _modelRot( modelRot ),
+			_parentTransform( parentTransform )
+		{ }
+		TransformComponent( TransformComponent&& transform ) : TransformComponent(
+			std::move( transform._pos ), std::move( transform._vel ),
+			std::move( transform._scl ), std::move( transform._rot ),
+			std::move( transform._modelRot ), std::move( transform._parentTransform ) )
+		{ }
+		TransformComponent operator = ( TransformComponent&& transform )
+		{
+			return TransformComponent( std::forward<TransformComponent>( transform ) );
+		}
+		Mat4x4 transform( ) const;
+		Mat4x4 modelTransform( ) const;
+		virtual void vInit( Resources& resources, Renderer* pRenderer )
+		{ }
+		virtual void vUpdate( const float deltaMs )
+		{ }
+		virtual void vRender( Renderer* pRenderer )
+		{ }
 	private:
 		FVec3 _pos;
 		FVec3 _vel;
 		FVec3 _scl;
 		FQuat _rot;
+		FQuat _modelRot;
+		Mat4x4 _parentTransform;
 	public:
 		FVec3 pos( ) const
 		{
@@ -27,6 +55,10 @@ namespace hp_ip
 		{
 			return _rot;
 		}
+		FQuat modelRot( ) const
+		{
+			return _modelRot;
+		}
 		void setPos( const FVec3& pos )
 		{
 			_pos = pos;
@@ -42,6 +74,14 @@ namespace hp_ip
 		void setRot( const FQuat rot )
 		{
 			_rot = rot;
+		}
+		void setModelRot( const FQuat modelRot )
+		{
+			_modelRot = modelRot;
+		}
+		void setParentTransform( const Mat4x4& transform )
+		{
+			_parentTransform = transform;
 		}
 	};
 }

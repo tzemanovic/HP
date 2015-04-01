@@ -239,5 +239,8 @@
     <ClInclude Include="..\include\utils\string.hpp">
       <Filter>include\utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\adt\frp\e.hpp">
+      <Filter>include\adt\frp</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
