@@ -19,8 +19,8 @@ namespace hp_ip
 		{ }
 		~ModelComponent()
 		{
-			HP_DELETE( _material );
-			HP_DELETE( _model );
+			_material = nullptr;
+			_model = nullptr;
 		}
 		virtual void vInit( Resources& resources, Renderer* pRenderer ) override;
 		virtual void vUpdate( const float deltaMs )

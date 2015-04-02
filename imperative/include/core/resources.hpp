@@ -23,24 +23,4 @@ namespace hp_ip
 		std::map<MaterialDef, Material*> _materials;
 		std::map<String, ID3D11ShaderResourceView*> _textures;
 	};
-	//struct ActorResources
-	//{
-	//	Model& model;
-	//	Material& material;
-	//};
-	///*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
-
-	//Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
-	//	const LoadedModelDef& modelDef );
-	//Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
-	//	const BuiltInModelDef& modelDef );
-	//Maybe<Material>& getMaterial_IO( Renderer& renderer, Resources& resources,
-	//	const MaterialDef& materialDef );
-	//Maybe<ActorResources> getActorResources_IO( Renderer& renderer, Resources& resources,
-	//	const ActorModelDef& actorModelDef );
-	//namespace
-	//{
-	//	Maybe<ActorResources> getMaterialForModel_IO( Renderer& renderer, Resources& resources,
-	//		Maybe<Model>& model, const MaterialDef& materialDef );
-	//}
 }

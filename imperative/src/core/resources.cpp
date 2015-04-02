@@ -12,6 +12,10 @@ namespace hp_ip
 		{
 			HP_DELETE( model.second );
 		}
+		for ( auto material : _materials )
+		{
+			HP_DELETE( material.second );
+		}
 	};
 	Model* Resources::getModel( Renderer* pRenderer, const LoadedModelDef& loadedModelDef )
 	{
@@ -36,7 +40,7 @@ namespace hp_ip
 			break;
 			default:
 				WAR( "Missing built-In model for type " +
-					std::to_string( static_cast<UInt8>(std::get<0>( builtInModelDef ) ) ) + "." );
+					std::to_string( static_cast<UInt8>( std::get<0>( builtInModelDef ) ) ) + "." );
 			}
 		}
 		return _builtInModels.at( builtInModelDef );

@@ -13,16 +13,11 @@ namespace hp_ip
 		Actor( Actor&& actor ) : _transformComponent( std::move( actor._transformComponent ) ),
 			_components( std::move( actor._components ) ),
 			_children( std::move( actor._children ) )
-		{ }
-		~Actor( )
 		{
-		//TODO: fix this
-			for ( iComponent* component : _components )
-			{
-				component->_owner = nullptr;
-				HP_DELETE( component );
-			}
+			actor._components.clear( );
 		}
+		~Actor( )
+		{ }
 		void init( Resources& resources, Renderer* pRenderer );
 		void update( const float deltaMs );
 		void render( Renderer* pRenderer );
