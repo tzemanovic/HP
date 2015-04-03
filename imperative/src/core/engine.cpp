@@ -20,16 +20,17 @@ namespace hp_ip
 				{
 					_pWindow->processMessages( );
 					double deltaMs = timer.update( );
+					for ( auto& actor : _actors )
+					{
+						actor.update( static_cast<float>( deltaMs ), _pWindow->gameInput( ) );
+					}
+					_pRenderer->swapCameras( );
 					_pRenderer->preRender( );
 					for ( auto& actor : _actors )
 					{
 						actor.render( _pRenderer );
 					}
 					_pRenderer->present( );
-					for ( auto& actor : _actors )
-					{
-						actor.update( static_cast<float>( deltaMs ) );
-					}
 				}
 			}
 			else

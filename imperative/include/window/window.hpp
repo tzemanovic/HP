@@ -46,5 +46,9 @@ namespace hp_ip
 		{
 			return _handle;
 		}
+		GameInput gameInput( ) const
+		{
+			return _gameInput;
+		}
 	};
 }

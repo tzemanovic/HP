@@ -17,6 +17,7 @@ namespace hp_ip
 		{ }
 		bool init( WindowHandle windowHandle );
 		void preRender( );
+		void swapCameras( );
 		void present( );
 		bool createVertexBuffer( ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
 			const Vertex* initData );

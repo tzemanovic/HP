@@ -23,15 +23,10 @@ namespace hp_ip
 		{
 			return TransformComponent( std::forward<TransformComponent>( transform ) );
 		}
+		virtual void vUpdate( const float deltaMs, const GameInput& input );
 		Mat4x4 transform( ) const;
 		Mat4x4 modelTransform( ) const;
-		virtual void vInit( Resources& resources, Renderer* pRenderer )
-		{ }
-		virtual void vUpdate( const float deltaMs )
-		{ }
-		virtual void vRender( Renderer* pRenderer )
-		{ }
-	private:
+	protected:
 		FVec3 _pos;
 		FVec3 _vel;
 		FVec3 _scl;

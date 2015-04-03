@@ -1,4 +1,5 @@
 #pragma once
+#include "../../../window/gameInput.hpp"
 namespace hp_ip
 {
 	enum class ComponentType : UInt8
@@ -17,12 +18,12 @@ namespace hp_ip
 		{ }
 		virtual ~iComponent( )
 		{ }
-		virtual void vInit( Resources& resources, Renderer* pRenderer ) = 0;
-		//{ }
-		virtual void vUpdate( const float deltaMs ) = 0;
-		//{ }
-		virtual void vRender( Renderer* pRenderer ) = 0;
-		//{ }
+		virtual void vInit( Resources& resources, Renderer* pRenderer )
+		{ }
+		virtual void vUpdate( const float deltaMs, const GameInput& input )
+		{ }
+		virtual void vRender( Renderer* pRenderer )
+		{ }
 	protected:
 		Actor* _owner;
 	private:

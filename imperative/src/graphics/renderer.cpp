@@ -120,9 +120,12 @@ namespace hp_ip
 		_pDeviceContext->ClearDepthStencilView( _pDepthStencilView,
 			D3D11_CLEAR_DEPTH, 1.0f, 0 );
 	}
-	void Renderer::present( )
+	void Renderer::swapCameras( )
 	{
 		_cameraBuffer.swap( );
+	}
+	void Renderer::present( )
+	{
 		_pSwapChain->Present( 0, 0 );
 	}
 	bool Renderer::createVertexBuffer( ID3D11Buffer** vertexBuffer, UInt32 byteWidth,

@@ -14,18 +14,18 @@ namespace hp_ip
 			child.init( resources, pRenderer );
 		}
 	}
-	void Actor::update( const float deltaMs )
+	void Actor::update( const float deltaMs, const GameInput& input )
 	{
-		_transformComponent.vUpdate( deltaMs );
-		Mat4x4 transform = _transformComponent.transform( );
+		_pTransformComponent->vUpdate( deltaMs, input );
+		Mat4x4 transform = _pTransformComponent->transform( );
 		for ( auto* component : _components )
 		{
-			component->vUpdate( deltaMs );
+			component->vUpdate( deltaMs, input );
 		}
 		for ( auto& child : _children )
 		{
 			child.transformComponent( ).setParentTransform( transform );
-			child.update( deltaMs );
+			child.update( deltaMs, input );
 		}
 	}
 	void Actor::render( Renderer* pRenderer )
@@ -44,9 +44,9 @@ namespace hp_ip
 		_components.push_back( component );
 		component->_owner = this;
 	}
-	void Actor::addComponent( TransformComponent&& component )
+	void Actor::addComponent( TransformComponent* component )
 	{
-		_transformComponent = std::forward<TransformComponent>( component );
-		_transformComponent._owner = this;
+		_pTransformComponent = component;
+		_pTransformComponent->_owner = this;
 	}
 }

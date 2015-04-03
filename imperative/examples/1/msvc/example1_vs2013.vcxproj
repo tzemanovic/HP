@@ -27,7 +27,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\component\ballTransformComponent.cpp" />
     <ClCompile Include="..\src\main\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\component\ballTransformComponent.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A9F6EEE9-AC5D-4624-A146-3BBDEDA941F1}</ProjectGuid>

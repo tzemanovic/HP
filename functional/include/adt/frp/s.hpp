@@ -45,24 +45,4 @@ namespace hp_fp
 			}
 		};
 	}
-	/*template<typename A>
-	S<A> signal( const A& a )
-	{
-	return S < A > { a };
-	}
-	template<typename A>
-	S<A> signal( const A&& a )
-	{
-	return S < A > { std::move( a ) };
-	}
-	template<typename A>
-	S<A> signal( const A& a, const float deltaMs )
-	{
-	return S < A > { a, deltaMs };
-	}
-	template<typename A>
-	S<A> signal( const A&& a, const float deltaMs )
-	{
-	return S < A > { std::move( a ), deltaMs };
-	}*/
 }

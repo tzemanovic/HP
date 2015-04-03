@@ -272,6 +272,39 @@ float ab( const float& a )
 {
 	return abs( a );
 }
+SF<ActorInput, ActorOutput> bouncingBall( )
+{
+	return SF < ActorInput, ActorOutput >
+	{
+		[]( const S<ActorInput>& input ) -> S < ActorOutput >
+		{
+			static const float rotSpeed = 0.003f;
+			auto state = arr( getState ) < input;
+			auto gi = arr( getGameInput ) < input;
+			S<FQuat> rot = mul( arr( getRot ) < state ) < arr( eulerRadToQuat<float> )
+				< arrAlt<float, FVec3>( conFVec3fromY( ) )
+				< integral<float>( ) < rotSpeed;
+			//S<float> velY = arr( getY ) < arr( getVel ) < state;
+			S<float> velY =
+				// add last velY
+				add( arr( getY ) < arr( getVel ) < state )
+				// add gravity
+				< integral<float>( ) < -0.00000981f;
+			S<float> velY2 =
+				// set velY to zero if posY is lower than 0.45f
+				mul( arrAlt<bool, float>( ifElse( -1.0f, 1.0f ) )
+				< and( arrAlt<float, bool>( lte( 0.45f ) )
+				< arr( getY ) < arr( getPos ) < state )
+				< arrAlt<float, bool>( lt( 0.0f ) ) < velY ) < velY;
+			S<FVec3> vel = arrAlt<float, FVec3>( conFVec3fromY( ) ) < velY2;
+			S<FVec3> pos = arrAlt<FVec3, FVec3>( minY( 0.45f ) )
+				< add( integral<FVec3>( ) < vel )
+				< arr( getPos ) < state;
+			return arr( conActorOutput ) < setRot( rot ) < setVel( vel )
+				< setPos( pos ) < state;
+		}
+	};
+}
 SF<ActorInput, ActorOutput> ball( )
 {
 	return SF < ActorInput, ActorOutput >
@@ -279,26 +312,31 @@ SF<ActorInput, ActorOutput> ball( )
 		[]( const S<ActorInput>& input ) -> S < ActorOutput >
 		{
 			static const float acceleration = 0.001f;
-			static const float rotSpeed = 0.003f;
 			static const float jumpSpeed = 0.01f;
+			static const float rotSpeed = 0.003f;
 			auto state = arr( getState ) < input;
 			auto gi = arr( getGameInput ) < input;
+			S<bool> onTheGround = arrAlt<float, bool>( eq( 0.45f ) )
+				< arr( getY ) < arr( getPos ) < state;
 			S<float> accZForward = arrAlt<bool, float>( ifElse( acceleration, 0.0f ) )
+				< and( onTheGround )
 				< arrAlt<GameInput, bool>( getInputState( Key::W ) ) < gi;
 			S<float> accZBackward = arrAlt<bool, float>( ifElse( -acceleration, 0.0f ) )
+				< and( onTheGround )
 				< arrAlt<GameInput, bool>( getInputState( Key::S ) ) < gi;
 			S<float> accXLeft = arrAlt<bool, float>( ifElse( -acceleration, 0.0f ) )
+				< and( onTheGround )
 				< arrAlt<GameInput, bool>( getInputState( Key::Q ) ) < gi;
 			S<float> accXRight = arrAlt<bool, float>( ifElse( acceleration, 0.0f ) )
+				< and( onTheGround )
 				< arrAlt<GameInput, bool>( getInputState( Key::E ) ) < gi;
 			S<float> angVelZLeft = arrAlt<bool, float>( ifElse( -rotSpeed, 0.0f ) )
 				< arrAlt<GameInput, bool>( getInputState( Key::A ) ) < gi;
 			S<float> angVelZRight = arrAlt<bool, float>( ifElse( rotSpeed, 0.0f ) )
 				< arrAlt<GameInput, bool>( getInputState( Key::D ) ) < gi;
-
 			S<float> velYUp = arrAlt<bool, float>( ifElse( jumpSpeed, 0.0f ) )
-				< and( arrAlt<GameInput, bool>( getInputState( Key::Space ) ) < gi )
-				< arrAlt<float, bool>( eq( 0.45f ) ) < arr( getY ) < arr( getPos ) < state;
+				< and( onTheGround )
+				< arrAlt<GameInput, bool>( getInputState( Key::Space ) ) < gi;
 			// rotation
 			S<FQuat> rot = mul( arr( getRot ) < state ) < arr( eulerRadToQuat<float> )
 				< arrAlt<float, FVec3>( conFVec3fromY( ) )
@@ -308,9 +346,8 @@ SF<ActorInput, ActorOutput> ball( )
 				< add( accZForward ) < accZBackward;
 			S<FVec3> accX = arrAlt<float, FVec3>( conFVec3fromX( ) )
 				< add( accXLeft ) < accXRight;
-			S<FVec3> acc = mul<FVec3>( arrAlt<bool, float>( ifElse( 1.0f, 0.0f ) )
-				< arrAlt<float, bool>( eq( 0.45f ) ) < arr( getY ) < arr( getPos ) < state )
-				< add( accZ ) < accX;
+			// TODO: move the YPos cond to input sf acc
+			S<FVec3> acc = add( accZ ) < accX;
 
 
 			/*
@@ -358,31 +395,13 @@ SF<ActorInput, ActorOutput> ball( )
 				add( arr( getY ) < arr( getVel ) < state )
 				// add gravity and jump
 				< add( velYUp ) < integral<float>( ) < -0.00000981f;
-
-			//S<float> velY_ = /*arrAlt<float, float>( clampToZero( 0.001f ) ) <*/
-			//	// add last velY
-			//	add( arr( getY ) < arr( getVel ) < state )
-			//	// add gravity and jump
-			//	< add( velYUp )
-			//	< ( integral<float>( )
-			//	< arrAlt<bool, float>( ifElse( -0.000000981f, 0.0f ) )
-			//	< arrAlt<float, bool>( ht( 0.45f ) )
-			//	< arr( getY ) < arr( getPos ) < state );
-
-			//S<float> velY_2 =
-			//	// set velY to zero if posY is lower than 0.45f
-			//	mul( arrAlt<bool, float>( ifElse( -0.5f, 1.0f ) )
-			//	< and( arrAlt<float, bool>( lte( 0.45f ) )
-			//	< arr( getY ) < arr( getPos ) < state )
-			//	< arrAlt<float, bool>( lt( 0.0f ) ) < velY_ ) < velY_;
-
 			S<float> velY2 =
 				// set velY to zero if posY is lower than 0.45f
 				mul( arrAlt<bool, float>( ifElse( -0.5f, 1.0f ) )
 				< and( arrAlt<float, bool>( lte( 0.45f ) )
 				< arr( getY ) < arr( getPos ) < state )
 				< arrAlt<float, bool>( lt( 0.0f ) ) < velY ) < velY;
-
+			// stop ball from jumping when velocity is low
 			S<float> velY3 = mul( arrAlt<bool, float>( ifElse( 0.0f, 1.0f ) )
 				< and( arrAlt<float, bool>( lte( 0.45f ) )
 				< arr( getY ) < arr( getPos ) < state )
@@ -392,12 +411,10 @@ SF<ActorInput, ActorOutput> ball( )
 			S<FVec3> vel = setY( velY3 ) < clampMag( 0.01f ) < mul<FVec3>( 0.999f )
 				< add( integral<FVec3>( ) < acc ) < arr( getVel ) < state;
 			// add oriented integral of velocity to position
-			//S<float> posY = ball < arr( getY ) < arr( getPos ) < state;
 			S<FVec3> pos = arrAlt<FVec3, FVec3>( minY( 0.45f ) )
 				< add( rotate( rot ) < integral<FVec3>( ) < vel )
 				< arr( getPos ) < state;
 
-			arrAlt<float, bool>( lt( 0.45f ) ) < arr( getY ) < pos;
 			auto newState = setRot( rot ) < setVel( vel )
 				< setPos( pos ) < state;
 			// model rotation
@@ -600,36 +617,36 @@ int main( )
 			{ } // children
 		}
 	};
-	//for ( int i = 0; i < 10; ++i )
-	//{
-	//	for ( int j = 0; j < 10; ++j )
-	//	{
-	//		actors.push_back( {
-	//			actorModelDef( {
-	//				loadedModelDef( { // model
-	//					"assets/models/basketball/basketball.fbx", // filename
-	//					0.02f // scale
-	//				} ),
-	//				{ // material
-	//					"assets/textures/basketball/basketball-diffuse.jpg", // diffuseTextureFilename
-	//					"", // specularTextureFilename
-	//					"assets/textures/basketball/basketball-bump.jpg", // bumpTextureFilename
-	//					"", // parallaxTextureFilename
-	//					"" // evnMapTextureFilename
-	//				}
-	//			} ),
-	//			{ // startingState
-	//				{ 0.0f + i*1.0f, 0.45f, 0.0f + j*1.0f }, // pos
-	//				{ 0.0f, 0.0f, 0.0f }, // vel
-	//				{ 1.0f, 1.0f, 1.0f }, // scl
-	//				FQuat::identity, // rot
-	//				FQuat::identity // modelRot
-	//			},
-	//			staticActor( ), // sf
-	//			{ } // children
-	//		} );
-	//	}
-	//}
+	const int I = 64;
+	const int I_HALF = 32;
+	for ( int i = 0; i < I; ++i )
+	{
+		float y = ( abs( i - I_HALF ) / static_cast<float>( I_HALF ) );
+		actors.push_back( {
+			actorModelDef( {
+				loadedModelDef( { // model
+					"assets/models/basketball/basketball.fbx", // filename
+					0.02f // scale
+				} ),
+				{ // material
+					"assets/textures/basketball/basketball-diffuse.jpg", // diffuseTextureFilename
+					"", // specularTextureFilename
+					"assets/textures/basketball/basketball-bump.jpg", // bumpTextureFilename
+					"", // parallaxTextureFilename
+					"" // evnMapTextureFilename
+				}
+			} ),
+			{ // startingState
+				{ sinf( i * TWO_PI_F / I ) * 10.0f, 5.0f * y + 0.45f, cosf( i * TWO_PI_F / I ) * 10.0f }, // pos
+				{ 0.0f, 0.0f, 0.0f }, // vel
+				{ 1.0f, 1.0f, 1.0f }, // scl
+				FQuat::identity, // rot
+				FQuat::identity // modelRot
+			},
+			bouncingBall( ), // sf
+			{ } // children
+		} );
+	}
 
 
 	Engine engine = init( "example1" );

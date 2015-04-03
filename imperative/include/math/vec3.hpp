@@ -68,6 +68,26 @@ namespace hp_ip
 			}
 			return x < v.x;
 		}
+		float length(  )
+		{
+			return sqrtf( x * x + y * y + z * z );
+		}
+		float mag( )
+		{
+			return length();
+		}
+		Vec3<A>& clampMag( const float max )
+		{
+			float magnitude = mag( );
+			if ( magnitude > max )
+			{
+				float mult = max / magnitude;
+				x *= mult;
+				y *= mult;
+				z *= mult;
+			}
+			return *this;
+		}
 		template<typename B>
 		friend inline Vec3<B> operator * ( const float scalar, const Vec3<B>& vec );
 		template<typename B>

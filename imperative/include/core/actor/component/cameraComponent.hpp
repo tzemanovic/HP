@@ -11,12 +11,11 @@ namespace hp_ip
 			: _cameraDef( std::forward<CameraDef>( cameraDef ) )
 		{ }
 		virtual void vInit( Resources& resources, Renderer* pRenderer ) override;
-		virtual void vUpdate( const float deltaMs )
-		{ }
-		virtual void vRender( Renderer* pRenderer ) override;
-	private:
+		virtual void vUpdate( const float deltaMs, const GameInput& input ) override;
+	protected:
 		CameraDef _cameraDef;
 		Frustum _frustum;
 		Mat4x4 _projection;
+		Renderer* _pRenderer;
 	};
 }

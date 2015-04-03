@@ -10,10 +10,21 @@
     <Filter Include="src\main">
       <UniqueIdentifier>{fb4a53f3-9553-44b7-8426-108fdf1194bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\component">
+      <UniqueIdentifier>{dd4b7837-1342-4e37-8b6d-89363bffdc31}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\main.cpp">
       <Filter>src\main</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\component\ballTransformComponent.cpp">
+      <Filter>src\component</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\component\ballTransformComponent.hpp">
+      <Filter>src\component</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
