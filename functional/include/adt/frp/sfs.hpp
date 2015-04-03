@@ -196,7 +196,6 @@ namespace hp_fp
 				{
 					[sf, f, a]( const float deltaMs ) -> B
 					{
-						//std::tuple<B, E<C>> sfRes = sf < a < deltaMs;
 						return ifThenElse( std::get<1>( sf < a < deltaMs ),
 							[f, a, deltaMs]( const C& c )
 						{
