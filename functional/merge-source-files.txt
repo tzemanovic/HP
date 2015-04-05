@@ -1,0 +1,4 @@
+include folder:
+for /R %f in (*.hpp) do type "%f" >> test.txt
+src folder:
+for /R %f in (*.cpp) do type "%f" >> test.txt
