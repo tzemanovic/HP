@@ -63,7 +63,7 @@ namespace hp_fp
 	public:
 		union
 		{
-			ActorModelDef actor;
+			ActorModelDef model;
 			ActorCameraDef camera;
 		};
 		friend ActorTypeDef actorModelDef( ActorModelDef&& m );

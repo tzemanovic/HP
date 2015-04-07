@@ -6,7 +6,7 @@ namespace hp_fp
 	ActorTypeDef actorModelDef( ActorModelDef&& m )
 	{
 		ActorTypeDef def;
-		def.actor = m;
+		def.model = m;
 		def._typeId = typeId<ActorModelDef>( );
 		return def;
 	}
@@ -27,7 +27,7 @@ namespace hp_fp
 		if ( actorDef.type.is<ActorModelDef>( ) )
 		{
 			Maybe<ActorResources> res = getActorResources_IO( renderer, resources,
-				actorDef.type.actor );
+				actorDef.type.model );
 			return ifThenElse( res, []( ActorResources& res )
 			{
 				return renderActor_IO( res );
