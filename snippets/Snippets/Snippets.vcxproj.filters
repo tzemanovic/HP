@@ -18,5 +18,8 @@
     <ClInclude Include="2-literature-review.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="4-design-and-implementation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

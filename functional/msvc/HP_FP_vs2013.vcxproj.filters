@@ -242,5 +242,8 @@
     <ClInclude Include="..\include\adt\frp\e.hpp">
       <Filter>include\adt\frp</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\adt\unit.hpp">
+      <Filter>include\adt</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

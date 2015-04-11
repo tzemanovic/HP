@@ -61,6 +61,7 @@
     <ClInclude Include="..\include\adt\maybe.hpp" />
     <ClInclude Include="..\include\adt\sum.hpp" />
     <ClInclude Include="..\include\adt\tree.hpp" />
+    <ClInclude Include="..\include\adt\unit.hpp" />
     <ClInclude Include="..\include\core\actor\actor.hpp" />
     <ClInclude Include="..\include\core\engine.hpp" />
     <ClInclude Include="..\include\core\resources.hpp" />
