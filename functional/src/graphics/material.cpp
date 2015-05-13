@@ -249,3 +249,4 @@ namespace hp_fp
 		material.pass->Apply( 0, renderer.deviceContext );
 	}
 }
+

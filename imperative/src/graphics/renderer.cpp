@@ -188,3 +188,4 @@ namespace hp_ip
 		_pDeviceContext->DrawIndexed( indexCount, startIndexLocation, baseVertexLocation );
 	}
 }
+

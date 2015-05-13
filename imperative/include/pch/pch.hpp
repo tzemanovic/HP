@@ -84,3 +84,4 @@ namespace hp_ip
 	extern const float DEG_TO_RAD_F;
 	extern const float RAD_TO_DEG_F;
 }
+

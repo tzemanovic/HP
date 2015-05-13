@@ -118,14 +118,13 @@ namespace hp_fp
 	{
 		LeftButton = MK_LBUTTON,
 		RightButton = MK_RBUTTON,
-		Shift = MK_SHIFT,
-		Control = MK_CONTROL,
 		MiddleButton = MK_MBUTTON,
 		XButton1 = MK_XBUTTON1,
 		XButton2 = MK_XBUTTON2
 	};
-	// 255 keys, 7 mouseButtons
-	const size_t STATES_SIZE = 255 + 7;
+	const size_t KEYS_SIZE = 255;
+	const size_t MOUSE_BUTTONS_SIZE = 5;
+	const size_t STATES_SIZE = KEYS_SIZE + MOUSE_BUTTONS_SIZE;
 	struct Mouse
 	{
 		UInt16 x;
@@ -164,7 +163,7 @@ namespace hp_fp
 		}
 		bool& operator[]( const MouseButton k )
 		{
-			return states[255 + static_cast<size_t>( k )];
+			return states[KEYS_SIZE + static_cast<size_t>( k )];
 		}
 		bool operator[]( const Key k ) const
 		{
@@ -172,7 +171,7 @@ namespace hp_fp
 		}
 		bool operator[]( const MouseButton k ) const
 		{
-			return states[255 + static_cast<size_t>( k )];
+			return states[KEYS_SIZE + static_cast<size_t>( k )];
 		}
 	private:
 		GameInput( std::array<bool, STATES_SIZE> states, Mouse mouse, UInt32 text )
@@ -184,3 +183,4 @@ namespace hp_fp
 		UInt32 text;
 	};
 }
+

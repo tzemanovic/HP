@@ -31,3 +31,4 @@ namespace hp_fp
 	typedef Vec2<Int32> Int32Vec2;
 	typedef Vec2<float> FVec2;
 }
+

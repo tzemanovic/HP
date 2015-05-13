@@ -190,3 +190,4 @@ namespace hp_ip
 		float _specularPower;
 	};
 }
+

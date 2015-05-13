@@ -1,0 +1,3 @@
+﻿Profiling of 'example1_vs2013' started.
+example1_vs2013 has exited.
+Profiling of 'example1_vs2013' stopped.

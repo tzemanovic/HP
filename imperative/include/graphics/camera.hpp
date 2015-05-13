@@ -23,3 +23,4 @@ namespace hp_ip
 		Camera _cam[2];
 	};
 }
+

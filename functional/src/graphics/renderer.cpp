@@ -73,8 +73,9 @@ namespace hp_fp
 		depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		depthDesc.CPUAccessFlags = 0;
 		depthDesc.MiscFlags = 0;
+		ID3D11Texture2D* depthStencilTexture;
 		if ( FAILED( renderer.device->CreateTexture2D( &depthDesc, NULL,
-			&renderer.depthStencilTexture ) ) )
+			&depthStencilTexture ) ) )
 		{
 			ERR( "Failed to create depth stencil texture!" );
 			return nothing<Renderer>( );
@@ -84,7 +85,7 @@ namespace hp_fp
 		depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthViewDesc.Texture2D.MipSlice = 0;
 		depthViewDesc.Flags = 0;
-		if ( FAILED( renderer.device->CreateDepthStencilView( renderer.depthStencilTexture,
+		if ( FAILED( renderer.device->CreateDepthStencilView( depthStencilTexture,
 			&depthViewDesc, &renderer.depthStencilView ) ) )
 		{
 			ERR( "Failed to create depth stencil view!" );
@@ -178,3 +179,4 @@ namespace hp_fp
 		renderer.deviceContext->DrawIndexed( indexCount, startIndexLocation, baseVertexLocation );
 	}
 }
+

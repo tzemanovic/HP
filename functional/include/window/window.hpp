@@ -48,3 +48,4 @@ namespace hp_fp
 		bool isOnlyInstance_IO( const LPCWSTR windowName );
 	}
 }
+

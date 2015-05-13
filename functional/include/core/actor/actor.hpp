@@ -98,3 +98,4 @@ namespace hp_fp
 			ActorResources& res );
 	}
 }
+

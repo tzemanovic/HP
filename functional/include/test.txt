@@ -1,0 +1,2133 @@
+#pragma once
+#include <core/engine.hpp>
+#include <adt/maybe.hpp>
+#include <adt/sum.hpp>
+#include <adt/frp/sfs.hpp>
+#include <math/frustum.hpp>
+
+#pragma once
+namespace hp_fp
+{
+	template<typename A, typename B>
+	struct Map
+	{
+
+	};
+}
+
+#pragma once
+namespace hp_fp
+{
+	template<typename A>
+	struct Maybe
+	{
+		template<typename B> friend Maybe<B> just( B&& b );
+		template<typename B> friend Maybe<B> nothing( );
+		template<typename B, typename C, typename D> friend auto ifThenElse( const Maybe<B>& maybe, C ifJust, D ifNothing ) -> decltype( ifJust( *maybe._a ) );
+		Maybe( const Maybe<A>& ) = delete;
+		Maybe( Maybe&& m ) : _a( std::move( m._a ) )
+		{
+			m._a = nullptr;
+		}
+		Maybe<A> operator = ( const Maybe<A>& ) = delete;
+		Maybe<A> operator = ( Maybe<A>&& m )
+		{
+			return Maybe<A>( std::move( m ) );
+		}
+		~Maybe( )
+		{
+			HP_DELETE( _a );
+		}
+	private:
+		Maybe( A&& a ) : _a( HP_NEW A( std::move( a ) ) )
+		{ }
+		Maybe( ) : _a( nullptr )
+		{ }
+	private:
+		A* _a;
+	};
+	template<typename A>
+	Maybe<A> just( A&& a )
+	{
+		return Maybe<A>( std::move( a ) );
+	}
+	template<typename A>
+	Maybe<A> nothing( )
+	{
+		return Maybe<A>( );
+	}
+	template<typename A, typename B, typename C>
+	auto ifThenElse( const Maybe<A>& maybe, B ifJust, C ifNothing ) -> decltype( ifJust( *maybe._a ) )
+	{
+		//static_assert( std::is_function<B>::value, "ifJust has to be a function." );
+		//static_assert( std::is_function<decltype( ifNothing )>::value, "ifNothing has to be a function." );
+		static_assert( std::is_same<decltype( ifJust( *maybe._a ) ), decltype( ifNothing( ) )>::value, "ifJust and ifNothing functions' return types have to be the same." );
+		if ( maybe._a == nullptr )
+		{
+			return ifNothing( );
+		}
+		return ifJust( *maybe._a );
+	}
+}
+
+#pragma once
+#include "../utils/typeId.hpp"
+namespace hp_fp
+{
+	template<typename TypesHead, typename... TypesTail>
+	struct SumHelper
+	{
+		inline static void destroy( const TypeId id, void * data )
+		{
+			if ( id == typeId<TypesHead>( ) )
+			{
+				reinterpret_cast<TypesHead*>( data )->~TypesHead( );
+			}
+			else
+			{
+				SumHelper<TypesTail...>::destroy( id, data );
+			}
+		}
+		inline static void copy( const TypeId id, const void* oldData, void* newData )
+		{
+			if ( id == typeId<TypesHead>( ) )
+			{
+				new (newData) TypesHead( *reinterpret_cast<const TypesHead*>( oldData ) );
+			}
+			else
+			{
+				SumHelper<TypesTail...>::copy( id, oldData, newData );
+			}
+		}
+		static const size_t val = sizeof( TypesHead ) > SumHelper<TypesTail...>::val ? sizeof( TypesHead ) : SumHelper<TypesTail...>::val;
+	};
+	template<typename Type>
+	struct SumHelper < Type >
+	{
+		inline static void destroy( const TypeId id, void * data )
+		{
+			reinterpret_cast<Type*>( data )->~Type( );
+		}
+		inline static void copy( const TypeId id, const void* oldData, void* newData )
+		{
+
+			const Type* t = reinterpret_cast<const Type*>( oldData );
+			new (newData) Type( *t );
+		}
+		static const size_t val = sizeof( Type );
+	};
+	template<typename... Types>
+	struct Sum
+	{
+	public:
+		template<typename Type>
+		explicit Sum( Type&& value )
+		{
+			new ( &_data ) Type( std::forward<Type>( value ) );
+			_typeId = typeId<Type>( );
+		}
+		template<typename Type>
+		explicit Sum( const Type& value )
+		{
+			new ( &_data ) Type( value );
+			_typeId = typeId<Type>( );
+		}
+		Sum( const Sum& s ) : _typeId( s._typeId )
+		{
+			SumHelper<Types...>::copy( s._typeId, &s._data, &_data );
+		}
+		Sum( Sum&& s ) : _typeId( std::move( s._typeId ) ), _data( std::move( s._data ) )
+		{ }
+		Sum operator = ( const Sum& s )
+		{
+			return Sum( s );
+		}
+		Sum operator = ( Sum&& s )
+		{
+			return Sum( std::move( s ) );
+		}
+		~Sum( )
+		{
+			SumHelper<Types...>::destroy( _typeId, &_data );
+		}
+		template<typename Type>
+		bool is( ) const
+		{
+			return ( _typeId == typeId<Type>( ) );
+		}
+		template<typename Type>
+		Type& get( ) const
+		{
+			return reinterpret_cast<Type&>( _data );
+		}
+	private:
+		//const static size_t size = SumHelper<Types...>::val;
+		TypeId _typeId;
+	public:
+		std::aligned_union<SumHelper<Types...>::val, Types...> _data;
+	};
+}
+// TODO: might have to add deleter like so
+//struct placement_deleter
+//{
+//	template <typename T>
+//	void operator () ( T* ptr ) const
+//	{
+//		ptr->~T( );
+//	}
+//};
+//
+//template <typename T>
+//using stack_ptr = std::unique_ptr<T, placement_deleter>;
+
+#pragma once
+namespace hp_fp
+{
+	struct Unit
+	{ };
+}
+
+#pragma once
+#include "../maybe.hpp"
+namespace hp_fp
+{
+	template<typename A>
+	using E = Maybe<A>;
+	template<typename A>
+	E<A> e( A&& a )
+	{
+		return E<A>( std::move( a ) );
+	}
+	template<typename A>
+	E<A> noE( )
+	{
+		return E<A>( );
+	}
+}
+
+#pragma once
+namespace hp_fp
+{
+	template<typename A>
+	struct S
+	{
+		S( std::function<A( const float )> f ) : f( f )
+		{ }
+		S( const S& s ) : f( s.f )
+		{ }
+		S( S&& s ) : f( std::move( s.f ) )
+		{ }
+		S operator = ( const S& s )
+		{
+			return S{ s };
+		}
+		S operator = ( S&& s )
+		{
+			return S{ std::move( s ) };
+		}
+		std::function<A( const float )> f;
+		A operator () ( const float deltaMs ) const
+		{
+			return f( deltaMs );
+		}
+		A operator < ( const float deltaMs ) const
+		{
+			return f( deltaMs );
+		}
+		A apply( const float deltaMs ) const
+		{
+			return f( deltaMs );
+		}
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	template<typename A>
+	S<A> constant( const A& a )
+	{
+		return S < A >
+		{
+			[a]( const float deltaMs ) -> A
+			{
+				return a;
+			}
+		};
+	}
+}
+
+#pragma once
+#include <functional>
+#include "s.hpp"
+namespace hp_fp
+{
+	template<typename A, typename B>
+	struct SF
+	{
+		SF( std::function<S<B>( const S<A>& a )> f ) : f( f )
+		{ }
+		SF( const SF& sf ) : f( sf.f )
+		{ }
+		SF( SF&& sf ) : f( std::move( sf.f ) )
+		{ }
+		SF operator = ( const SF& sf )
+		{
+			return SF{ sf };
+		}
+		SF operator = ( SF&& sf )
+		{
+			return SF{ std::move( sf ) };
+		}
+		std::function<S<B>( const S<A>& a )> f;
+		template<typename C>
+		// compose two SF ( this >>> sf )
+		SF<A, C> operator > ( SF<B, C>& sf ) const
+		{
+			return compose( *this, sf );
+		}
+		template<typename C>
+		// compose two SF ( this <<< sf )
+		SF<C, B> operator < ( SF<C, A>& sf ) const
+		{
+			return compose( sf, *this );
+		}
+		// apply signal to SF
+		S<B> operator () ( const S<A>& a ) const
+		{
+			return f( a );
+		}
+		// apply constant value to SF
+		S<B> operator () ( const A& a ) const
+		{
+			return f( constant( a ) );
+		}
+		// apply signal to SF
+		S<B> operator < ( const S<A>& a ) const
+		{
+			return f( a );
+		}
+		// apply constant value to SF
+		S<B> operator < ( const A& a ) const
+		{
+			return f( constant( a ) );
+		}
+	};
+	template<typename B>
+	struct SF < void, B >
+	{
+		std::function<S<B>( const S<void>& )> f;
+		template<typename C>
+		// compose two SF ( *this >>> sf )
+		SF<void, C> operator > ( SF<B, C> sf )
+		{
+			return compose( *this, sf );
+		}
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	template<typename A, typename B>
+	SF<A, B> arr( B( *f )( const A& ) )
+	{
+		return SF < A, B > {
+			[f]( const S<A>& a ) -> S < B >
+			{
+				return S < B > {
+					[f, a]( const float deltaMs )
+					{
+						return f( std::forward<A>( a < deltaMs ) );
+					}
+				};
+			}
+		};
+	}
+	template<typename A, typename B>
+	SF<A, B> arrAlt( std::function<B( const A& )> f )
+	{
+		return SF < A, B > {
+			[f]( const S<A>& a ) -> S < B >
+			{
+				return S < B > {
+					[f, a]( const float deltaMs )
+					{
+						return f( std::forward<A>( a < deltaMs ) );
+					}
+				};
+			}
+		};
+	}
+	/*template<typename A, typename B>
+	SF<A, B> arr( std::function<B( const S<A>& )> f )
+	{
+	return SF < A, B > {
+	[f]( const S<A>& a )
+	{
+	return signal( f( a ), a.deltaMs );
+	}
+	};
+	}*/
+	template<typename A, typename B, typename C>
+	SF<A, C> compose( const SF<A, B>& fst, const SF<B, C>& snd )
+	{
+		return SF < A, C > {
+			[fst, snd]( const S<A>& a ) -> S < C >
+			{
+				return snd.f( fst.f( a ) );
+			}
+		};
+	}
+}
+
+#pragma once
+#include <tuple>
+#include "e.hpp"
+#include "sf.hpp"
+#include "../../math/vec3.hpp"
+#include "../../math/quat.hpp"
+namespace hp_fp
+{
+	template<typename A>
+	SF<A, A> add( const S<A>& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a( deltaMs ) + b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> add( const A& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a + b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> sub( const S<A>& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a( deltaMs ) - b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> sub( const A& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a - b( deltaMs );
+					}
+				}
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> mul( const S<A>& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a( deltaMs ) * b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> mul( const A& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a * b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A, typename B>
+	SF<A, A> mul( const S<B>& b )
+	{
+		return SF < A, A > {
+			[b]( const S<A>& a )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a( deltaMs ) * b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A, typename B>
+	SF<A, A> mul( const B& b )
+	{
+		return SF < A, A > {
+			[b]( const S<A>& a )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a( deltaMs ) * b;
+					}
+				};
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> div( const S<A>& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a( deltaMs ) / b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> div( const A& a )
+	{
+		return SF < A, A > {
+			[a]( const S<A>& b )
+			{
+				return S < A >
+				{
+					[a, b]( const float deltaMs ) -> A
+					{
+						return a / b( deltaMs );
+					}
+				};
+			}
+		};
+	}
+	template<typename A>
+	SF<A, A> integral( )
+	{
+		return SF < A, A >
+		{
+			[]( const S<A>& a ) -> S < A >
+			{
+				return S < A >
+				{
+					[a]( const float deltaMs ) -> A
+					{
+						return a( deltaMs ) * deltaMs;
+					}
+				};
+			}
+		};
+	}
+	SF<FVec3, FVec3> rotate( const S<FQuat>& rot );
+	SF<FVec3, FVec3> rotate( const FQuat& rot );
+
+	template<typename A, typename B, typename C>
+	SF<A, B> sw( const SF<A, std::tuple<B, E<C>>>& sf, std::function<SF<A, B>( C )> f )
+	{
+		return SF < A, B > {
+			[sf, f]( const S<A>& a )
+			{
+				return S < B >
+				{
+					[sf, f, a]( const float deltaMs ) -> B
+					{
+						return ifThenElse( std::get<1>( sf < a < deltaMs ),
+							[f, a, deltaMs]( const C& c )
+						{
+							return f( c ) < a < deltaMs;
+						},
+							[sf, a, deltaMs]( )
+						{
+							return std::get<0>( sf < a < deltaMs );
+						} );
+					}
+				};
+			}
+		};
+	}
+}
+
+#pragma once
+#include "actor/actor.hpp"
+#include "../window/gameInput.hpp"
+#include "../window/window.hpp"
+namespace hp_fp
+{
+	enum struct EngineState : UInt8
+	{
+		Initialized,
+		Running,
+		Terminated
+	};
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  0  ][  0  ][  +  ][  +  ]
+	struct Engine
+	{
+		Engine( String&& name, EngineState&& state, GameInput&& gameInput )
+			: name( std::move( name ) ), state( std::move( state ) ),
+			gameInput( std::move( gameInput ) )
+		{ }
+		Engine( const Engine& ) = delete;
+		Engine( Engine&& e ) : name( std::move( e.name ) ), state( std::move( e.state ) ),
+			gameInput( std::move( e.gameInput ) )
+		{ }
+		Engine operator = ( const Engine& ) = delete;
+		Engine operator = ( Engine&& e )
+		{
+			return Engine{ std::move( e ) };
+		}
+		const String name;
+		EngineState state;
+		GameInput gameInput;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	Engine init( String&& name );
+	void run_IO( Engine& engine, std::vector<ActorDef>&& actorDefs,
+		const WindowConfig& windowConfig = defaultWindowConfig_IO( ) );
+	namespace
+	{
+		void renderActors_IO( Renderer& renderer, std::vector<Actor>& actors,
+			const GameInput& gameInput, const float deltaMs,
+			const Mat4x4& parentLocalTransform = Mat4x4::identity );
+		std::vector<Actor> initActors_IO( Renderer& renderer, Resources& resources,
+			std::vector<ActorDef>&& actorsDef );
+	}
+}
+
+#pragma once
+#include <core/worldImm.hpp>
+#include <window/gameInputMut.hpp>
+namespace hp_fp
+{
+
+}#pragma once
+#include <map>
+#include <tuple>
+#include "actor/actor.hpp"
+#include "../graphics/model.hpp"
+#include "../graphics/material.hpp"
+namespace hp_fp
+{
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  0  ][  0  ][  0  ][  0  ]
+	struct Resources
+	{
+		std::map<LoadedModelDef, Maybe<Model>> loadedModels;
+		std::map<BuiltInModelDef, Maybe<Model>> builtInModels;
+		std::map<MaterialDef, Maybe<Material>> materials;
+		std::map<String, ID3D11ShaderResourceView*> textures;
+	};
+	struct ActorResources
+	{
+		Model& model;
+		Material& material;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
+		const LoadedModelDef& modelDef );
+	Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
+		const BuiltInModelDef& modelDef );
+	Maybe<Material>& getMaterial_IO( Renderer& renderer, Resources& resources,
+		const MaterialDef& materialDef );
+	Maybe<ActorResources> getActorResources_IO( Renderer& renderer, Resources& resources,
+		const ActorModelDef& actorModelDef );
+	namespace
+	{
+		Maybe<ActorResources> getMaterialForModel_IO( Renderer& renderer, Resources& resources,
+			Maybe<Model>& model, const MaterialDef& materialDef );
+	}
+}
+
+#pragma once
+namespace hp_fp
+{
+	extern const double TIME_ADDITION;
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  -  ][  0  ][  0  ][  +  ][  +  ]
+	struct Timer
+	{
+		friend Timer initTimer_IO( );
+		friend void updateTimer_IO( Timer& timer );
+		Timer( const Timer& ) = delete;
+		Timer operator = ( const Timer& ) = delete;
+		Timer( Timer&& r ) : deltaMs( std::move( r.deltaMs ) ),
+			_timeMs( std::move( r._timeMs ) ), _lastTimeMs( std::move( r._lastTimeMs ) )
+		{ }
+		Timer operator = ( Timer&& r )
+		{
+			return Timer{ r.deltaMs, r._timeMs, r._lastTimeMs };
+		}
+		double deltaMs;
+		friend double timeMs( const Timer& timer );
+	private:
+		Timer( const double deltaMs, const double lastTimeMs, const double timeMs )
+			: deltaMs( deltaMs ), _lastTimeMs( lastTimeMs ), _timeMs( timeMs + TIME_ADDITION )
+		{ }
+		double _timeMs;
+		double _lastTimeMs;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	Timer initTimer_IO( );
+	void updateTimer_IO( Timer& timer );
+	double timeMs( const Timer& timer );
+	namespace
+	{
+		double getTimeMs_IO( );
+	}
+}#pragma once
+#include <functional>
+#include <vector>
+#include "../../adt/frp/sf.hpp"
+#include "../../graphics/material.hpp"
+#include "../../graphics/model.hpp"
+#include "../../graphics/renderer.hpp"
+#include "../../math/mat4x4.hpp"
+#include "../../math/quat.hpp"
+#include "../../window/gameInput.hpp"
+namespace hp_fp
+{
+	struct Resources;
+	struct ActorResources;
+	struct ActorStartingState
+	{
+		FVec3 pos;
+		FVec3 vel;
+		FVec3 scl;
+		FQuat rot;
+		FQuat modelRot;
+	};
+	struct ActorState
+	{
+		FVec3 pos;
+		FVec3 vel;
+		FVec3 scl;
+		FQuat rot;
+		FQuat modelRot;
+	};
+	struct ActorInput
+	{
+		GameInput gameInput;
+		ActorState state;
+	};
+	struct ActorOutput
+	{
+		ActorState state;
+	};
+	struct ActorModelDef
+	{
+		ModelDef model;
+		MaterialDef material;
+	};
+	typedef std::function<void( Renderer&, const ActorState&, const Mat4x4& )> CamRenderFn;
+	struct ActorCameraDef;
+	typedef CamRenderFn( *InitCamRenderFn )( const ActorCameraDef&, const WindowConfig& );
+	struct ActorCameraDef
+	{
+		float nearClipDist;
+		float farClipDist;
+		InitCamRenderFn render;
+	};
+	struct ActorTypeDef
+	{
+		template<typename A>
+		bool is( ) const
+		{
+			return ( _typeId == typeId<A>( ) );
+		}
+	private:
+		TypeId _typeId;
+	public:
+		union
+		{
+			ActorModelDef model;
+			ActorCameraDef camera;
+		};
+		friend ActorTypeDef actorModelDef( ActorModelDef&& m );
+		friend ActorTypeDef actorCameraDef( ActorCameraDef&& c );
+	};
+	struct ActorDef
+	{
+		ActorTypeDef type;
+		ActorStartingState startingState;
+		SF<ActorInput, ActorOutput> sf;
+		std::vector<ActorDef> children;
+	};
+	struct Actor
+	{
+		ActorState state;
+		SF<ActorInput, ActorOutput> sf;
+		std::function<void( Renderer&, const ActorState&, const Mat4x4& )> render_IO;
+		std::vector<Actor> children;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	ActorTypeDef actorModelDef( ActorModelDef&& m );
+	ActorTypeDef actorCameraDef( ActorCameraDef&& c );
+	std::function<void( Renderer&, const ActorState&, const Mat4x4& )>
+		initActorRenderFunction_IO( Renderer& renderer, Resources& resources,
+		const ActorDef& actorDef );
+	Mat4x4 trasformMatFromActorState( const ActorState& actorState );
+	Mat4x4 modelTrasformMatFromActorState( const ActorState& actorState );
+	namespace
+	{
+		std::function<void( Renderer&, const ActorState&, const Mat4x4& )>  renderActor_IO(
+			ActorResources& res );
+	}
+}
+
+#pragma once
+#include "../math/mat4x4.hpp"
+namespace hp_fp
+{
+	struct Camera
+	{
+		Mat4x4 projection;
+		Mat4x4 transform;
+	};
+	struct CameraBuffer
+	{
+	private:
+		bool _first;
+		Camera _cam[2];
+	public:
+		friend const Camera& getCamera( const CameraBuffer& cameraBuffer );
+		friend void setCamera_IO( CameraBuffer& cameraBuffer, Camera&& camera );
+		friend void swap_IO( CameraBuffer& cameraBuffer );
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	const Camera& getCamera( const CameraBuffer& cameraBuffer );
+	void setCamera_IO( CameraBuffer& cameraBuffer, Camera&& camera );
+	void swap_IO( CameraBuffer& cameraBuffer );
+}
+
+#pragma once
+#include <d3d11_2.h>
+#pragma comment(lib, "d3d11.lib")
+#include <D3Dcompiler.h>
+#pragma comment(lib, "d3dcompiler.lib")
+#include <Effects11/inc/d3dx11effect.h>
+#pragma comment(lib, "Effects11.lib")
+#include "DirectXTex/DDSTextureLoader/DDSTextureLoader.h"
+#include "DirectXTex/WICTextureLoader/WICTextureLoader.h"
+
+#pragma once
+#include "directx.hpp"
+#include "renderer.hpp"
+#include "../math/mat4x4.hpp"
+#include "../math/color.hpp"
+#include "../math/vec2.hpp"
+namespace hp_fp
+{
+	struct MaterialDef
+	{
+		const char* diffuseTextureFilename;
+		const char* specularTextureFilename;
+		const char* bumpTextureFilename;
+		const char* parallaxTextureFilename;
+		const char* evnMapTextureFilename;
+		FVec2 textureRepeat;
+		bool operator == ( const MaterialDef& m ) const
+		{
+			return diffuseTextureFilename == m.diffuseTextureFilename &&
+				specularTextureFilename == m.specularTextureFilename &&
+				bumpTextureFilename == m.bumpTextureFilename &&
+				parallaxTextureFilename == m.parallaxTextureFilename &&
+				evnMapTextureFilename == m.evnMapTextureFilename &&
+				textureRepeat == m.textureRepeat;
+		}
+		bool operator < ( const MaterialDef& m ) const
+		{
+			if ( diffuseTextureFilename == m.diffuseTextureFilename )
+			{
+				if ( specularTextureFilename == m.specularTextureFilename )
+				{
+					if ( bumpTextureFilename == m.bumpTextureFilename )
+					{
+						if ( parallaxTextureFilename == m.parallaxTextureFilename )
+						{
+							if ( evnMapTextureFilename == m.evnMapTextureFilename )
+							{
+								return  textureRepeat < m.textureRepeat;
+							}
+							return evnMapTextureFilename < m.evnMapTextureFilename;
+						}
+						return parallaxTextureFilename < m.parallaxTextureFilename;
+					}
+					return bumpTextureFilename < m.bumpTextureFilename;
+				}
+				return specularTextureFilename < m.specularTextureFilename;
+			}
+			return diffuseTextureFilename < m.diffuseTextureFilename;
+		}
+	};
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  0  ][  0  ][  +  ][  +  ]
+	struct Material
+	{
+		Material( const String& filename, const String& techniqueName,
+			const FVec2& textureRepeat, const Color& ambientMaterial,
+			const Color& diffuseMaterial, const Color& specularMaterial,
+			const float specularPower ) : filename( filename ), techniqueName( techniqueName ),
+			effect( nullptr ), technique( nullptr ), pass( nullptr ), inputLayout( nullptr ),
+			techniqueDesc( ), viewMatrixVariable( nullptr ), projectionMatrixVariable( nullptr ),
+			worldMatrixVariable( nullptr ), diffuseTextureVariable( nullptr ),
+			specularTextureVariable( nullptr ), bumpTextureVariable( nullptr ),
+			parallaxTextureVariable( nullptr ), envMapVariable( nullptr ),
+			diffuseTexture( nullptr ), specularTexture( nullptr ), bumpTexture( nullptr ),
+			parallaxTexture( nullptr ), envMapTexture( nullptr ), textureRepeat( textureRepeat ),
+			useDiffuseTextureVariable( nullptr ), useSpecularTextureVariable( nullptr ),
+			useBumpTextureVariable( nullptr ), useParallaxTextureVariable( nullptr ),
+			ambientLightColourVariable( nullptr ), diffuseLightColourVariable( nullptr ),
+			specularLightColourVariable( nullptr ), lightDirectionVariable( nullptr ),
+			ambientMaterialVariable( nullptr ), diffuseMaterialVariable( nullptr ),
+			specularMaterialVariable( nullptr ), specularPowerVariable( nullptr ),
+			textureRepeatVariable( nullptr ), cameraPositionVariable( nullptr ),
+			ambientMaterial( ambientMaterial ), diffuseMaterial( diffuseMaterial ),
+			specularMaterial( specularMaterial ), specularPower( specularPower )
+		{
+			ZeroMemory( &techniqueDesc, sizeof( D3D10_TECHNIQUE_DESC ) );
+		}
+		Material( const Material& ) = delete;
+		Material( Material&&  m ) : filename( std::move( m.filename ) ),
+			techniqueName( std::move( m.techniqueName ) ), effect( std::move( m.effect ) ),
+			technique( std::move( m.technique ) ), pass( std::move( m.pass ) ),
+			inputLayout( std::move( m.inputLayout ) ),
+			techniqueDesc( std::move( m.techniqueDesc ) ),
+			viewMatrixVariable( std::move( m.viewMatrixVariable ) ),
+			projectionMatrixVariable( std::move( m.projectionMatrixVariable ) ),
+			worldMatrixVariable( std::move( m.worldMatrixVariable ) ),
+			diffuseTextureVariable( std::move( m.diffuseTextureVariable ) ),
+			specularTextureVariable( std::move( m.specularTextureVariable ) ),
+			bumpTextureVariable( std::move( m.bumpTextureVariable ) ),
+			parallaxTextureVariable( std::move( m.parallaxTextureVariable ) ),
+			envMapVariable( std::move( m.envMapVariable ) ),
+			diffuseTexture( std::move( m.diffuseTexture ) ),
+			specularTexture( std::move( m.specularTexture ) ),
+			bumpTexture( std::move( m.bumpTexture ) ),
+			parallaxTexture( std::move( m.parallaxTexture ) ),
+			envMapTexture( std::move( m.envMapTexture ) ),
+			textureRepeat( std::move( m.textureRepeat ) ),
+			useDiffuseTextureVariable( std::move( m.useDiffuseTextureVariable ) ),
+			useSpecularTextureVariable( std::move( m.useSpecularTextureVariable ) ),
+			useBumpTextureVariable( std::move( m.useBumpTextureVariable ) ),
+			useParallaxTextureVariable( std::move( m.useParallaxTextureVariable ) ),
+			ambientLightColourVariable( std::move( m.ambientLightColourVariable ) ),
+			diffuseLightColourVariable( std::move( m.diffuseLightColourVariable ) ),
+			specularLightColourVariable( std::move( m.specularLightColourVariable ) ),
+			lightDirectionVariable( std::move( m.lightDirectionVariable ) ),
+			ambientMaterialVariable( std::move( m.ambientMaterialVariable ) ),
+			diffuseMaterialVariable( std::move( m.diffuseMaterialVariable ) ),
+			specularMaterialVariable( std::move( m.specularMaterialVariable ) ),
+			specularPowerVariable( std::move( m.specularPowerVariable ) ),
+			textureRepeatVariable( std::move( m.textureRepeatVariable ) ),
+			cameraPositionVariable( std::move( m.cameraPositionVariable ) ),
+			ambientMaterial( std::move( m.ambientMaterial ) ),
+			diffuseMaterial( std::move( m.diffuseMaterial ) ),
+			specularMaterial( std::move( m.specularMaterial ) ),
+			specularPower( std::move( m.specularPower ) )
+		{
+			m.effect = nullptr;
+			m.technique = nullptr;
+			m.pass = nullptr;
+			m.inputLayout = nullptr;
+			m.viewMatrixVariable = nullptr;
+			m.projectionMatrixVariable = nullptr;
+			m.worldMatrixVariable = nullptr;
+			m.diffuseTextureVariable = nullptr;
+			m.specularTextureVariable = nullptr;
+			m.bumpTextureVariable = nullptr;
+			m.parallaxTextureVariable = nullptr;
+			m.envMapVariable = nullptr;
+			m.diffuseTexture = nullptr;
+			m.specularTexture = nullptr;
+			m.bumpTexture = nullptr;
+			m.parallaxTexture = nullptr;
+			m.envMapTexture = nullptr;
+			m.useDiffuseTextureVariable = nullptr;
+			m.useSpecularTextureVariable = nullptr;
+			m.useBumpTextureVariable = nullptr;
+			m.useParallaxTextureVariable = nullptr;
+			m.ambientLightColourVariable = nullptr;
+			m.diffuseLightColourVariable = nullptr;
+			m.specularLightColourVariable = nullptr;
+			m.lightDirectionVariable = nullptr;
+			m.ambientMaterialVariable = nullptr;
+			m.diffuseMaterialVariable = nullptr;
+			m.specularMaterialVariable = nullptr;
+			m.specularPowerVariable = nullptr;
+			m.textureRepeatVariable = nullptr;
+			m.cameraPositionVariable = nullptr;
+		}
+		Material operator = ( const Material& ) = delete;
+		Material operator = ( Material&& m )
+		{
+			return Material( std::move( m ) );
+		}
+		~Material( )
+		{
+			HP_RELEASE( envMapTexture );
+			HP_RELEASE( parallaxTexture );
+			HP_RELEASE( bumpTexture );
+			HP_RELEASE( specularTexture );
+			HP_RELEASE( diffuseTexture );
+			HP_RELEASE( inputLayout );
+			HP_RELEASE( effect );
+		}
+		String filename;
+		String techniqueName;
+		// effect variables
+		ID3DX11Effect* effect;
+		ID3DX11EffectTechnique* technique;
+		ID3DX11EffectPass* pass;
+		// input layout
+		ID3D11InputLayout* inputLayout;
+		// technique desc
+		D3DX11_TECHNIQUE_DESC techniqueDesc;
+		// effect variables(constants)
+		ID3DX11EffectMatrixVariable* viewMatrixVariable;
+		ID3DX11EffectMatrixVariable* projectionMatrixVariable;
+		ID3DX11EffectMatrixVariable* worldMatrixVariable;
+		// Textures
+		ID3DX11EffectShaderResourceVariable* diffuseTextureVariable;
+		ID3DX11EffectShaderResourceVariable* specularTextureVariable;
+		ID3DX11EffectShaderResourceVariable* bumpTextureVariable;
+		ID3DX11EffectShaderResourceVariable* parallaxTextureVariable;
+		ID3DX11EffectShaderResourceVariable* envMapVariable;
+		ID3D11ShaderResourceView* diffuseTexture;
+		ID3D11ShaderResourceView* specularTexture;
+		ID3D11ShaderResourceView* bumpTexture;
+		ID3D11ShaderResourceView* parallaxTexture;
+		ID3D11ShaderResourceView* envMapTexture;
+		FVec2 textureRepeat;
+		// Texture switches
+		ID3DX11EffectScalarVariable* useDiffuseTextureVariable;
+		ID3DX11EffectScalarVariable* useSpecularTextureVariable;
+		ID3DX11EffectScalarVariable* useBumpTextureVariable;
+		ID3DX11EffectScalarVariable* useParallaxTextureVariable;
+		// Light
+		ID3DX11EffectVectorVariable* ambientLightColourVariable;
+		ID3DX11EffectVectorVariable* diffuseLightColourVariable;
+		ID3DX11EffectVectorVariable* specularLightColourVariable;
+		// Direction
+		ID3DX11EffectVectorVariable* lightDirectionVariable;
+		// Material
+		ID3DX11EffectVectorVariable* ambientMaterialVariable;
+		ID3DX11EffectVectorVariable* diffuseMaterialVariable;
+		ID3DX11EffectVectorVariable* specularMaterialVariable;
+		ID3DX11EffectScalarVariable* specularPowerVariable;
+		ID3DX11EffectVectorVariable* textureRepeatVariable;
+		// Camera
+		ID3DX11EffectVectorVariable* cameraPositionVariable;
+		// Material colours
+		Color ambientMaterial;
+		Color diffuseMaterial;
+		Color specularMaterial;
+		float specularPower;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	Material defaultMat( );
+	Maybe<Material> loadMaterial_IO( Renderer& renderer, const MaterialDef& materialDef );
+	bool loadTexture_IO( ID3D11ShaderResourceView** texture, Renderer& renderer,
+		const String& filename );
+	namespace
+	{
+		bool initMaterial_IO( Material& material, Renderer& renderer );
+		bool loadShader_IO( Material& material, Renderer& renderer );
+		bool loadAndCompile_IO( Material& material, Renderer& renderer, const String& shaderModel,
+			ID3DBlob** buffer );
+		bool createVertexLayout_IO( Material& material, Renderer& renderer );
+	}
+	void setProjection_IO( Material& material, const Mat4x4& mat );
+	void setView_IO( Material& material, const Mat4x4& mat );
+	void setWorld_IO( Material& material, const Mat4x4& mat );
+	void setAbientLightColor_IO( Material& material, const Color& color );
+	void setDiffuseLightColor_IO( Material& material, const Color& color );
+	void setSpecularLightColor_IO( Material& material, const Color& color );
+	void setLightDirection_IO( Material& material, const FVec3& dir );
+	void setCameraPosition_IO( Material& material, const FVec3& dir );
+	void setTextureRepeat_IO( Material& material, const FVec2& repeat );
+	void setTextures_IO( Material& material );
+	void setMaterials_IO( Material& material );
+	void bindInputLayout_IO( Renderer& renderer, Material& material );
+	UInt32 getPassCount( Material& material );
+	void applyPass_IO( Renderer& renderer, Material& material, UInt32 i );
+}
+
+#pragma once
+#include <vector>
+#include "vertex.hpp"
+#include "../adt/list.hpp"
+#include "../adt/maybe.hpp"
+#include "../adt/sum.hpp"
+#include "../math/vec3.hpp"
+#include "../utils/typeId.hpp"
+namespace hp_fp
+{
+	struct Renderer;
+	enum struct BuiltInModelType : UInt8
+	{
+		Cube, Sphere, Count
+	};
+	struct BuiltInModelDef
+	{
+		BuiltInModelType type;
+		FVec3 dimensions;
+		bool operator == ( const BuiltInModelDef& m ) const
+		{
+			return type == m.type && dimensions == m.dimensions;
+		}
+		bool operator < ( const BuiltInModelDef& m ) const
+		{
+			if ( type == m.type )
+			{
+				return  dimensions < m.dimensions;
+			}
+			return type < m.type;
+		}
+	};
+	struct LoadedModelDef
+	{
+		const char* filename;
+		float scale;
+		bool operator == ( const LoadedModelDef& m ) const
+		{
+			return filename == m.filename && scale == m.scale;
+		}
+		bool operator < ( const LoadedModelDef& m ) const
+		{
+			if ( filename == m.filename )
+			{
+				return  scale < m.scale;
+			}
+			return filename < m.filename;
+		}
+	};
+	//typedef Sum<BuiltInModelDef, LoadedModelDef> ModelDef;
+	struct ModelDef
+	{
+		template<typename A>
+		bool is( ) const
+		{
+			return ( _typeId == typeId<A>( ) );
+		}
+	private:
+		TypeId _typeId;
+	public:
+		union
+		{
+			BuiltInModelDef builtIn;
+			LoadedModelDef loaded;
+		};
+		friend ModelDef builtInModelDef( BuiltInModelDef&& m );
+		friend ModelDef loadedModelDef( LoadedModelDef&& m );
+	};
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  0  ][  0  ][  +  ][  +  ]
+	struct Mesh
+	{
+		Mesh( ) : vertexBuffer( nullptr ), indexBuffer( nullptr )
+		{ }
+		Mesh( const Mesh& ) = delete;
+		Mesh( Mesh&&  m ) : vertices( std::move( m.vertices ) ), indices( std::move( m.indices ) ),
+			vertexBuffer( std::move( m.vertexBuffer ) ), indexBuffer( std::move( m.indexBuffer ) )
+		{ }
+		Mesh operator = ( const Mesh& ) = delete;
+		Mesh operator = ( Mesh&& m )
+		{
+			return Mesh( std::move( m ) );
+		}
+		~Mesh( )
+		{
+			HP_RELEASE( indexBuffer );
+			HP_RELEASE( vertexBuffer );
+		}
+		std::vector<Vertex> vertices;
+		std::vector<Index> indices;
+		ID3D11Buffer* vertexBuffer;
+		ID3D11Buffer* indexBuffer;
+	};
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  0  ][  0  ][  +  ][  +  ]
+	struct Model
+	{
+		Model( )
+		{ }
+		Model( const Model& ) = delete;
+		Model( Model&&  m ) : meshes( std::move( m.meshes ) )
+		{ }
+		Model operator = ( const Model& ) = delete;
+		Model operator = ( Model&& m )
+		{
+			return Model( std::move( m ) );
+		}
+		std::vector<Mesh> meshes;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	ModelDef builtInModelDef( BuiltInModelDef&& m );
+	ModelDef loadedModelDef( LoadedModelDef&& m );
+	void addVertex_IO( Mesh& mesh, const Vertex vertex );
+	void addIndex_IO( Mesh& mesh, const Index index );
+	void setBuffers_IO( Renderer& renderer, Mesh& mesh );
+	Maybe<Model> loadModelFromFile_IO( Renderer& renderer, const String& filename, const float scale );
+	Maybe<Model> cubeMesh_IO( Renderer& renderer, const FVec3& dimensions );
+	namespace
+	{
+		void addMesh_IO( Model& meshes, Mesh&& mesh );
+		Maybe<Model> loadModelFromFBXFile_IO( Renderer& renderer, const String& filename, const float scale );
+		void computeTangentsAndBinormals_IO( Vertex* pVerticies, UInt32 vertexCount, UInt32* pIndices,
+			UInt32 indexCount );
+		bool createBuffers_IO( Renderer& renderer, Mesh& mesh );
+		Model cubeMesh( const FVec3& dimensions );
+	}
+}
+
+#pragma once
+#include "camera.hpp"
+#include "directx.hpp"
+#include "vertex.hpp"
+#include "../adt/maybe.hpp"
+#include "../window/window.hpp"
+namespace hp_fp
+{
+	struct WindowConfig;
+	struct Renderer
+	{
+		Renderer( D3D_DRIVER_TYPE driverType, D3D_FEATURE_LEVEL featureLevel,
+			const WindowConfig& windowConfig ) : driverType( driverType ),
+			featureLevel( featureLevel ), device( nullptr ), deviceContext( nullptr ),
+			swapChain( nullptr ), renderTargetView( nullptr ),
+			depthStencilView( nullptr ), windowConfig( windowConfig )
+		{ }
+		Renderer( const Renderer& ) = delete;
+		Renderer( Renderer&& r ) : driverType( std::move( r.driverType ) ), featureLevel( std::move( r.featureLevel ) ), device( std::move( r.device ) ), deviceContext( std::move( r.deviceContext ) ),
+			swapChain( std::move( r.swapChain ) ), renderTargetView( std::move( r.renderTargetView ) ), depthStencilView( std::move( r.depthStencilView ) ),
+			windowConfig( std::move( r.windowConfig ) )
+		{ }
+		Renderer operator = ( const Renderer& ) = delete;
+		Renderer operator = ( Renderer&& r )
+		{
+			return Renderer{ std::move( r ) };
+		}
+		D3D_DRIVER_TYPE driverType;
+		D3D_FEATURE_LEVEL featureLevel;
+		ID3D11Device* device;
+		ID3D11DeviceContext* deviceContext;
+		IDXGISwapChain* swapChain;
+		ID3D11RenderTargetView* renderTargetView;
+		ID3D11DepthStencilView* depthStencilView;
+		CameraBuffer cameraBuffer;
+		WindowConfig windowConfig;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	Maybe<Renderer> init_IO( WindowHandle windowHandle, const WindowConfig& windowConfig );
+	void preRender_IO( Renderer& renderer );
+	void present_IO( Renderer& renderer );
+	bool createVertexBuffer_IO( Renderer& renderer, ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
+		const Vertex* initData );
+	bool createIndexBuffer_IO( Renderer& renderer, ID3D11Buffer** indexBuffer, UInt32 byteWidth,
+		const Index* initData );
+	void setVertexBuffers_IO( Renderer& renderer, ID3D11Buffer** vertexBuffer, UInt32* stride,
+		UInt32* offset );
+	void setIndexBuffer_IO( Renderer& renderer, ID3D11Buffer** indexBuffer );
+	void drawIndexed_IO( Renderer& renderer, UInt32 indexCount, UInt32 startIndexLocation,
+		UInt32 baseVertexLocation );
+}
+
+#pragma once
+#include "directx.hpp"
+#include "../math/color.hpp"
+#include "../math/vec2.hpp"
+#include "../math/vec3.hpp"
+namespace hp_fp
+{
+	struct Vertex
+	{
+		FVec3 position;
+		Color color;
+		FVec2 texCoord;
+		FVec3 normal;
+		FVec3 tangent;
+		FVec3 binormal;
+	};
+	static const D3D11_INPUT_ELEMENT_DESC D3D11_LAYOUT[] =
+	{
+		{
+			"POSITION", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			0, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"COLOR", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32A32_FLOAT, // format
+			0, // input slot
+			12, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"TEXCOORD", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32_FLOAT, // format
+			0, // input slot
+			28, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"NORMAL", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			36, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"TANGENT", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			48, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"BINORMAL", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			60, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+	};
+}
+
+#pragma once
+namespace hp_fp
+{
+	struct Color
+	{
+		float r, g, b, a;
+		Color( const float r = 0, const float g = 0, const float b = 0,
+			const float a = 1.0f ) : r( r ), g( g ), b( b ), a( a )
+		{ }
+		operator float*( )
+		{
+			return &r;
+		}
+	};
+}
+
+#pragma once
+#include "plane.hpp"
+namespace hp_fp
+{
+	enum struct FrustumSides : UInt8
+	{
+		Near, Far, Top, Right, Bottom, Left, Count
+	};
+	struct Frustum
+	{
+		Plane planes[static_cast<UInt8>( FrustumSides::Count )];
+		FVec3 nearClipVerts[4];
+		FVec3 farClipVerts[4];
+		float fieldOfView; // radians
+		float aspectRatio; // width / height
+		float nearClipDist;
+		float farClipDist;
+	};
+	Frustum init( const float fieldOfView, const float aspectRatio, const float nearClipDist,
+		const float farClipDist );
+	bool isInside( const Frustum& frustum, const FVec3& point, const float radius );
+}
+
+#pragma once
+#include "vec3.hpp"
+#include "vec4.hpp"
+#include "quat.hpp"
+namespace hp_fp
+{
+	struct Mat4x4
+	{
+	public:
+		union
+		{
+			struct
+			{
+				float _11, _12, _13, _14, _21, _22, _23, _24, _31, _32, _33, _34, _41, _42, _43, _44;
+			};
+			float m[4][4];
+		};
+		Mat4x4( ) : Mat4x4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 )
+		{ }
+		Mat4x4( float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24,
+			float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44 )
+			: _11( m11 ), _12( m12 ), _13( m13 ), _14( m14 ), _21( m21 ), _22( m22 ), _23( m23 ), _24( m24 ),
+			_31( m31 ), _32( m32 ), _33( m33 ), _34( m34 ), _41( m41 ), _42( m42 ), _43( m43 ), _44( m44 )
+		{ }
+		static const Mat4x4 identity;
+		Mat4x4 operator * ( const Mat4x4& mat ) const
+		{
+			Mat4x4 result;
+			for ( int i = 0; i < 4; i++ )
+			{
+				for ( int j = 0; j < 4; j++ )
+				{
+					result.m[i][j] =
+						m[i][0] * mat.m[0][j] +
+						m[i][1] * mat.m[1][j] +
+						m[i][2] * mat.m[2][j] +
+						m[i][3] * mat.m[3][j];
+				}
+			}
+			return result;
+		}
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	FVec3 pos( const Mat4x4& mat );
+	float determinant( const Mat4x4& mat );
+	Mat4x4 inverse( const Mat4x4& mat );
+	Mat4x4 matrixPerspectiveFovLH( const float fieldOfView, const float aspectRatio,
+		const float nearClipDist, const float farClipDist );
+	Mat4x4 rotToMat4x4( const FQuat& rot );
+	Mat4x4 sclToMat4x4( const FVec3& scl );
+	Mat4x4 posToMat4x4( const FVec3& pos );
+	Mat4x4 rotSclPosToMat4x4( const FQuat& rot, const FVec3& scl, const FVec3& pos );
+}
+
+#pragma once
+#include "vec3.hpp"
+namespace hp_fp
+{
+	struct Plane
+	{
+	public:
+		float a, b, c, d;
+		Plane( ) : a( 0.f ), b( 0.f ), c( 0.f ), d( 0.f )
+		{ }
+		Plane( float a, float b, float c, float d ) : a( a ), b( b ), c( c ), d( d )
+		{ }
+	};
+	Plane init( const FVec3& p0, const FVec3& p1, const FVec3& p2 );
+	Plane normalize( const Plane& plane );
+	Plane planeFromPointNormal( const FVec3& point, const FVec3& normal );
+	bool isInside( const Plane& plane, const FVec3& point, const float radius );
+	float planeDotCoord( const Plane& plane, const FVec3& point );
+}
+
+#pragma once
+#include "vec3.hpp"
+namespace hp_fp
+{
+	template<typename A>
+	struct Quat
+	{
+	public:
+		A x, y, z, w;
+		Quat( const A x, const A y, const A z, const A w ) : x( x ), y( y ), z( z ), w( w )
+		{ };
+		Quat( ) : x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 1.0f )
+		{ };
+		static const Quat<A> identity;
+		Quat operator * ( const Quat& q ) const
+		{
+			return Quat{
+				x * q.w + w * q.x + z * q.y - y * q.z,
+				y * q.w - z * q.x + w * q.y + x * q.z,
+				z * q.w + y * q.x - x * q.y + w * q.z,
+				w * q.w - x * q.x - y * q.y - z * q.z };
+		}
+	};
+	typedef Quat<float> FQuat;
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	template<typename A>
+	Quat<A> eulerDegToQuat( const Vec3<A>& vec )
+	{
+		return eulerRadToQuat( vec * DEG_TO_RAD_F );
+	}
+	template<typename A>
+	Quat<A> eulerRadToQuat( const Vec3<A>& vec )
+	{
+		Quat<A> quat;
+		quat.x = sin( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * sin( vec.z / 2.0f ) +
+			cos( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * cos( vec.z / 2.0f );
+		quat.y = sin( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * cos( vec.z / 2.0f ) -
+			cos( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * sin( vec.z / 2.0f );
+		quat.z = cos( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * sin( vec.z / 2.0f ) -
+			sin( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * cos( vec.z / 2.0f );
+		quat.w = cos( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * cos( vec.z / 2.0f ) +
+			sin( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * sin( vec.z / 2.0f );
+		return quat;
+	}
+	template<typename A>
+	Quat<A> conjugate( const Quat<A>& quat )
+	{
+		return Quat < A > {-quat.x, -quat.y, -quat.z, quat.w};
+	}
+	template<typename A>
+	Vec3<A> rotate( const Vec3<A>& vec, const Quat<A>& quat )
+	{
+		auto rotated = conjugate( quat ) * Quat < A > {vec.x, vec.y, vec.z, 1.0f} *quat;
+		return Vec3 < A > {rotated.x, rotated.y, rotated.z};
+	};
+}
+
+#pragma once
+namespace hp_fp
+{
+	template<typename A>
+	struct Vec2
+	{
+	public:
+		A x, y;
+		/*Vec2( const A x = 0, const A y = 0 ) : x( x ), y( y )
+		{ }*/
+		Vec2<A> operator - ( const Vec2<A>& vec ) const
+		{
+			return Vec2 < A > { x - vec.x, y - vec.y };
+		}
+		bool operator == ( const Vec2<A>& v ) const
+		{
+			return x == v.x && y == v.y;
+		}
+		bool operator < ( const Vec2<A>& v ) const
+		{
+			if ( x == v.x )
+			{
+				return y < v.y;
+			}
+			return x < v.x;
+		}
+	};
+	typedef Vec2<UInt16> UInt16Vec2;
+	typedef Vec2<Int16> Int16Vec2;
+	typedef Vec2<UInt32> UInt32Vec2;
+	typedef Vec2<Int32> Int32Vec2;
+	typedef Vec2<float> FVec2;
+}
+
+#pragma once
+namespace hp_fp
+{
+	template<typename A>
+	struct Vec3
+	{
+	public:
+		A x, y, z;
+		static const Vec3<A> zero;
+		static const Vec3<A> right;
+		static const Vec3<A> up;
+		static const Vec3<A> forward;
+		/*Vec3( const A x = 0, const A y = 0, const A z = 0 ) : x( x ), y( y ), z( z )
+		{ }*/
+		Vec3<A> operator + ( const Vec3<A>& vec ) const
+		{
+			return Vec3 < A > { x + vec.x, y + vec.y, z + vec.z };
+		}
+		Vec3<A> operator - ( const Vec3<A>& vec ) const
+		{
+			return Vec3 < A > { x - vec.x, y - vec.y, z - vec.z };
+		}
+		Vec3<A>& operator += ( const Vec3<A>& vec )
+		{
+			x += vec.x;
+			y += vec.y;
+			z += vec.z;
+			return *this;
+		}
+		Vec3<A>& operator -= ( const Vec3<A>& vec )
+		{
+			x -= vec.x;
+			y -= vec.y;
+			z -= vec.z;
+			return *this;
+		}
+		bool operator == ( const Vec3<A>& v ) const
+		{
+			return x == v.x && y == v.y && z == v.z;
+		}
+		bool operator < ( const Vec3<A>& v ) const
+		{
+			if ( x == v.x )
+			{
+				if ( y == v.y )
+				{
+					return  z < v.z;
+				}
+				return y < v.y;
+			}
+			return x < v.x;
+		}
+		template<typename B>
+		friend inline Vec3<B> operator * ( const float scalar, const Vec3<B>& vec );
+		template<typename B>
+		friend inline Vec3<B> operator * ( const Vec3<B>& vec, const float scalar );
+		template<typename B>
+		friend inline Vec3<B> operator / ( const Vec3<B>& vec, const float scalar );
+	};
+	typedef Vec3<UInt16> UInt16Vec3;
+	typedef Vec3<Int16> Int16Vec3;
+	typedef Vec3<UInt32> UInt32Vec3;
+	typedef Vec3<Int32> Int32Vec3;
+	typedef Vec3<float> FVec3;
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	template<typename A>
+	inline Vec3<A> operator * ( const float scalar, const Vec3<A>& vec )
+	{
+		return Vec3 < A > { vec.x * scalar, vec.y * scalar, vec.z * scalar };
+	}
+	template<typename A>
+	inline Vec3<A> operator * ( const Vec3<A>& vec, const float scalar )
+	{
+		return scalar * vec;
+	}
+	template<typename A>
+	inline Vec3<A> operator / ( const Vec3<A>& vec, const float scalar )
+	{
+		return Vec3 < A > { vec.x / scalar, vec.y / scalar, vec.z / scalar };
+	}
+	template<typename A>
+	inline Vec3<A> cross( const Vec3<A>& vec1, const Vec3<A>& vec2 )
+	{
+		return Vec3 < A > {
+			vec1.y * vec2.z - vec1.z * vec2.y,
+				vec1.z * vec2.x - vec1.x * vec2.z,
+				vec1.x * vec2.y - vec1.y * vec2.x };
+	}
+	template<typename A>
+	inline A dot( const Vec3<A>& vec1, const Vec3<A>& vec2 )
+	{
+		return ( vec1.x ) * ( vec2.x ) + ( vec1.y ) * ( vec2.y ) + ( vec1.z ) * ( vec2.z );
+	}
+	template<typename A>
+	Vec3<A> normalize( const Vec3<A>& vec )
+	{
+		Vec3<A> normVec{ };
+		float len = length( vec );
+		if ( len == 0.0f )
+		{
+			return normVec;
+		}
+		len = 1.0f / len;
+		normVec.x = vec.x * len;
+		normVec.y = vec.y * len;
+		normVec.z = vec.z * len;
+		return normVec;
+	}
+	template<typename A>
+	float length( const Vec3<A>& vec )
+	{
+		return sqrtf( vec.x * vec.x + vec.y * vec.y + vec.z * vec.z );
+	}
+	template<typename A>
+	float mag( const Vec3<A>& vec )
+	{
+		return length( vec );
+	}
+	template<typename A>
+	Vec3<A> clampMag( const Vec3<A>& vec, const float max )
+	{
+		float magnitude = mag( vec );
+		if ( magnitude > max )
+		{
+			return vec / magnitude * max;
+		}
+		return vec;
+	}
+}
+
+#pragma once
+#include "vec3.hpp"
+namespace hp_fp
+{
+	template<typename A>
+	struct Vec4
+	{
+	public:
+		A x, y, z, w;
+		static const Vec4<A> right;
+		static const Vec4<A> up;
+		static const Vec4<A> forward;
+		Vec4( const A x = 0, const A y = 0, const A z = 0, const A w = 0 ) : x( x ), y( y ), z( z ), w( w )
+		{ }
+		Vec4( const FVec3& vec );
+		// not implemented yet
+		static inline float Vec4Dot( const Vec4<A>* vec1, const Vec4<A>* vec2 )
+		{
+			return 0.f;
+		}
+		// not implemented yet
+		static inline Vec3<A>* Vec4Normalize( Vec4<A>* vecOut, const Vec4<A>* vecIn )
+		{
+			return vecOut;
+		}
+		Vec4<A> operator + ( const Vec4<A>& vec ) const
+		{
+			return Vec4<A>( x + vec.x, y + vec.y, z + vec.z, 1.f );
+		}
+		Vec4<A> operator - ( const Vec4<A>& vec ) const
+		{
+			return Vec4<A>( x - vec.x, y - vec.y, z - vec.z, 1.f );
+		}
+		Vec4<A>& operator += ( const Vec4<A>& vec )
+		{
+			x += vec.x;
+			y += vec.y;
+			z += vec.z;
+			return *this;
+		}
+		Vec4<A>& operator -= ( const Vec4<A>& vec )
+		{
+			x -= vec.x;
+			y -= vec.y;
+			z -= vec.z;
+			return *this;
+		}
+		template<typename B >
+		friend inline Vec4< B > operator * ( const float scalar, const Vec4< B >& vec );
+		template<typename B >
+		friend inline Vec4< B > operator * ( const Vec4< B >& vec, const float scalar );
+	};
+	template<typename A>
+	inline Vec4<A> operator * ( const float scalar, const Vec4<A>& vec )
+	{
+		return Vec4<A>( vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w );
+	}
+	template<typename A>
+	inline Vec4<A> operator * ( const Vec4<A>& vec, const float scalar )
+	{
+		return scalar * vec;
+	}
+	template<typename A>
+	inline Vec4<A> cross( const Vec4<A>& vec1, const Vec4<A>& vec2, const Vec4<A>& vec3 )
+	{
+		return Vec4<A>(
+			vec1.y * ( vec2.z * vec3.w - vec2.w * vec3.z )
+			- vec1.z * ( vec2.y * vec3.w - vec2.w * vec3.y )
+			+ vec1.w * ( vec2.y * vec3.z - vec2.z * vec3.y ),
+			-vec1.x * ( vec2.z * vec3.w - vec2.w * vec3.z )
+			+ vec1.z * ( vec2.x * vec3.w - vec2.w * vec3.x )
+			- vec1.w * ( vec2.x * vec3.z - vec2.z * vec3.x ),
+			vec1.x * ( vec2.y * vec3.w - vec2.w * vec3.y )
+			- vec1.y * ( vec2.x * vec3.w - vec2.w * vec3.x )
+			+ vec1.w * ( vec2.x * vec3.y - vec2.y * vec3.x ),
+			-vec1.x * ( vec2.y * vec3.z - vec2.z * vec3.y )
+			+ vec1.y * ( vec2.x * vec3.z - vec2.z * vec3.x )
+			- vec1.z * ( vec2.x * vec3.y - vec2.y * vec3.x ) );
+	}
+	typedef Vec4<float> FVec4;
+}
+
+///
+/// precompiled header
+///
+#pragma once
+
+// disable STL expections
+#define _HAS_EXCEPTIONS 0
+
+#if defined( _WIN32 ) || defined( __WIN32__ )
+// Windows
+#   define HP_PLATFORM_WIN32
+// exclude rarely-used services from Windows headers
+#   ifndef WIN32_LEAN_AND_MEAN
+#       define WIN32_LEAN_AND_MEAN
+#   endif
+#	ifndef NOMINMAX
+#		define NOMINMAX
+#	endif
+#   include <Windows.h>
+#else
+#   error This operating system is not supported
+#endif
+
+// redefine new for debugging purposes
+#if defined( _LOG )
+#	define HP_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__ )
+#   define HP_DEBUG
+#	include <iostream>
+#	define ERR( x ) do { SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x0C ); std::cerr << __FILE__  << ":" << __LINE__ << ": " << x << std::endl; } while ( 0 )
+#	define WAR( x ) do { SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x0E ); std::cerr << __FILE__  << ":" << __LINE__ << ": " << x << std::endl; } while ( 0 )
+#	define LOG( x ) do { SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x07 ); std::cout << __FILE__  << ":" << __LINE__ << ": " << x << std::endl; } while ( 0 )
+#else
+#	define HP_NEW new
+#	define ERR( x )
+#	define WAR( x )
+#	define LOG( x )
+#endif
+
+// safe delete pointer
+#ifndef HP_DELETE
+#   define HP_DELETE( x ) delete x; x = nullptr;
+#endif
+// safe delete array
+#ifndef HP_DELETE_ARRAY
+#   define HP_DELETE_ARRAY( x ) delete [] x; x = nullptr;
+#endif
+// safe release
+#ifndef HP_RELEASE
+#   define HP_RELEASE( x ) if( x ) x->Release( ); x = nullptr;
+#endif
+
+#include <string>
+
+#if defined( HP_PLATFORM_WIN32 )
+typedef bool				 Bool;
+typedef unsigned char		 UInt8;
+typedef signed char			 Int8;
+typedef unsigned short		 UInt16;
+typedef signed short		 Int16;
+typedef unsigned int		 UInt32;
+typedef signed int			 Int32;
+#   ifdef _MSC_VER
+typedef signed __int64		 Int64;
+typedef unsigned __int64	 UInt64;
+#   else
+typedef signed long long	 Int64;
+typedef unsigned long long	 UInt64;
+#   endif
+typedef Int32				 Int;
+typedef UInt32				 UInt;
+typedef float				 Float;
+typedef double				 Double;
+typedef std::string			 String;
+typedef HWND				 WindowHandle;
+typedef UInt32				 Index;
+#endif
+
+namespace hp_fp
+{
+	extern const double PI;
+	extern const double TWO_PI;
+	extern const double DEG_TO_RAD;
+	extern const double RAD_TO_DEG;
+	extern const float PI_F;
+	extern const float TWO_PI_F;
+	extern const float DEG_TO_RAD_F;
+	extern const float RAD_TO_DEG_F;
+}
+
+#pragma once
+namespace hp_fp
+{
+#if defined( HP_PLATFORM_WIN32 )
+	// converts multibyte string to unicode widechar string
+	std::wstring s2ws( const std::string& s );
+	// returns base path from a file path
+	std::string basePath( const std::string& path );
+#endif
+}
+
+#pragma once
+namespace hp_fp
+{
+	typedef void* TypeId;
+	template<typename A>
+	// get type id without RTTI
+	TypeId typeId( )
+	{
+		static A* typeUniqueMarker = NULL;
+		return &typeUniqueMarker;
+	}
+}
+
+#pragma once
+#include <array>
+namespace hp_fp
+{
+	enum struct Key : UInt8
+	{
+		Backspace = VK_BACK,
+		Tab = VK_TAB,
+		Return = VK_RETURN,
+		Shift = VK_SHIFT,
+		Ctrl = VK_CONTROL,
+		Alt = VK_MENU,
+		Pause = VK_PAUSE,
+		CapsLock = VK_CAPITAL,
+		Esc = VK_ESCAPE,
+		Space = VK_SPACE,
+		PageUp = VK_PRIOR,
+		PageDown = VK_NEXT,
+		End = VK_END,
+		Home = VK_HOME,
+		ArrowLeft = VK_LEFT,
+		ArrowUp = VK_UP,
+		ArrowRight = VK_RIGHT,
+		ArrowDown = VK_DOWN,
+		Print = VK_PRINT,
+		PrintScreen = VK_SNAPSHOT,
+		Insert = VK_INSERT,
+		Delete = VK_DELETE,
+		Help = VK_HELP,
+		No0 = 0x30,
+		No1 = 0x31,
+		No2 = 0x32,
+		No3 = 0x33,
+		No4 = 0x34,
+		No5 = 0x35,
+		No6 = 0x36,
+		No7 = 0x37,
+		No8 = 0x38,
+		No9 = 0x39,
+		A = 'A',
+		B = 'B',
+		C = 'C',
+		D = 'D',
+		E = 'E',
+		F = 'F',
+		G = 'G',
+		H = 'H',
+		I = 'I',
+		J = 'J',
+		K = 'K',
+		L = 'L',
+		M = 'M',
+		N = 'N',
+		O = 'O',
+		P = 'P',
+		Q = 'Q',
+		R = 'R',
+		S = 'S',
+		T = 'T',
+		U = 'U',
+		V = 'V',
+		W = 'W',
+		X = 'X',
+		Y = 'Y',
+		Z = 'Z',
+		LWin = VK_LWIN,
+		RWin = VK_RWIN,
+		Num0 = VK_NUMPAD0,
+		Num1 = VK_NUMPAD1,
+		Num2 = VK_NUMPAD2,
+		Num3 = VK_NUMPAD3,
+		Num4 = VK_NUMPAD4,
+		Num5 = VK_NUMPAD5,
+		Num6 = VK_NUMPAD6,
+		Num7 = VK_NUMPAD7,
+		Num8 = VK_NUMPAD8,
+		Num9 = VK_NUMPAD9,
+		NumMultiply = VK_MULTIPLY,
+		NumAdd = VK_ADD,
+		NumSeparator = VK_SEPARATOR,
+		NumSubstract = VK_SUBTRACT,
+		NumDecimal = VK_DECIMAL,
+		NumDivide = VK_DIVIDE,
+		F1 = VK_F1,
+		F2 = VK_F2,
+		F3 = VK_F3,
+		F4 = VK_F4,
+		F5 = VK_F5,
+		F6 = VK_F6,
+		F7 = VK_F7,
+		F8 = VK_F8,
+		F9 = VK_F9,
+		F10 = VK_F10,
+		F11 = VK_F11,
+		F12 = VK_F12,
+		F13 = VK_F13,
+		F14 = VK_F14,
+		F15 = VK_F15,
+		F16 = VK_F16,
+		F17 = VK_F17,
+		F18 = VK_F18,
+		F19 = VK_F19,
+		F20 = VK_F20,
+		F21 = VK_F21,
+		F22 = VK_F22,
+		F23 = VK_F23,
+		F24 = VK_F24,
+		NumLock = VK_NUMLOCK,
+		ScrollLock = VK_SCROLL,
+		LShift = VK_LSHIFT,
+		RShift = VK_RSHIFT,
+		LCtrl = VK_LCONTROL,
+		RCtrl = VK_RCONTROL,
+		LAlt = VK_LMENU,
+		RAlt = VK_RMENU
+	};
+	enum struct MouseButton : UInt8
+	{
+		LeftButton = MK_LBUTTON,
+		RightButton = MK_RBUTTON,
+		MiddleButton = MK_MBUTTON,
+		XButton1 = MK_XBUTTON1,
+		XButton2 = MK_XBUTTON2
+	};
+	const size_t KEYS_SIZE = 255;
+	const size_t MOUSE_BUTTONS_SIZE = 5;
+	const size_t STATES_SIZE = KEYS_SIZE + MOUSE_BUTTONS_SIZE;
+	struct Mouse
+	{
+		UInt16 x;
+		UInt16 y;
+		UInt16 delta; // wheel delta
+	};
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  +  ][  +  ][  +  ][  +  ]
+	struct GameInput
+	{
+		GameInput( )
+		{
+			std::fill_n( states.begin( ), STATES_SIZE, false );
+		}
+		GameInput( const GameInput& gi ) : states( gi.states ), mouse( gi.mouse ),
+			text( gi.text )
+		{ }
+		GameInput( GameInput&& gi ) : states( std::move( gi.states ) ),
+			mouse( std::move( gi.mouse ) ), text( std::move( gi.text ) )
+		{ }
+		GameInput operator = ( const GameInput& gi )
+		{
+			return GameInput{ gi };
+		}
+		GameInput operator = ( GameInput&& gi )
+		{
+			return GameInput{ std::move( gi ) };
+		}
+		bool& operator[]( const size_t i )
+		{
+			return states[i];
+		}
+		bool& operator[]( const Key k )
+		{
+			return states[static_cast<size_t>( k )];
+		}
+		bool& operator[]( const MouseButton k )
+		{
+			return states[KEYS_SIZE + static_cast<size_t>( k )];
+		}
+		bool operator[]( const Key k ) const
+		{
+			return states[static_cast<size_t>( k )];
+		}
+		bool operator[]( const MouseButton k ) const
+		{
+			return states[KEYS_SIZE + static_cast<size_t>( k )];
+		}
+	private:
+		GameInput( std::array<bool, STATES_SIZE> states, Mouse mouse, UInt32 text )
+			: states( states ), mouse( mouse ), text( text )
+		{ }
+		std::array<bool, STATES_SIZE> states;
+	public:
+		Mouse mouse;
+		UInt32 text;
+	};
+}
+
+#pragma once
+#include "../adt/maybe.hpp"
+namespace hp_fp
+{
+	enum struct WindowStyle : unsigned
+	{
+		Window,
+		Fullscreen,
+		Default = Window
+	};
+	struct WindowConfig
+	{
+		UInt width;
+		UInt height;
+		WindowStyle windowStyle;
+		UInt bitsPerPx;
+	};
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  0  ][  0  ][  +  ][  +  ]
+	struct Window
+	{
+		Window( WindowHandle handle, const LPCWSTR name ) : handle( handle ), name( name )
+		{ }
+		Window( const Window& ) = delete;
+		Window( Window&& w ) : handle( std::move( w.handle ) ), name( std::move( w.name ) )
+		{ }
+		Window operator = ( const Window& ) = delete;
+		Window operator = ( Window&& w )
+		{
+			return Window{ std::move( w ) };
+		}
+		WindowHandle	handle;
+		const LPCWSTR	name;
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	struct Engine;
+	Maybe<Window> open_IO( Engine& engine, const WindowConfig& windowConfig );
+	WindowConfig defaultWindowConfig_IO( );
+	void setWindowVisibility_IO( WindowHandle windowHandle, const bool visible );
+	void switchToFullscreen_IO( WindowHandle windowHandle, const WindowConfig& windowConfig );
+	void processMessages_IO( WindowHandle windowHandle );
+	void captureMouse_IO( WindowHandle windowHandle );
+	void releaseMouse_IO( );
+	namespace
+	{
+		LRESULT CALLBACK windowProc_IO( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam );
+		bool isOnlyInstance_IO( const LPCWSTR windowName );
+	}
+}
+

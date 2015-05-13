@@ -52,3 +52,4 @@ namespace hp_fp
 		return ifJust( *maybe._a );
 	}
 }
+

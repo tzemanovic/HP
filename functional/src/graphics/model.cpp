@@ -202,12 +202,12 @@ namespace hp_fp
 					float mul = 1.0f / cp;
 					FVec3 tan = ( edge1 * edge2uv.y - edge2 * edge1uv.y ) * mul;
 					FVec3 binorm = ( edge1 * edge2uv.x - edge2 * edge1uv.x ) * mul;
-					tangents[indices[i]] += tan;
-					binormals[indices[i]] += binorm;
-					tangents[indices[i + 1]] += tan;
-					binormals[indices[i + 1]] += binorm;
-					tangents[indices[i + 2]] += tan;
-					binormals[indices[i + 2]] += binorm;
+					tangents[indices[i]] = tangents[indices[i]] + tan;
+					binormals[indices[i]] = binormals[indices[i]] + binorm;
+					tangents[indices[i + 1]] = tangents[indices[i + 1]] + tan;
+					binormals[indices[i + 1]] = binormals[indices[i + 1]] + binorm;
+					tangents[indices[i + 2]] = tangents[indices[i + 2]] + tan;
+					binormals[indices[i + 2]] = binormals[indices[i + 2]] + binorm;
 				}
 			}
 			for ( UInt32 i = 0; i < vertexCount; ++i )
@@ -291,3 +291,4 @@ namespace hp_fp
 		}
 	}
 }
+

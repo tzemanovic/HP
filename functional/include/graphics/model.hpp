@@ -11,7 +11,7 @@ namespace hp_fp
 	struct Renderer;
 	enum struct BuiltInModelType : UInt8
 	{
-		Box, Count
+		Cube, Sphere, Count
 	};
 	struct BuiltInModelDef
 	{
@@ -126,3 +126,4 @@ namespace hp_fp
 		Model cubeMesh( const FVec3& dimensions );
 	}
 }
+

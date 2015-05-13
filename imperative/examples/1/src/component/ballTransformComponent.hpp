@@ -10,6 +10,7 @@ namespace hp_ip
 			const Mat4x4& parentTransform = Mat4x4::identity )
 			: TransformComponent( pos, vel, scl, rot, modelRot, parentTransform )
 		{ }
-		virtual void vUpdate( const float deltaMs, const GameInput& input );
+		virtual void vUpdate( const float deltaMs, const GameInput& input ) override;
 	};
 }
+

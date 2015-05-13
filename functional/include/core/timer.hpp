@@ -18,10 +18,7 @@ namespace hp_fp
 			return Timer{ r.deltaMs, r._timeMs, r._lastTimeMs };
 		}
 		double deltaMs;
-		double timeMs( ) const
-		{
-			return _timeMs - TIME_ADDITION;
-		}
+		friend double timeMs( const Timer& timer );
 	private:
 		Timer( const double deltaMs, const double lastTimeMs, const double timeMs )
 			: deltaMs( deltaMs ), _lastTimeMs( lastTimeMs ), _timeMs( timeMs + TIME_ADDITION )
@@ -33,6 +30,7 @@ namespace hp_fp
 
 	Timer initTimer_IO( );
 	void updateTimer_IO( Timer& timer );
+	double timeMs( const Timer& timer );
 	namespace
 	{
 		double getTimeMs_IO( );

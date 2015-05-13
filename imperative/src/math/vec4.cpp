@@ -9,3 +9,4 @@ namespace hp_ip
 	const FVec4 FVec4::up( 0.f, 1.f, 0.f, 0.f );
 	const FVec4 FVec4::forward( 0.f, 0.f, 1.f, 0.f );
 }
+

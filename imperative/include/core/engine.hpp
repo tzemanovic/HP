@@ -40,3 +40,4 @@ namespace hp_ip
 		std::vector<Actor> _actors;
 	};
 }
+

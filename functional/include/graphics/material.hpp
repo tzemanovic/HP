@@ -241,3 +241,4 @@ namespace hp_fp
 	UInt32 getPassCount( Material& material );
 	void applyPass_IO( Renderer& renderer, Material& material, UInt32 i );
 }
+

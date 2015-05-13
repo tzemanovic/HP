@@ -17,3 +17,4 @@ namespace hp_ip
 	bool isInside( const Plane& plane, const FVec3& point, const float radius );
 	float planeDotCoord( const Plane& plane, const FVec3& point );
 }
+

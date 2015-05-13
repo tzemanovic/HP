@@ -36,3 +36,4 @@ namespace hp_fp
 			Maybe<Model>& model, const MaterialDef& materialDef );
 	}
 }
+

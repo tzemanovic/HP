@@ -29,3 +29,4 @@ imperative/msvc/ipch/
 imperative/msvc/*.sdf
 imperative/msvc/*.suo
 imperative/msvc/*.opensdf
+*.db

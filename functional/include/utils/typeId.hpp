@@ -10,3 +10,4 @@ namespace hp_fp
 		return &typeUniqueMarker;
 	}
 }
+

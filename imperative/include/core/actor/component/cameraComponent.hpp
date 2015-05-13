@@ -19,3 +19,4 @@ namespace hp_ip
 		Renderer* _pRenderer;
 	};
 }
+

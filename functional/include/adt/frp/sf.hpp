@@ -91,8 +91,7 @@ namespace hp_fp
 				return S < B > {
 					[f, a]( const float deltaMs )
 					{
-						// TODO: forward?
-						return f( a < deltaMs );
+						return f( std::forward<A>( a < deltaMs ) );
 					}
 				};
 			}
@@ -119,3 +118,4 @@ namespace hp_fp
 		};
 	}
 }
+

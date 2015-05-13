@@ -50,3 +50,4 @@ namespace hp_ip
 		_pTransformComponent->_owner = this;
 	}
 }
+

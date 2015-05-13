@@ -55,3 +55,4 @@ namespace hp_ip
 		return Vec3 < A > {rotated.x, rotated.y, rotated.z};
 	};
 }
+

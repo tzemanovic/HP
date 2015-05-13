@@ -19,3 +19,4 @@ namespace hp_ip
 		return ( std::string::npos == pos ) ? "" : path.substr( 0, pos + 1 );
 	}
 }
+

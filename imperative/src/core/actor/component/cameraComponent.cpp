@@ -19,3 +19,4 @@ namespace hp_ip
 		_pRenderer->setCamera( { _projection, _owner->transformComponent( ).modelTransform( ) } );
 	}
 }
+

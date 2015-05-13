@@ -16,6 +16,10 @@ namespace hp_fp
 		timer._lastTimeMs = currentTimeMs;
 		timer._timeMs += timer.deltaMs;
 	}
+	double timeMs( const Timer& timer )
+	{
+		return timer._timeMs - TIME_ADDITION;
+	}
 	namespace
 	{
 		double getTimeMs_IO( )
@@ -33,3 +37,4 @@ namespace hp_fp
 		}
 	}
 }
+

@@ -1,0 +1,1637 @@
+#include <pch.hpp>
+#include "../../include/adt/frp/sfs.hpp"
+namespace hp_fp
+{
+	SF<FVec3, FVec3> rotate( const S<FQuat>& rot )
+	{
+		return SF < FVec3, FVec3 >
+		{
+			[rot]( const S<FVec3>& b ) -> S < FVec3 >
+			{
+				return S < FVec3 >
+				{
+					[rot, b]( const float deltaMs ) -> FVec3
+					{
+						return rotate( b < deltaMs, rot < deltaMs );
+					}
+				};
+			}
+		};
+	}
+	SF<FVec3, FVec3> rotate( const FQuat& rot )
+	{
+		return SF < FVec3, FVec3 >
+		{
+			[rot]( const S<FVec3>& b ) -> S < FVec3 >
+			{
+				return S < FVec3 >
+				{
+					[rot, b]( const float deltaMs ) -> FVec3
+					{
+						return rotate( b < deltaMs, rot );
+					}
+				};
+			}
+		};
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/core/engine.hpp"
+#include <functional>
+#include "../../include/adt/maybe.hpp"
+#include "../../include/core/resources.hpp"
+#include "../../include/core/timer.hpp"
+#include "../../include/core/actor/actor.hpp"
+#include "../../include/graphics/renderer.hpp"
+#include "../../include/math/frustum.hpp"
+namespace hp_fp
+{
+	Engine init( String&& name )
+	{
+		return Engine{ std::move( name ), EngineState::Initialized, { } };
+	}
+	void run_IO( Engine& engine, std::vector<ActorDef>&& actorDefs,
+		const WindowConfig& windowConfig )
+	{
+		Maybe<Window> window = open_IO( engine, windowConfig );
+		ifThenElse( window, [&engine, &windowConfig, &actorDefs]( Window& window )
+		{
+			Maybe<Renderer> renderer = init_IO( window.handle, windowConfig );
+			ifThenElse( renderer, [&engine, &window, &actorDefs]( Renderer& renderer )
+			{
+				engine.state = EngineState::Running;
+				Resources resources;
+				Timer timer = initTimer_IO( );
+				std::vector<Actor> actors = initActors_IO( renderer, resources,
+					std::move( actorDefs ) );
+				while ( engine.state == EngineState::Running )
+				{
+					processMessages_IO( window.handle );
+					updateTimer_IO( timer );
+					preRender_IO( renderer );
+					renderActors_IO( renderer, actors, engine.gameInput,
+						static_cast<float>( timer.deltaMs ) );
+					present_IO( renderer );
+				}
+			}, []
+			{
+				ERR( "Failed to initialize renderer." );
+			} );
+		}, []
+		{
+			ERR( "Failed to open a window." );
+		} );
+	}
+	namespace
+	{
+		void renderActors_IO( Renderer& renderer, std::vector<Actor>& actors,
+			const GameInput& gameInput, const float deltaMs,
+			const Mat4x4& parentLocalTransform )
+		{
+			for ( auto& actor : actors )
+			{
+				ActorInput actorInput{
+					gameInput,
+					actor.state
+				};
+				// render previous states first then run SF to be in sync with cam
+				actor.render_IO( renderer, actor.state, parentLocalTransform );
+				auto actorOutput = actor.sf < actorInput < deltaMs;
+				actor.state = actorOutput.state;
+				renderActors_IO( renderer, actor.children, gameInput, deltaMs,
+					trasformMatFromActorState( actor.state ) );
+			}
+		}
+		std::vector<Actor> initActors_IO( Renderer& renderer, Resources& resources,
+			std::vector<ActorDef>&& actorsDef )
+		{
+			std::vector<Actor> actors{ };
+			actors.reserve( actorsDef.size( ) );
+			for ( auto& actorDef : actorsDef )
+			{
+				ActorState startingState{
+					actorDef.startingState.pos,
+					actorDef.startingState.vel,
+					actorDef.startingState.scl,
+					actorDef.startingState.rot,
+					actorDef.startingState.modelRot
+				};
+				actors.push_back( Actor{ startingState, actorDef.sf,
+					initActorRenderFunction_IO( renderer, resources, actorDef ),
+					initActors_IO( renderer, resources, std::move( actorDef.children ) ) } );
+			}
+			return actors;
+		}
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/core/resources.hpp"
+#include "../../include/core/actor/actor.hpp"
+namespace hp_fp
+{
+	Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
+		const LoadedModelDef& modelDef )
+	{
+		if ( resources.loadedModels.count( modelDef ) == 0 )
+		{
+			resources.loadedModels.emplace( modelDef, loadModelFromFile_IO( renderer,
+				modelDef.filename, modelDef.scale ) );
+		}
+		return resources.loadedModels.at( modelDef );
+	}
+	Maybe<Model>& getModel_IO( Renderer& renderer, Resources& resources,
+		const BuiltInModelDef& modelDef )
+	{
+		if ( resources.builtInModels.count( modelDef ) == 0 )
+		{
+			switch ( modelDef.type )
+			{
+			case BuiltInModelType::Cube:
+			{
+				resources.builtInModels.emplace( modelDef,
+					cubeMesh_IO( renderer, modelDef.dimensions ) );
+			}
+			break;
+			default:
+				WAR( "Missing built-In model for type " +
+					std::to_string( static_cast<UInt8>( modelDef.type ) ) + "." );
+			}
+		}
+		return resources.builtInModels.at( modelDef );
+	}
+	Maybe<Material>& getMaterial_IO( Renderer& renderer, Resources& resources,
+		const MaterialDef& materialDef )
+	{
+		if ( resources.materials.count( materialDef ) == 0 )
+		{
+			resources.materials.emplace( materialDef, loadMaterial_IO( renderer, materialDef ) );
+		}
+		return resources.materials.at( materialDef );
+	}
+	Maybe<ActorResources> getActorResources_IO( Renderer& renderer, Resources& resources,
+		const ActorModelDef& actorModelDef )
+	{
+		if ( actorModelDef.model.is<LoadedModelDef>( ) )
+		{
+			Maybe<Model>& model = getModel_IO( renderer, resources,
+				actorModelDef.model.loaded );
+			return getMaterialForModel_IO( renderer, resources, model,
+				actorModelDef.material );
+		}
+		else if ( actorModelDef.model.is<BuiltInModelDef>( ) )
+		{
+			Maybe<Model>& model = getModel_IO( renderer, resources,
+				actorModelDef.model.builtIn );
+			return getMaterialForModel_IO( renderer, resources, model,
+				actorModelDef.material );
+		}
+		return nothing<ActorResources>( );
+	}
+	namespace
+	{
+		Maybe<ActorResources> getMaterialForModel_IO( Renderer& renderer, Resources& resources,
+			Maybe<Model>& model, const MaterialDef& materialDef )
+		{
+			return ifThenElse( model, [&renderer, &resources, &materialDef]( Model& model )
+			{
+				Maybe<Material>& material = getMaterial_IO( renderer, resources, materialDef );
+				return ifThenElse( material, [&model]( Material& material )
+				{
+					return just( ActorResources{ model, material } );
+				}, []
+				{
+					return nothing<ActorResources>( );
+				} );
+			}, []
+			{
+				return nothing<ActorResources>( );
+			} );
+		}
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/core/timer.hpp"
+namespace hp_fp
+{
+	// http://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
+	// start timer at 2^32 to gain best precision
+	const double TIME_ADDITION = 4294967296;
+	Timer initTimer_IO( )
+	{
+		return Timer{ 0.0, getTimeMs_IO( ), 0.0 };
+	}
+	void updateTimer_IO( Timer& timer )
+	{
+		double currentTimeMs = getTimeMs_IO( );
+		timer.deltaMs = currentTimeMs - timer._lastTimeMs;
+		timer._lastTimeMs = currentTimeMs;
+		timer._timeMs += timer.deltaMs;
+	}
+	double timeMs( const Timer& timer )
+	{
+		return timer._timeMs - TIME_ADDITION;
+	}
+	namespace
+	{
+		double getTimeMs_IO( )
+		{
+			// use only single thread to calculate time
+			HANDLE currentThread = GetCurrentThread( );
+			DWORD_PTR previousMask = SetThreadAffinityMask( currentThread, 1 );
+			static LARGE_INTEGER frequency;
+			LARGE_INTEGER time;
+			QueryPerformanceFrequency( &frequency );
+			QueryPerformanceCounter( &time );
+			// use previously used thread
+			SetThreadAffinityMask( currentThread, previousMask );
+			return double( 1000 * time.QuadPart / frequency.QuadPart );
+		}
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/core/actor/actor.hpp"
+#include "../../include/core/resources.hpp"
+namespace hp_fp
+{
+	ActorTypeDef actorModelDef( ActorModelDef&& m )
+	{
+		ActorTypeDef def;
+		def.model = m;
+		def._typeId = typeId<ActorModelDef>( );
+		return def;
+	}
+	ActorTypeDef actorCameraDef( ActorCameraDef&& c )
+	{
+		ActorTypeDef def;
+		def.camera = c;
+		def._typeId = typeId<ActorCameraDef>( );
+		return def;
+	}
+	std::function<void( Renderer&, const ActorState&, const Mat4x4& )>
+		initActorRenderFunction_IO( Renderer& renderer, Resources& resources,
+		const ActorDef& actorDef )
+	{
+		static std::function<void( Renderer&, const ActorState&, const Mat4x4& )> doNothing =
+			[]( Renderer&, const ActorState&, const Mat4x4& )
+		{ };
+		if ( actorDef.type.is<ActorModelDef>( ) )
+		{
+			Maybe<ActorResources> res = getActorResources_IO( renderer, resources,
+				actorDef.type.model );
+			return ifThenElse( res, []( ActorResources& res )
+			{
+				return renderActor_IO( res );
+			}, []
+			{
+				return doNothing;
+			} );
+		}
+		else if ( actorDef.type.is<ActorCameraDef>( ) )
+		{
+			return actorDef.type.camera.render( actorDef.type.camera, renderer.windowConfig );
+		}
+		return doNothing;
+	}
+	Mat4x4 trasformMatFromActorState( const ActorState& actorState )
+	{
+		return rotSclPosToMat4x4( actorState.rot, actorState.scl, actorState.pos );
+	}
+	Mat4x4 modelTrasformMatFromActorState( const ActorState& actorState )
+	{
+		return rotSclPosToMat4x4( actorState.modelRot * actorState.rot,
+			actorState.scl, actorState.pos );
+	}
+	namespace
+	{
+		// Have to specify lambda's return type to std::function because of the issue
+		// with return type deduction (http://stackoverflow.com/questions/12639578/c11-lambda-returning-lambda)
+		std::function<void( Renderer&, const ActorState&, const Mat4x4& )>  renderActor_IO(
+			ActorResources& res )
+		{
+			return [res]( Renderer& renderer, const ActorState& actorState,
+				const Mat4x4& transform ) mutable
+			{
+				const Camera& cam = getCamera( renderer.cameraBuffer );
+				setProjection_IO( res.material, cam.projection );
+				setView_IO( res.material, inverse( cam.transform ) );
+				setWorld_IO( res.material,
+					modelTrasformMatFromActorState( actorState ) * transform );
+				setCameraPosition_IO( res.material, pos( cam.transform ) );
+				setAbientLightColor_IO( res.material, Color( 0.1f, 0.1f, 0.1f, 0.6f ) );
+				setDiffuseLightColor_IO( res.material, Color( 1.0f, 0.95f, 0.4f, 0.4f ) );
+				setSpecularLightColor_IO( res.material, Color( 1.0f, 1.0f, 1.0f, 0.3f ) );
+				setLightDirection_IO( res.material, FVec3{ -0.5f, -1.0f, 0.1f } );
+				setTextures_IO( res.material );
+				setMaterials_IO( res.material );
+				bindInputLayout_IO( renderer, res.material );
+				for ( UInt32 i = 0; i < getPassCount( res.material ); ++i )
+				{
+					applyPass_IO( renderer, res.material, i );
+					for ( UInt32 j = 0; j < res.model.meshes.size( ); ++j )
+					{
+						setBuffers_IO( renderer, res.model.meshes[j] );
+						drawIndexed_IO( renderer, res.model.meshes[j].indices.size( ), 0, 0 );
+					}
+				}
+			};
+		};
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/graphics/camera.hpp"
+namespace hp_fp
+{
+	const Camera& getCamera( const CameraBuffer& cameraBuffer )
+	{
+		if ( cameraBuffer._first )
+		{
+			return cameraBuffer._cam[0];
+		}
+		else
+		{
+			return cameraBuffer._cam[1];
+		}
+	}
+	void setCamera_IO( CameraBuffer& cameraBuffer, Camera&& camera )
+	{
+		if ( cameraBuffer._first )
+		{
+			cameraBuffer._cam[1] = camera;
+		}
+		else
+		{
+			cameraBuffer._cam[0] = camera;
+		}
+	}
+	void swap_IO( CameraBuffer& cameraBuffer )
+	{
+		cameraBuffer._first = !cameraBuffer._first;
+	}
+}
+
+#include <pch.hpp>
+#include <algorithm>
+#include "../../include/graphics/material.hpp"
+#include "../../include/graphics/renderer.hpp"
+#include "../../include/graphics/vertex.hpp"
+#include "../../include/utils/string.hpp"
+namespace hp_fp
+{
+	Material defaultMat( )
+	{
+		return Material
+		{
+			"assets/shaders/parallax.fx", // filename
+			"Render", // techniqueName
+			{ 1.0f, 1.0f }, // textureRepeat
+			{ 0.5f, 0.5f, 0.5f }, // ambientMaterial
+			{ 0.8f, 0.8f, 0.8f }, // diffuseMaterial
+			{ 1.0f, 1.0f, 1.0f }, // specularMaterial
+			25.0f // specularPower
+		};
+	}
+	Maybe<Material> loadMaterial_IO( Renderer& renderer, const MaterialDef& materialDef )
+	{
+		Material material = defaultMat( );
+		bool materialLoaded;
+		if ( materialLoaded = initMaterial_IO( material, renderer ) )
+		{
+			// TODO: fix these in /Ox
+			if ( materialDef.diffuseTextureFilename != "" )
+			{
+				materialLoaded &= loadTexture_IO( &material.diffuseTexture, renderer,
+					materialDef.diffuseTextureFilename );
+			}
+			if ( materialDef.specularTextureFilename != "" )
+			{
+				materialLoaded &= loadTexture_IO( &material.specularTexture, renderer,
+					materialDef.specularTextureFilename );
+			}
+			if ( materialDef.bumpTextureFilename != "" )
+			{
+				materialLoaded &= loadTexture_IO( &material.bumpTexture, renderer,
+					materialDef.bumpTextureFilename );
+			}
+			if ( materialDef.parallaxTextureFilename != "" )
+			{
+				materialLoaded &= loadTexture_IO( &material.parallaxTexture, renderer,
+					materialDef.parallaxTextureFilename );
+			}
+			if ( materialDef.textureRepeat.x != 0.0f && materialDef.textureRepeat.y != 0.0f )
+			{
+				material.textureRepeat = materialDef.textureRepeat;
+			}
+		}
+		if ( materialLoaded )
+		{
+			return just( std::move( material ) );
+		}
+		return nothing<Material>( );
+	}
+	bool loadTexture_IO( ID3D11ShaderResourceView** texture, Renderer& renderer,
+		const String& filename )
+	{
+		String fileExt = filename.substr( filename.find( '.' ) + 1 );
+		std::transform( fileExt.begin( ), fileExt.end( ), fileExt.begin( ), ::tolower );
+		std::wstring wFilename = s2ws( filename );
+		if ( fileExt.compare( "dds" ) == 0 )
+		{
+			if ( FAILED( DirectX::CreateDDSTextureFromFile( renderer.device,
+				wFilename.c_str( ), nullptr, texture ) ) )
+			{
+				ERR( "Failed to load \"" + filename + "\" texture." );
+				return false;
+			}
+		}
+		else
+		{
+			if ( FAILED( DirectX::CreateWICTextureFromFile( renderer.device,
+				wFilename.c_str( ), nullptr, texture ) ) )
+			{
+				ERR( "Failed to load \"" + filename + "\" texture." );
+				return false;
+			}
+		}
+		return true;
+	}
+	namespace
+	{
+		bool initMaterial_IO( Material& material, Renderer& renderer )
+		{
+			if ( loadShader_IO( material, renderer ) )
+			{
+				material.technique = material.effect->GetTechniqueByName( material.techniqueName.c_str( ) );
+				material.technique->GetDesc( &material.techniqueDesc );
+				if ( createVertexLayout_IO( material, renderer ) )
+				{
+					// retrieve all variables using semantic
+					material.worldMatrixVariable = material.effect->GetVariableBySemantic( "WORLD" )->AsMatrix( );
+					material.viewMatrixVariable = material.effect->GetVariableBySemantic( "VIEW" )->AsMatrix( );
+					material.projectionMatrixVariable = material.effect->GetVariableBySemantic( "PROJECTION" )->AsMatrix( );
+					material.diffuseTextureVariable = material.effect->GetVariableByName( "diffuseMap" )->AsShaderResource( );
+					material.specularTextureVariable = material.effect->GetVariableByName( "specularMap" )->AsShaderResource( );
+					material.bumpTextureVariable = material.effect->GetVariableByName( "bumpMap" )->AsShaderResource( );
+					material.parallaxTextureVariable = material.effect->GetVariableByName( "heightMap" )->AsShaderResource( );
+					material.envMapVariable = material.effect->GetVariableByName( "envMap" )->AsShaderResource( );
+					// lights
+					material.ambientLightColourVariable = material.effect->GetVariableByName( "ambientLightColour" )->AsVector( );
+					material.diffuseLightColourVariable = material.effect->GetVariableByName( "diffuseLightColour" )->AsVector( );
+					material.specularLightColourVariable = material.effect->GetVariableByName( "specularLightColour" )->AsVector( );
+					material.lightDirectionVariable = material.effect->GetVariableByName( "lightDirection" )->AsVector( );
+					// materials
+					material.ambientMaterialVariable = material.effect->GetVariableByName( "ambientMaterialColour" )->AsVector( );
+					material.diffuseMaterialVariable = material.effect->GetVariableByName( "diffuseMaterialColour" )->AsVector( );
+					material.specularMaterialVariable = material.effect->GetVariableByName( "specularMaterialColour" )->AsVector( );
+					material.specularPowerVariable = material.effect->GetVariableByName( "specularPower" )->AsScalar( );
+					material.textureRepeatVariable = material.effect->GetVariableByName( "textureRepeat" )->AsVector( );
+					// camera
+					material.cameraPositionVariable = material.effect->GetVariableByName( "cameraPosition" )->AsVector( );
+					// booleans
+					material.useDiffuseTextureVariable = material.effect->GetVariableByName( "useDiffuseTexture" )->AsScalar( );
+					material.useSpecularTextureVariable = material.effect->GetVariableByName( "useSpecularTexture" )->AsScalar( );
+					material.useBumpTextureVariable = material.effect->GetVariableByName( "useBumpTexture" )->AsScalar( );
+					material.useParallaxTextureVariable = material.effect->GetVariableByName( "useHeightTexture" )->AsScalar( );
+					return true;
+				}
+			}
+			ERR( "Failed to initalize \"" + material.filename + "\"'s material." );
+			return false;
+		}
+		bool loadShader_IO( Material& material, Renderer& renderer )
+		{
+			ID3DBlob* buffer = NULL;
+			if ( !loadAndCompile_IO( material, renderer, "fx_5_0", &buffer ) )
+			{
+				return false;
+			}
+			if ( FAILED( D3DX11CreateEffectFromMemory( buffer->GetBufferPointer( ),
+				buffer->GetBufferSize( ), 0, renderer.device, &material.effect ) ) )
+			{
+				HP_RELEASE( buffer );
+				return false;
+			}
+			return true;
+		}
+		bool loadAndCompile_IO( Material& material, Renderer& renderer, const String& shaderModel,
+			ID3DBlob** buffer )
+		{
+			std::wstring wFilePath = s2ws( material.filename );
+			DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#       ifdef HP_DEBUG
+			shaderFlags |= D3DCOMPILE_DEBUG;
+#       endif
+			ID3DBlob* errorBuffer = 0;
+			HRESULT result = D3DCompileFromFile( wFilePath.c_str( ), 0, 0, 0, shaderModel.c_str( ),
+				shaderFlags, 0, buffer, &errorBuffer );
+			if ( FAILED( result ) )
+			{
+				HP_RELEASE( errorBuffer );
+				return false;
+			}
+			HP_RELEASE( errorBuffer );
+			return true;
+		}
+		bool createVertexLayout_IO( Material& material, Renderer& renderer )
+		{
+			UInt32 elementsCount = ARRAYSIZE( D3D11_LAYOUT );
+			D3DX11_PASS_DESC passDesc;
+			material.technique->GetPassByIndex( 0 )->GetDesc( &passDesc );
+			if ( FAILED( renderer.device->CreateInputLayout( D3D11_LAYOUT, elementsCount,
+				passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, &material.inputLayout ) ) )
+			{
+				return false;
+			}
+			return true;
+		}
+	}
+	void setProjection_IO( Material& material, const Mat4x4& mat )
+	{
+		material.projectionMatrixVariable->SetMatrix( (float*) ( &mat ) );
+	}
+	void setView_IO( Material& material, const Mat4x4& mat )
+	{
+		material.viewMatrixVariable->SetMatrix( (float*) ( &mat ) );
+	}
+	void setWorld_IO( Material& material, const Mat4x4& mat )
+	{
+		material.worldMatrixVariable->SetMatrix( (float*) ( &mat ) );
+	}
+	void setAbientLightColor_IO( Material& material, const Color& color )
+	{
+		material.ambientLightColourVariable->SetFloatVector( (float*) ( &color ) );
+	}
+	void setDiffuseLightColor_IO( Material& material, const Color& color )
+	{
+		material.diffuseLightColourVariable->SetFloatVector( (float*) ( &color ) );
+	}
+	void setSpecularLightColor_IO( Material& material, const Color& color )
+	{
+		material.specularLightColourVariable->SetFloatVector( (float*) ( &color ) );
+	}
+	void setLightDirection_IO( Material& material, const FVec3& dir )
+	{
+		material.lightDirectionVariable->SetFloatVector( (float*) ( &dir ) );
+	}
+	void setCameraPosition_IO( Material& material, const FVec3& dir )
+	{
+		material.cameraPositionVariable->SetFloatVector( (float*) ( &dir ) );
+	}
+	void setTextureRepeat_IO( Material& material, const FVec2& repeat )
+	{
+		material.textureRepeat = repeat;
+	}
+	void setTextures_IO( Material& material )
+	{
+		material.diffuseTextureVariable->SetResource( material.diffuseTexture );
+		material.specularTextureVariable->SetResource( material.specularTexture );
+		material.bumpTextureVariable->SetResource( material.bumpTexture );
+		material.parallaxTextureVariable->SetResource( material.parallaxTexture );
+		material.envMapVariable->SetResource( material.envMapTexture );
+
+		if ( material.diffuseTexture )
+			material.useDiffuseTextureVariable->SetBool( true );
+		if ( material.specularTexture )
+			material.useSpecularTextureVariable->SetBool( true );
+		if ( material.bumpTexture )
+			material.useBumpTextureVariable->SetBool( true );
+		if ( material.parallaxTexture )
+			material.useParallaxTextureVariable->SetBool( true );
+
+		material.textureRepeatVariable->SetFloatVector( (float*) ( &material.textureRepeat ) );
+	}
+	void setMaterials_IO( Material& material )
+	{
+		material.ambientMaterialVariable->SetFloatVector( (float*) ( material.ambientMaterial ) );
+		material.diffuseMaterialVariable->SetFloatVector( (float*) ( material.diffuseMaterial ) );
+		material.specularMaterialVariable->SetFloatVector( (float*) ( material.specularMaterial ) );
+		material.specularPowerVariable->SetFloat( material.specularPower );
+	}
+	void bindInputLayout_IO( Renderer& renderer, Material& material )
+	{
+		renderer.deviceContext->IASetInputLayout( material.inputLayout );
+	}
+	UInt32 getPassCount( Material& material )
+	{
+		return material.techniqueDesc.Passes;
+	}
+	void applyPass_IO( Renderer& renderer, Material& material, UInt32 i )
+	{
+		material.pass = material.technique->GetPassByIndex( i );
+		material.pass->Apply( 0, renderer.deviceContext );
+	}
+}
+
+#include <pch.hpp>
+#include <algorithm>
+#include <fbxsdk.h>
+#pragma comment(lib, "libfbxsdk-md.lib")
+#include "../../include/graphics/model.hpp"
+#include "../../include/graphics/renderer.hpp"
+namespace hp_fp
+{
+	ModelDef builtInModelDef( BuiltInModelDef&& m )
+	{
+		ModelDef model;
+		model.builtIn = m;
+		model._typeId = typeId<BuiltInModelDef>( );
+		return model;
+	}
+	ModelDef loadedModelDef( LoadedModelDef&& m )
+	{
+		ModelDef model;
+		model.loaded = m;
+		model._typeId = typeId<LoadedModelDef>( );
+		return model;
+	}
+	void addVertex_IO( Mesh& mesh, const Vertex vertex )
+	{
+		mesh.vertices.push_back( vertex );
+	}
+	void addIndex_IO( Mesh& mesh, const Index index )
+	{
+		mesh.indices.push_back( index );
+	}
+	void setBuffers_IO( Renderer& renderer, Mesh& mesh )
+	{
+		UInt32 stride = sizeof( Vertex );
+		UInt32 offset = 0;
+		setVertexBuffers_IO( renderer, &mesh.vertexBuffer, &stride, &offset );
+		setIndexBuffer_IO( renderer, &mesh.indexBuffer );
+	}
+	Maybe<Model> loadModelFromFile_IO( Renderer& renderer, const String& filename, const float scale )
+	{
+		String fileExt{ filename.substr( filename.find( '.' ) + 1 ) };
+		std::transform( fileExt.begin( ), fileExt.end( ), fileExt.begin( ), ::tolower );
+		if ( fileExt.compare( "fbx" ) == 0 )
+		{
+			return loadModelFromFBXFile_IO( renderer, filename, scale );
+		}
+		return nothing<Model>( );
+	}
+	Maybe<Model> cubeMesh_IO( Renderer& renderer, const FVec3& dimensions )
+	{
+		Model model{ cubeMesh( dimensions ) };
+		bool buffersCreated = true;
+		for ( auto& mesh : model.meshes )
+		{
+			buffersCreated &= createBuffers_IO( renderer, mesh );
+		}
+		if ( buffersCreated )
+		{
+			return just( std::move( model ) );
+		}
+		ERR( "Failed to initalize cube's buffers." );
+		return nothing<Model>( );
+	}
+	namespace
+	{
+		void addMesh_IO( Model& model, Mesh&& mesh )
+		{
+			model.meshes.push_back( std::move( mesh ) );
+		}
+		Maybe<Model> loadModelFromFBXFile_IO( Renderer& renderer, const String& filename, const float scale )
+		{
+			Model model;
+			FbxManager* manager = FbxManager::Create( );
+			FbxIOSettings* settings = FbxIOSettings::Create( manager, IOSROOT );
+			manager->SetIOSettings( settings );
+			FbxImporter* importer = FbxImporter::Create( manager, "" );
+			FbxGeometryConverter converter( manager );
+			if ( !importer->Initialize( filename.c_str( ), -1, manager->GetIOSettings( ) ) )
+			{
+				return nothing<Model>( );
+			}
+			FbxScene* scene = FbxScene::Create( manager, "myScene" );
+			FbxAxisSystem axisSystem = scene->GetGlobalSettings( ).GetAxisSystem( );
+			importer->Import( scene );
+			importer->Destroy( );
+			FbxNode* rootNode = scene->GetRootNode( );
+			FbxMesh* fbxMesh = NULL;
+			if ( rootNode )
+			{
+				for ( Int32 i = 0; i < rootNode->GetChildCount( ); ++i )
+				{
+					FbxNode* childNode = rootNode->GetChild( i );
+					for ( Int32 j = 0; j < childNode->GetNodeAttributeCount( ); ++j )
+					{
+						FbxNodeAttribute* nodeAttribute = childNode->GetNodeAttributeByIndex( j );
+						converter.Triangulate( nodeAttribute, true );
+						if ( nodeAttribute->GetAttributeType( ) == FbxNodeAttribute::eMesh )
+						{
+							fbxMesh = (FbxMesh*) ( nodeAttribute );
+							if ( fbxMesh )
+							{
+								Mesh mesh;
+								FbxVector4* fbxVertices = fbxMesh->GetControlPoints( );
+								UInt32 vertexCount = fbxMesh->GetControlPointsCount( );
+								UInt32 indexCount = fbxMesh->GetPolygonVertexCount( );
+								Index* indices = (Index*) fbxMesh->GetPolygonVertices( );
+								Vertex* vertices = new Vertex[vertexCount];
+								for ( UInt32 k = 0; k < vertexCount; ++k )
+								{
+									vertices[k].position.x = float( fbxVertices[k][0] * scale );
+									vertices[k].position.y = float( fbxVertices[k][1] * scale );
+									vertices[k].position.z = float( fbxVertices[k][2] * scale );
+								}
+
+								for ( Int32 polyIndex = 0; polyIndex < fbxMesh->GetPolygonCount( ); ++polyIndex )
+								{
+									for ( UInt32 vertexIndex = 0; vertexIndex < 3; ++vertexIndex )
+									{
+										UInt32 cornerIndex = fbxMesh->GetPolygonVertex( polyIndex, vertexIndex );
+										FbxVector4 fbxVertex = fbxVertices[cornerIndex];
+										FbxVector4 fbxNormal;
+										fbxMesh->GetPolygonVertexNormal( polyIndex, vertexIndex, fbxNormal );
+										fbxNormal.Normalize( );
+										vertices[cornerIndex].normal = FVec3{ float( fbxNormal[0] ),
+											float( fbxNormal[1] ), float( fbxNormal[2] ) };
+										FbxVector2 fbxUV = FbxVector2( 0, 0 );
+										FbxLayerElementUV* fbxUVs = fbxMesh->GetLayer( 0 )->GetUVs( );
+										if ( fbxUVs )
+										{
+											UInt32 UVIndex = 0;
+											switch ( fbxUVs->GetMappingMode( ) )
+											{
+											case FbxLayerElement::eByControlPoint:
+												UVIndex = cornerIndex;
+												break;
+											case FbxLayerElement::eByPolygonVertex:
+												UVIndex = fbxMesh->GetTextureUVIndex( polyIndex, vertexIndex, FbxLayerElement::eTextureDiffuse );
+												break;
+											}
+											fbxUV = fbxUVs->GetDirectArray( ).GetAt( UVIndex );
+											vertices[cornerIndex].texCoord.x = float( fbxUV[0] );
+											vertices[cornerIndex].texCoord.y = float( 1.0 - fbxUV[1] );
+										}
+									}
+								}
+								computeTangentsAndBinormals_IO( vertices, vertexCount, indices, indexCount );
+								for ( UInt32 k = 0; k < vertexCount; ++k )
+								{
+									addVertex_IO( mesh, vertices[k] );
+								}
+								for ( UInt32 k = 0; k < indexCount; ++k )
+								{
+									addIndex_IO( mesh, indices[k] );
+								}
+								HP_DELETE_ARRAY( vertices );
+								addMesh_IO( model, std::move( mesh ) );
+							}
+						}
+					}
+				}
+				bool buffersCreated = true;
+				for ( auto& mesh : model.meshes )
+				{
+					buffersCreated &= createBuffers_IO( renderer, mesh );
+				}
+				if ( buffersCreated )
+				{
+					settings->Destroy( );
+					manager->Destroy( );
+					return just( std::move( model ) );
+				}
+				else
+				{
+					ERR( "Failed to initalize \"" + filename + "\"'s buffers." );
+				}
+			}
+			ERR( "Failed to load \"" + filename + "\" model." );
+			settings->Destroy( );
+			manager->Destroy( );
+			return nothing<Model>( );
+		}
+		void computeTangentsAndBinormals_IO( Vertex* vertices, UInt32 vertexCount, UInt32* indices,
+			UInt32 indexCount )
+		{
+			UInt32 triCount = indexCount / 3;
+			FVec3* tangents = HP_NEW FVec3[vertexCount];
+			FVec3* binormals = HP_NEW FVec3[vertexCount];
+			for ( UInt32 i = 0; i < triCount; i += 3 )
+			{
+				FVec3 v1 = vertices[indices[i]].position;
+				FVec3 v2 = vertices[indices[i + 1]].position;
+				FVec3 v3 = vertices[indices[i + 2]].position;
+				FVec2 uv1 = vertices[indices[i]].texCoord;
+				FVec2 uv2 = vertices[indices[i + 1]].texCoord;
+				FVec2 uv3 = vertices[indices[i + 2]].texCoord;
+				FVec3 edge1 = v2 - v1;
+				FVec3 edge2 = v3 - v1;
+				FVec2 edge1uv = uv2 - uv1;
+				FVec2 edge2uv = uv3 - uv1;
+				float cp = edge1uv.x * edge2uv.y - edge1uv.y * edge2uv.x;
+				if ( cp != 0.0f )
+				{
+					float mul = 1.0f / cp;
+					FVec3 tan = ( edge1 * edge2uv.y - edge2 * edge1uv.y ) * mul;
+					FVec3 binorm = ( edge1 * edge2uv.x - edge2 * edge1uv.x ) * mul;
+					tangents[indices[i]] += tan;
+					binormals[indices[i]] += binorm;
+					tangents[indices[i + 1]] += tan;
+					binormals[indices[i + 1]] += binorm;
+					tangents[indices[i + 2]] += tan;
+					binormals[indices[i + 2]] += binorm;
+				}
+			}
+			for ( UInt32 i = 0; i < vertexCount; ++i )
+			{
+				vertices[i].tangent = normalize( tangents[i] );
+				vertices[i].binormal = normalize( binormals[i] );
+			}
+			HP_DELETE_ARRAY( tangents );
+			HP_DELETE_ARRAY( binormals );
+		}
+		bool createBuffers_IO( Renderer& renderer, Mesh& mesh )
+		{
+			if ( createVertexBuffer_IO( renderer, &mesh.vertexBuffer, sizeof( Vertex ) * mesh.vertices.size( ), &mesh.vertices.at( 0 ) ) )
+			{
+				if ( createIndexBuffer_IO( renderer, &mesh.indexBuffer, sizeof( Index ) * mesh.indices.size( ), &mesh.indices.at( 0 ) ) )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		Model cubeMesh( const FVec3& dimensions )
+		{
+			Model model;
+			Mesh mesh;
+			float halfWidth = dimensions.x / 2.f;
+			float halfHeight = dimensions.y / 2.f;
+			float halfLength = dimensions.z / 2.f;
+			Vertex vertices[] =
+			{
+				{ FVec3{ -halfWidth, halfHeight, -halfLength }, Color( ), FVec2{ 0.0f, 0.0f }, FVec3::up }, // 0 +Y (top face)
+				{ FVec3{ halfWidth, halfHeight, -halfLength }, Color( ), FVec2{ 1.0f, 0.0f }, FVec3::up }, // 1
+				{ FVec3{ halfWidth, halfHeight, halfLength }, Color( ), FVec2{ 1.0f, 1.0f }, FVec3::up }, // 2
+				{ FVec3{ -halfWidth, halfHeight, halfLength }, Color( ), FVec2{ 0.0f, 1.0f }, FVec3::up }, // 3
+
+				{ FVec3{ -halfWidth, -halfHeight, halfLength }, Color( ), FVec2{ 0.0f, 0.0f }, -1 * FVec3::up }, // 4 -Y (bottom face)
+				{ FVec3{ halfWidth, -halfHeight, halfLength }, Color( ), FVec2{ 1.0f, 0.0f }, -1 * FVec3::up }, // 5
+				{ FVec3{ halfWidth, -halfHeight, -halfLength }, Color( ), FVec2{ 1.0f, 1.0f }, -1 * FVec3::up }, // 6
+				{ FVec3{ -halfWidth, -halfHeight, -halfLength }, Color( ), FVec2{ 0.0f, 1.0f }, -1 * FVec3::up }, // 7
+
+				{ FVec3{ halfWidth, halfHeight, halfLength }, Color( ), FVec2{ 0.0f, 0.0f }, FVec3::right }, // 8 +X (right face)
+				{ FVec3{ halfWidth, halfHeight, -halfLength }, Color( ), FVec2{ 1.0f, 0.0f }, FVec3::right }, // 9
+				{ FVec3{ halfWidth, -halfHeight, -halfLength }, Color( ), FVec2{ 1.0f, 1.0f }, FVec3::right }, // 10
+				{ FVec3{ halfWidth, -halfHeight, halfLength }, Color( ), FVec2{ 0.0f, 1.0f }, FVec3::right }, // 11
+
+				{ FVec3{ -halfWidth, halfHeight, -halfLength }, Color( ), FVec2{ 0.0f, 0.0f }, -1 * FVec3::right }, // 12 -X (left face)
+				{ FVec3{ -halfWidth, halfHeight, halfLength }, Color( ), FVec2{ 1.0f, 0.0f }, -1 * FVec3::right }, // 13
+				{ FVec3{ -halfWidth, -halfHeight, halfLength }, Color( ), FVec2{ 1.0f, 1.0f }, -1 * FVec3::right }, // 14
+				{ FVec3{ -halfWidth, -halfHeight, -halfLength }, Color( ), FVec2{ 0.0f, 1.0f }, -1 * FVec3::right }, // 15
+
+				{ FVec3{ -halfWidth, halfHeight, halfLength }, Color( ), FVec2{ 0.0f, 0.0f }, FVec3::forward }, // 16 +Z (front face)
+				{ FVec3{ halfWidth, halfHeight, halfLength }, Color( ), FVec2{ 1.0f, 0.0f }, FVec3::forward }, // 17
+				{ FVec3{ halfWidth, -halfHeight, halfLength }, Color( ), FVec2{ 1.0f, 1.0f }, FVec3::forward }, // 18
+				{ FVec3{ -halfWidth, -halfHeight, halfLength }, Color( ), FVec2{ 0.0f, 1.0f }, FVec3::forward }, // 19
+
+				{ FVec3{ halfWidth, halfHeight, -halfLength }, Color( ), FVec2{ 0.0f, 0.0f }, -1 * FVec3::forward }, // 20 -Z (back face)
+				{ FVec3{ -halfWidth, halfHeight, -halfLength }, Color( ), FVec2{ 1.0f, 0.0f }, -1 * FVec3::forward }, // 21
+				{ FVec3{ -halfWidth, -halfHeight, -halfLength }, Color( ), FVec2{ 1.0f, 1.0f }, -1 * FVec3::forward }, // 22
+				{ FVec3{ halfWidth, -halfHeight, -halfLength }, Color( ), FVec2{ 0.0f, 1.0f }, -1 * FVec3::forward }, // 23
+			};
+			Index indices[] =
+			{
+				1, 0, 2, 2, 0, 3, // top face
+				5, 4, 6, 6, 4, 7, // bottom
+				9, 8, 10, 10, 8, 11, // right
+				13, 12, 14, 14, 12, 15, // left
+				17, 16, 18, 18, 16, 19, // front
+				21, 20, 22, 22, 20, 23 // back
+			};
+			computeTangentsAndBinormals_IO( vertices, 24, indices, 36 );
+			for ( UInt16 i = 0; i < 24; i++ )
+			{
+				addVertex_IO( mesh, vertices[i] );
+			}
+			for ( UInt16 i = 0; i < 36; i++ )
+			{
+				addIndex_IO( mesh, indices[i] );
+			}
+			addMesh_IO( model, std::move( mesh ) );
+			return model;
+		}
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/graphics/renderer.hpp"
+namespace hp_fp
+{
+	Maybe<Renderer> init_IO( WindowHandle windowHandle, const WindowConfig& windowConfig )
+	{
+		Renderer renderer{ D3D_DRIVER_TYPE_NULL, D3D_FEATURE_LEVEL_11_0, windowConfig };
+		// driver types for fallback
+		D3D_DRIVER_TYPE driverTypes[] = { D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP,
+			D3D_DRIVER_TYPE_SOFTWARE };
+		UInt8 totalDriverTypes = ARRAYSIZE( driverTypes );
+		// fallback feature levels
+		D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0 };
+		UInt8 totalFeatureLevels = ARRAYSIZE( featureLevels );
+		// swap chain description
+		DXGI_SWAP_CHAIN_DESC swapChainDesc;
+		ZeroMemory( &swapChainDesc, sizeof( swapChainDesc ) );
+		swapChainDesc.BufferCount = windowConfig.windowStyle == WindowStyle::Fullscreen ? 2 : 1;
+		swapChainDesc.BufferDesc.Width = windowConfig.width;
+		swapChainDesc.BufferDesc.Height = windowConfig.height;
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.OutputWindow = windowHandle;
+		swapChainDesc.Windowed = windowConfig.windowStyle == WindowStyle::Window;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		// device creation flags
+		UInt32 creationFlags = 0;
+#       ifdef HP_DEBUG
+		creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#       endif
+		HRESULT result;
+		UInt8 driver = 0;
+		// loop through driver types and attempt to create device
+		for ( driver; driver < totalDriverTypes; ++driver )
+		{
+			result = D3D11CreateDeviceAndSwapChain( 0, driverTypes[driver], 0,
+				creationFlags, featureLevels, totalFeatureLevels, D3D11_SDK_VERSION,
+				&swapChainDesc, &renderer.swapChain, &renderer.device,
+				&renderer.featureLevel, &renderer.deviceContext );
+			if ( SUCCEEDED( result ) )
+			{
+				renderer.driverType = driverTypes[driver];
+				break;
+			}
+		}
+		if ( FAILED( result ) )
+		{
+			ERR( "Failed to create the Direct3D device!" );
+			return nothing<Renderer>( );
+		}
+		// back buffer texture to link render target with back buffer
+		ID3D11Texture2D* backBufferTexture;
+		if ( FAILED( renderer.swapChain->GetBuffer( 0, _uuidof( ID3D11Texture2D ),
+			(LPVOID*) &backBufferTexture ) ) )
+		{
+			ERR( "Failed to get the swap chain back buffer!" );
+			return nothing<Renderer>( );
+		}
+		D3D11_TEXTURE2D_DESC depthDesc;
+		depthDesc.Width = windowConfig.width;
+		depthDesc.Height = windowConfig.height;
+		depthDesc.MipLevels = 1;
+		depthDesc.ArraySize = 1;
+		depthDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		depthDesc.SampleDesc.Count = 1;
+		depthDesc.SampleDesc.Quality = 0;
+		depthDesc.Usage = D3D11_USAGE_DEFAULT;
+		depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		depthDesc.CPUAccessFlags = 0;
+		depthDesc.MiscFlags = 0;
+		ID3D11Texture2D* depthStencilTexture;
+		if ( FAILED( renderer.device->CreateTexture2D( &depthDesc, NULL,
+			&depthStencilTexture ) ) )
+		{
+			ERR( "Failed to create depth stencil texture!" );
+			return nothing<Renderer>( );
+		}
+		D3D11_DEPTH_STENCIL_VIEW_DESC depthViewDesc;
+		depthViewDesc.Format = depthDesc.Format;
+		depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		depthViewDesc.Texture2D.MipSlice = 0;
+		depthViewDesc.Flags = 0;
+		if ( FAILED( renderer.device->CreateDepthStencilView( depthStencilTexture,
+			&depthViewDesc, &renderer.depthStencilView ) ) )
+		{
+			ERR( "Failed to create depth stencil view!" );
+			return nothing<Renderer>( );
+		}
+		if ( FAILED( renderer.device->CreateRenderTargetView( backBufferTexture, NULL,
+			&renderer.renderTargetView ) ) )
+		{
+			ERR( "Failed to create render target view!" );
+			HP_RELEASE( backBufferTexture );
+			return nothing<Renderer>( );
+		}
+		HP_RELEASE( backBufferTexture );
+		renderer.deviceContext->OMSetRenderTargets( 1, &renderer.renderTargetView,
+			renderer.depthStencilView );
+		// setup the viewport
+		D3D11_VIEWPORT viewport;
+		viewport.Width = static_cast<FLOAT>( windowConfig.width );
+		viewport.Height = static_cast<FLOAT>( windowConfig.height );
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		viewport.TopLeftX = 0.f;
+		viewport.TopLeftY = 0.f;
+		renderer.deviceContext->RSSetViewports( 1, &viewport );
+		renderer.deviceContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		return just( std::move( renderer ) );
+	}
+	void preRender_IO( Renderer& renderer )
+	{
+		float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
+		renderer.deviceContext->ClearRenderTargetView( renderer.renderTargetView,
+			ClearColor );
+		renderer.deviceContext->ClearDepthStencilView( renderer.depthStencilView,
+			D3D11_CLEAR_DEPTH, 1.0f, 0 );
+	}
+	void present_IO( Renderer& renderer )
+	{
+		swap_IO( renderer.cameraBuffer );
+		renderer.swapChain->Present( 0, 0 );
+	}
+	bool createVertexBuffer_IO( Renderer& renderer, ID3D11Buffer** vertexBuffer,
+		UInt32 byteWidth, const Vertex* initData )
+	{
+		D3D11_BUFFER_DESC bd;
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = byteWidth;
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		bd.MiscFlags = 0;
+		D3D11_SUBRESOURCE_DATA subresourceData;
+		subresourceData.pSysMem = initData;
+		subresourceData.SysMemPitch = 0;
+		subresourceData.SysMemSlicePitch = 0;
+		if ( SUCCEEDED( renderer.device->CreateBuffer( &bd, &subresourceData, vertexBuffer ) ) )
+		{
+			return true;
+		}
+		return false;
+	}
+	bool createIndexBuffer_IO( Renderer& renderer, ID3D11Buffer** indexBuffer,
+		UInt32 byteWidth, const Index* initData )
+	{
+		D3D11_BUFFER_DESC bd;
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = byteWidth;
+		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		bd.MiscFlags = 0;
+		D3D11_SUBRESOURCE_DATA subresourceData;
+		subresourceData.pSysMem = initData;
+		subresourceData.SysMemPitch = 0;
+		subresourceData.SysMemSlicePitch = 0;
+		if ( SUCCEEDED( renderer.device->CreateBuffer( &bd, &subresourceData, indexBuffer ) ) )
+		{
+			return true;
+		}
+		return false;
+	}
+	void setVertexBuffers_IO( Renderer& renderer, ID3D11Buffer** vertexBuffer, UInt32* stride,
+		UInt32* offset )
+	{
+		renderer.deviceContext->IASetVertexBuffers( 0, 1, vertexBuffer, stride, offset );
+	}
+	void setIndexBuffer_IO( Renderer& renderer, ID3D11Buffer** indexBuffer )
+	{
+		renderer.deviceContext->IASetIndexBuffer( *indexBuffer, DXGI_FORMAT_R32_UINT, 0 );
+	}
+	void drawIndexed_IO( Renderer& renderer, UInt32 indexCount, UInt32 startIndexLocation,
+		UInt32 baseVertexLocation )
+	{
+		renderer.deviceContext->DrawIndexed( indexCount, startIndexLocation, baseVertexLocation );
+	}
+}
+
+///
+/// replace WinMain function with main on Windows
+///
+#include <pch.hpp>
+#ifdef HP_PLATFORM_WIN32
+extern int main( int argc, char ** argv );
+
+int WINAPI WinMain( HINSTANCE, HINSTANCE, LPSTR, INT )
+{
+	return main( __argc, __argv );
+}
+#endif
+
+#include <pch.hpp>
+#include "../../include/math/frustum.hpp"
+namespace hp_fp
+{
+	Frustum init( const float fieldOfView, const float aspectRatio, const float nearClipDist,
+		const float farClipDist )
+	{
+		Frustum frustum;
+		frustum.fieldOfView = fieldOfView;
+		frustum.aspectRatio = aspectRatio;
+		frustum.nearClipDist = nearClipDist;
+		frustum.farClipDist = farClipDist;
+		float tanHalfFov = tan( frustum.fieldOfView / 2.f );
+		FVec3 nearRight = ( frustum.nearClipDist * tanHalfFov ) * frustum.aspectRatio * FVec3::right;
+		FVec3 farRight = ( frustum.farClipDist * tanHalfFov ) * frustum.aspectRatio * FVec3::right;
+		FVec3 nearUp = ( frustum.nearClipDist * tanHalfFov ) * frustum.aspectRatio * FVec3::up;
+		FVec3 farUp = ( frustum.farClipDist * tanHalfFov ) * frustum.aspectRatio * FVec3::up;
+		frustum.nearClipVerts[0] = ( frustum.nearClipDist * FVec3::forward ) - nearRight + nearUp;
+		frustum.nearClipVerts[1] = ( frustum.nearClipDist * FVec3::forward ) + nearRight + nearUp;
+		frustum.nearClipVerts[2] = ( frustum.nearClipDist * FVec3::forward ) + nearRight - nearUp;
+		frustum.nearClipVerts[3] = ( frustum.nearClipDist * FVec3::forward ) - nearRight - nearUp;
+		frustum.farClipVerts[0] = ( frustum.farClipDist * FVec3::forward ) - farRight + farUp;
+		frustum.farClipVerts[1] = ( frustum.farClipDist * FVec3::forward ) + farRight + farUp;
+		frustum.farClipVerts[2] = ( frustum.farClipDist * FVec3::forward ) + farRight - farUp;
+		frustum.farClipVerts[3] = ( frustum.farClipDist * FVec3::forward ) - farRight - farUp;
+		FVec3 origin;
+		frustum.planes[static_cast<UInt8>( FrustumSides::Near )] = init( frustum.nearClipVerts[2], frustum.nearClipVerts[1], frustum.nearClipVerts[0] );
+		frustum.planes[static_cast<UInt8>( FrustumSides::Far )] = init( frustum.farClipVerts[0], frustum.farClipVerts[1], frustum.farClipVerts[2] );
+		frustum.planes[static_cast<UInt8>( FrustumSides::Right )] = init( frustum.farClipVerts[2], frustum.farClipVerts[1], origin );
+		frustum.planes[static_cast<UInt8>( FrustumSides::Top )] = init( frustum.farClipVerts[1], frustum.farClipVerts[0], origin );
+		frustum.planes[static_cast<UInt8>( FrustumSides::Left )] = init( frustum.farClipVerts[0], frustum.farClipVerts[3], origin );
+		frustum.planes[static_cast<UInt8>( FrustumSides::Bottom )] = init( frustum.farClipVerts[3], frustum.farClipVerts[2], origin );
+		return frustum;
+	}
+	bool isInside( const Frustum& frustum, const FVec3& point, const float radius )
+	{
+		for ( UInt8 i = 0; i < static_cast<UInt8>( FrustumSides::Count ); ++i )
+		{
+			if ( !isInside( frustum.planes[i], point, radius ) )
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/math/mat4x4.hpp"
+namespace hp_fp
+{
+	const Mat4x4 Mat4x4::identity( Mat4x4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ) );
+	FVec3 pos( const Mat4x4& mat )
+	{
+		return FVec3{ mat.m[3][0], mat.m[3][1], mat.m[3][2] };
+	}
+	float determinant( const Mat4x4& mat )
+	{
+		FVec4 v1, v2, v3;
+		v1.x = mat.m[0][0];
+		v1.y = mat.m[1][0];
+		v1.z = mat.m[2][0];
+		v1.w = mat.m[3][0];
+		v2.x = mat.m[0][1];
+		v2.y = mat.m[1][1];
+		v2.z = mat.m[2][1];
+		v2.w = mat.m[3][1];
+		v3.x = mat.m[0][2];
+		v3.y = mat.m[1][2];
+		v3.z = mat.m[2][2];
+		v3.w = mat.m[3][2];
+		FVec4 x = cross( v1, v2, v3 );
+		return -( mat.m[0][3] * x.x + mat.m[1][3] * x.y + mat.m[2][3] * x.z +
+			mat.m[3][3] * x.w );
+	}
+	Mat4x4 inverse( const Mat4x4& mat )
+	{
+		Mat4x4 invMat;
+		FVec4 vec[3];
+		int i, j;
+		float det = determinant( mat );
+		for ( i = 0; i < 4; ++i )
+		{
+			for ( j = 0; j < 4; ++j )
+			{
+				if ( i != j )
+				{
+					int a = ( j <= i ) ? j : j - 1;
+					vec[a].x = mat.m[j][0];
+					vec[a].y = mat.m[j][1];
+					vec[a].z = mat.m[j][2];
+					vec[a].w = mat.m[j][3];
+				}
+			}
+			FVec4 x = cross( vec[0], vec[1], vec[2] );
+			float cofactor;
+			for ( j = 0; j < 4; ++j )
+			{
+				switch ( j )
+				{
+				case 0: cofactor = x.x; break;
+				case 1: cofactor = x.y; break;
+				case 2: cofactor = x.z; break;
+				case 3: cofactor = x.w; break;
+				}
+				invMat.m[j][i] = pow( -1.0f, i ) * cofactor / det;
+			}
+		}
+		return invMat;
+	}
+	Mat4x4 matrixPerspectiveFovLH( const float fieldOfView, const float aspectRatio,
+		const float nearClipDist, const float farClipDist )
+	{
+		Mat4x4 perspective;
+		float tanFov = tan( fieldOfView / 2.0f );
+		perspective.m[0][0] = 1.0f / ( aspectRatio * tanFov );
+		perspective.m[1][1] = 1.0f / tanFov;
+		perspective.m[2][2] = farClipDist / ( farClipDist - nearClipDist );
+		perspective.m[2][3] = 1.0f;
+		perspective.m[3][2] = ( farClipDist *  -nearClipDist ) / ( farClipDist - nearClipDist );
+		perspective.m[3][3] = 0.0f;
+		return perspective;
+	}
+	Mat4x4 rotToMat4x4( const FQuat& rot )
+	{
+		Mat4x4 mat;
+		mat.m[0][0] = 1.0f - 2.0f * ( rot.y * rot.y + rot.z * rot.z );
+		mat.m[0][1] = 2.0f * ( rot.x *rot.y + rot.z * rot.w );
+		mat.m[0][2] = 2.0f * ( rot.x * rot.z - rot.y * rot.w );
+		mat.m[1][0] = 2.0f * ( rot.x * rot.y - rot.z * rot.w );
+		mat.m[1][1] = 1.0f - 2.0f * ( rot.x * rot.x + rot.z * rot.z );
+		mat.m[1][2] = 2.0f * ( rot.y *rot.z + rot.x *rot.w );
+		mat.m[2][0] = 2.0f * ( rot.x * rot.z + rot.y * rot.w );
+		mat.m[2][1] = 2.0f * ( rot.y *rot.z - rot.x *rot.w );
+		mat.m[2][2] = 1.0f - 2.0f * ( rot.x * rot.x + rot.y * rot.y );
+		return mat;
+	}
+	Mat4x4 posToMat4x4( const FVec3& pos )
+	{
+		Mat4x4 mat;
+		mat.m[3][0] = pos.x;
+		mat.m[3][1] = pos.y;
+		mat.m[3][2] = pos.z;
+		return mat;
+	}
+	Mat4x4 sclToMat4x4( const FVec3& scl )
+	{
+		Mat4x4 mat;
+		mat.m[0][0] = scl.x;
+		mat.m[1][1] = scl.y;
+		mat.m[2][2] = scl.z;
+		return mat;
+	}
+	Mat4x4 rotSclPosToMat4x4( const FQuat& rot, const FVec3& scl, const FVec3& pos )
+	{
+		Mat4x4 mat;
+		mat.m[0][0] = 1.0f - 2.0f * ( rot.y * rot.y + rot.z * rot.z );
+		mat.m[0][1] = 2.0f * ( rot.x *rot.y + rot.z * rot.w );
+		mat.m[0][2] = 2.0f * ( rot.x * rot.z - rot.y * rot.w );
+		mat.m[1][0] = 2.0f * ( rot.x * rot.y - rot.z * rot.w );
+		mat.m[1][1] = 1.0f - 2.0f * ( rot.x * rot.x + rot.z * rot.z );
+		mat.m[1][2] = 2.0f * ( rot.y *rot.z + rot.x *rot.w );
+		mat.m[2][0] = 2.0f * ( rot.x * rot.z + rot.y * rot.w );
+		mat.m[2][1] = 2.0f * ( rot.y *rot.z - rot.x *rot.w );
+		mat.m[2][2] = 1.0f - 2.0f * ( rot.x * rot.x + rot.y * rot.y );
+		mat.m[3][0] = pos.x;
+		mat.m[3][1] = pos.y;
+		mat.m[3][2] = pos.z;
+		mat.m[0][0] *= scl.x;
+		mat.m[1][1] *= scl.y;
+		mat.m[2][2] *= scl.z;
+		return mat;
+
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/math/plane.hpp"
+namespace hp_fp
+{
+	Plane init( const FVec3& p0, const FVec3& p1, const FVec3& p2 )
+	{
+		FVec3 edge1, edge2, normal;
+		edge1 = p1 - p0;
+		edge2 = p2 - p0;
+		normal = normalize( cross( edge1, edge2 ) );
+		return normalize( planeFromPointNormal( p0, normal ) );
+	}
+	Plane normalize( const Plane& plane )
+	{
+		Plane normPlane;
+		float mag;
+		mag = 1.0f / sqrt( plane.a * plane.a + plane.b * plane.b + plane.c * plane.c );
+		normPlane.a = plane.a * mag;
+		normPlane.b = plane.b * mag;
+		normPlane.c = plane.c * mag;
+		normPlane.d = plane.d * mag;
+		return normPlane;
+	}
+	Plane planeFromPointNormal( const FVec3& point, const FVec3& normal )
+	{
+		Plane plane;
+		plane.a = normal.x;
+		plane.b = normal.y;
+		plane.c = normal.z;
+		plane.d = dot( point, normal );
+		return plane;
+	}
+	bool isInside( const Plane& plane, const FVec3& point, const float radius )
+	{
+		float distance;
+		distance = planeDotCoord( plane, point );
+		return distance >= -radius;
+	}
+	float planeDotCoord( const Plane& plane, const FVec3& point )
+	{
+		return plane.a * point.x + plane.b * point.y + plane.c * point.z + plane.d;
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/math/quat.hpp"
+namespace hp_fp
+{
+	const FQuat FQuat::identity( FQuat( 0.0f, 0.0f, 0.0f, 1.0f ) );
+}
+
+#include <pch.hpp>
+#include "../../include/math/vec3.hpp"
+namespace hp_fp
+{
+	const FVec3 FVec3::zero{ 0.f, 0.f, 0.f };
+	const FVec3 FVec3::right{ 1.f, 0.f, 0.f };
+	const FVec3 FVec3::up{ 0.f, 1.f, 0.f };
+	const FVec3 FVec3::forward{ 0.f, 0.f, 1.f };
+}
+
+#include <pch.hpp>
+#include "../../include/math/vec4.hpp"
+namespace hp_fp
+{
+	template<typename A>
+	Vec4<A>::Vec4( const FVec3& vec ) : x( vec.x ), y( vec.y ), z( vec.z ), w( 1.f )
+	{ }
+	const FVec4 FVec4::right( 1.f, 0.f, 0.f, 0.f );
+	const FVec4 FVec4::up( 0.f, 1.f, 0.f, 0.f );
+	const FVec4 FVec4::forward( 0.f, 0.f, 1.f, 0.f );
+}
+
+#include <pch.hpp>
+#include "../../include/utils/string.hpp"
+namespace hp_fp
+{
+	std::wstring s2ws( const std::string& s )
+	{
+		int len;
+		int slength = ( int ) s.length( ) + 1;
+		len = MultiByteToWideChar( CP_ACP, 0, s.c_str( ), slength, 0, 0 );
+		wchar_t* buf = new wchar_t[len];
+		MultiByteToWideChar( CP_ACP, 0, s.c_str( ), slength, buf, len );
+		std::wstring r( buf );
+		delete[] buf;
+		return r;
+	}
+	std::string basePath( const std::string& path )
+	{
+		size_t pos = path.find_last_of( "\\/" );
+		return ( std::string::npos == pos ) ? "" : path.substr( 0, pos + 1 );
+	}
+}
+
+#include <pch.hpp>
+#include "../../include/core/engine.hpp"
+#include "../../include/utils/string.hpp"
+#include "../../include/window/window.hpp"
+#include "../../include/adt/maybe.hpp"
+namespace hp_fp
+{
+	Maybe<Window> open_IO( Engine& engine, const WindowConfig& windowConfig )
+	{
+		std::wstring windowNameW = s2ws( "HP_FP::" + engine.name );
+		Window window{ nullptr, windowNameW.c_str( ) };
+		if ( isOnlyInstance_IO( window.name ) )
+		{
+			// window class details
+			WNDCLASSEX windowClass = { 0 };
+			windowClass.cbSize = sizeof( WNDCLASSEX );
+			windowClass.style = CS_VREDRAW | CS_HREDRAW;
+			windowClass.lpfnWndProc = &windowProc_IO;
+			windowClass.cbClsExtra = 0;
+			windowClass.cbWndExtra = 0;
+			windowClass.hInstance = GetModuleHandle( nullptr );
+			windowClass.hIcon = 0;
+			windowClass.hIconSm = 0;
+			windowClass.hCursor = 0;
+			windowClass.hbrBackground = 0;
+			windowClass.lpszMenuName = 0;
+			windowClass.lpszClassName = window.name;
+			// register the window
+			if ( RegisterClassEx( &windowClass ) )
+			{
+				// find position and size
+				HDC screenDC = GetDC( nullptr );
+				unsigned left = ( GetDeviceCaps( screenDC, HORZRES ) - windowConfig.width ) / 2;
+				unsigned top = ( GetDeviceCaps( screenDC, VERTRES ) - windowConfig.height ) / 2;
+				unsigned width = windowConfig.width;
+				unsigned height = windowConfig.height;
+				ReleaseDC( nullptr, screenDC );
+				// set the style of the window
+				DWORD style = WS_VISIBLE;
+				if ( windowConfig.windowStyle == WindowStyle::Window )
+				{
+					style |= WS_CAPTION | WS_MINIMIZEBOX | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_SYSMENU;
+					// adjust the window size with the borders etc.
+					RECT rectangle = { 0, 0, windowConfig.width, windowConfig.height };
+					AdjustWindowRect( &rectangle, style, false );
+					width = rectangle.right - rectangle.left;
+					height = rectangle.bottom - rectangle.top;
+				}
+				// create the window
+				window.handle = CreateWindowEx( 0, window.name, window.name, style, left, top, width, height, GetDesktopWindow( ), nullptr, GetModuleHandle( nullptr ), &engine );
+				if ( window.handle == nullptr )
+				{
+					ERR( GetLastError( ) );
+					return nothing<Window>( );
+				}
+				if ( windowConfig.windowStyle == WindowStyle::Fullscreen )
+				{
+					switchToFullscreen_IO( window.handle, windowConfig );
+				}
+			}
+		}
+		return just( std::move( window ) );
+	}
+	WindowConfig defaultWindowConfig_IO( )
+	{
+		DEVMODE mode;
+		mode.dmSize = sizeof( mode );
+		EnumDisplaySettings( nullptr, ENUM_CURRENT_SETTINGS, &mode );
+		return WindowConfig{ mode.dmPelsWidth, mode.dmPelsHeight, WindowStyle::Default, mode.dmBitsPerPel };
+	}
+	void setWindowVisibility_IO( WindowHandle windowHandle, const bool visible )
+	{
+		ShowWindow( windowHandle, visible ? SW_SHOW : SW_HIDE );
+		if ( visible )
+		{
+			SetFocus( windowHandle );
+			SetForegroundWindow( windowHandle );
+			SetActiveWindow( windowHandle );
+		}
+	}
+	void switchToFullscreen_IO( WindowHandle windowHandle, const WindowConfig& windowConfig )
+	{
+		// set display settings
+		DEVMODE devMode;
+		devMode.dmSize = sizeof( devMode );
+		devMode.dmPelsWidth = windowConfig.width;
+		devMode.dmPelsHeight = windowConfig.height;
+		devMode.dmBitsPerPel = windowConfig.bitsPerPx;
+		devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
+		// change default display device settings
+		if ( ChangeDisplaySettings( &devMode, CDS_FULLSCREEN ) != DISP_CHANGE_SUCCESSFUL )
+		{
+			return;
+		}
+		// set window style
+		SetWindowLong( windowHandle, GWL_STYLE, WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS );
+		// set extended window style
+		SetWindowLong( windowHandle, GWL_EXSTYLE, WS_EX_APPWINDOW );
+		// set window size, position and z-order
+		SetWindowPos( windowHandle, HWND_TOP, 0, 0, windowConfig.width, windowConfig.height, SWP_FRAMECHANGED );
+		// show the window
+		setWindowVisibility_IO( windowHandle, true );
+	}
+	void processMessages_IO( WindowHandle windowHandle )
+	{
+		MSG message;
+		while ( PeekMessage( &message, windowHandle, 0, 0, PM_REMOVE ) )
+		{
+			TranslateMessage( &message );
+			DispatchMessage( &message );
+		}
+	}
+	void captureMouse_IO( WindowHandle windowHandle )
+	{
+		SetCapture( windowHandle );
+	}
+	void releaseMouse_IO( )
+	{
+		ReleaseCapture( );
+	}
+	namespace
+	{
+		LRESULT CALLBACK windowProc_IO( WindowHandle handle, UINT message, WPARAM wParam, LPARAM lParam )
+		{
+			Engine* engine = reinterpret_cast<Engine*>( GetWindowLongPtr( handle, GWL_USERDATA ) );
+			switch ( message )
+			{
+			case WM_CREATE:
+			{
+				CREATESTRUCT *cs = reinterpret_cast<CREATESTRUCT*>( lParam );
+				engine = reinterpret_cast<Engine*>( cs->lpCreateParams );
+				SetLastError( 0 );
+				if ( SetWindowLongPtr( handle, GWL_USERDATA, reinterpret_cast<LONG_PTR>( engine ) ) == 0 )
+				{
+					if ( GetLastError( ) != 0 )
+					{
+						ERR( "Unable to set window user data." );
+						return FALSE;
+					}
+				}
+				break;
+			}
+			case WM_CLOSE:
+			{
+				engine->state = EngineState::Terminated;
+				break;
+			}
+			case WM_ACTIVATEAPP:
+			{
+				break;
+			}
+			case WM_KEYDOWN:
+			case WM_SYSKEYDOWN:
+			{
+				engine->gameInput[static_cast<Key>( wParam )] = true;
+				break;
+			}
+			case WM_KEYUP:
+			case WM_SYSKEYUP:
+			{
+				engine->gameInput[static_cast<Key>( wParam )] = false;
+				break;
+			}
+			case WM_CHAR:
+			{
+				engine->gameInput.text = wParam;
+				break;
+			}
+			case WM_MOUSEMOVE:
+			{
+				engine->gameInput.mouse.x = LOWORD( lParam );
+				engine->gameInput.mouse.y = HIWORD( lParam );
+				break;
+			}
+			case WM_LBUTTONDOWN:
+			{
+				captureMouse_IO( handle );
+				engine->gameInput[MouseButton::LeftButton] = true;
+				break;
+			}
+			case WM_LBUTTONUP:
+			{
+				releaseMouse_IO( );
+				engine->gameInput[MouseButton::LeftButton] = false;
+				break;
+			}
+			case WM_RBUTTONDOWN:
+			{
+				captureMouse_IO( handle );
+				engine->gameInput[MouseButton::RightButton] = true;
+				break;
+			}
+			case WM_RBUTTONUP:
+			{
+				releaseMouse_IO( );
+				engine->gameInput[MouseButton::RightButton] = false;
+				break;
+			}
+			case WM_MBUTTONDOWN:
+			{
+				captureMouse_IO( handle );
+				engine->gameInput[MouseButton::MiddleButton] = true;
+				break;
+			}
+			case WM_MBUTTONUP:
+			{
+				releaseMouse_IO( );
+				engine->gameInput[MouseButton::MiddleButton] = false;
+				break;
+			}
+			case WM_MOUSEWHEEL:
+			{
+				engine->gameInput.mouse.delta = HIWORD( wParam ) / 120;
+				break;
+			}
+			case WM_XBUTTONDOWN:
+			{
+				captureMouse_IO( handle );
+				engine->gameInput[HIWORD( wParam ) == XBUTTON1 ? MouseButton::XButton1 : MouseButton::XButton2] = true;
+				break;
+			}
+			case WM_XBUTTONUP:
+			{
+				releaseMouse_IO( );
+				engine->gameInput[HIWORD( wParam ) == XBUTTON1 ? MouseButton::XButton1 : MouseButton::XButton2] = false;
+				break;
+			}
+			default:
+				return DefWindowProc( handle, message, wParam, lParam );
+			}
+			return FALSE;
+		}
+		bool isOnlyInstance_IO( const LPCWSTR windowName )
+		{
+			HANDLE handle = CreateMutex( nullptr, true, windowName );
+			if ( GetLastError( ) != ERROR_SUCCESS )
+			{
+				WindowHandle windowHandle = FindWindow( windowName, nullptr );
+				if ( windowHandle != nullptr )
+				{
+					setWindowVisibility_IO( windowHandle, true );
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+}
+

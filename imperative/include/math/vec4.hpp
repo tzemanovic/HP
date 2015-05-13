@@ -79,3 +79,4 @@ namespace hp_ip
 	}
 	typedef Vec4<float> FVec4;
 }
+

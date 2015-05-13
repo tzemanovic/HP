@@ -21,5 +21,11 @@
     <ClInclude Include="4-design-and-implementation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="5-testing-and-evaluation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="6-discussion-and-conclusion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -54,3 +54,4 @@ namespace hp_ip
 		return _materials.at( materialDef );
 	}
 }
+

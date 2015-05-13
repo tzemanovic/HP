@@ -45,3 +45,4 @@ namespace hp_fp
 			std::vector<ActorDef>&& actorsDef );
 	}
 }
+

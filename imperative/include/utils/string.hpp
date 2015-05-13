@@ -8,3 +8,4 @@ namespace hp_ip
 	std::string basePath( const std::string& path );
 #endif
 }
+

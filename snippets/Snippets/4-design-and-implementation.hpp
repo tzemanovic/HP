@@ -111,6 +111,12 @@ struct List
 	Cons* cons;
 };
 
+// Naive C++ implementation of IO type
+template<typename A>
+struct IO
+{
+	typedef std::function<A( )> type;
+};
 
 // Naive implementation of maybe type
 template<typename A>
@@ -151,3 +157,51 @@ B ifThenElse1( const Maybe<A>& maybe, B( *ifJust )( const A& a ), B( *ifNothing 
 // Another Maybe's visitor function alternative implementation
 template<typename A, typename B>
 B ifThenElse2( const Maybe<A>& maybe, std::function<B( A )> ifJust, std::function<B( A )> ifNothing );
+
+// Signal implementation
+template<typename A>
+struct S
+{
+	std::function<A( const float )> f;
+};
+
+// Signal Function implementation
+template<typename A, typename B>
+struct SF
+{
+	std::function<S<B>( const S<A>& a )> f;
+};
+
+// Application of signal to a signal function and composition of two signal functions
+template<typename A, typename B>
+struct SF
+{
+	std::function<S<B>( const S<A>& a )> f;
+
+	S<B> operator < ( const S<A>& a ) const
+	{
+		return f( a );
+	}
+	SF<C, B> operator < ( SF<C, A>& sf ) const
+	{
+		return SF < A, C > {
+			[sf, *this]( const S<A>& a ) -> S < C >
+			{
+				return snd.f( fst.f( a ) );
+			}
+		};
+	}
+};
+
+struct GameInput;
+struct ActorState;
+// Actor input and output
+struct ActorInput
+{
+	GameInput gameInput;
+	ActorState state;
+};
+struct ActorOutput
+{
+	ActorState state;
+};

@@ -52,6 +52,7 @@
 #include <string>
 
 #if defined( HP_PLATFORM_WIN32 )
+typedef bool				 Bool;
 typedef unsigned char		 UInt8;
 typedef signed char			 Int8;
 typedef unsigned short		 UInt16;
@@ -67,10 +68,11 @@ typedef unsigned long long	 UInt64;
 #   endif
 typedef Int32				 Int;
 typedef UInt32				 UInt;
-
-typedef HWND		 WindowHandle;
-typedef std::string	 String;
-typedef UInt32		 Index;
+typedef float				 Float;
+typedef double				 Double;
+typedef std::string			 String;
+typedef HWND				 WindowHandle;
+typedef UInt32				 Index;
 #endif
 
 namespace hp_fp
@@ -84,3 +86,4 @@ namespace hp_fp
 	extern const float DEG_TO_RAD_F;
 	extern const float RAD_TO_DEG_F;
 }
+

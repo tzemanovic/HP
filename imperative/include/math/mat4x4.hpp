@@ -52,3 +52,4 @@ namespace hp_ip
 	Mat4x4 posToMat4x4( const FVec3& pos );
 	Mat4x4 rotSclPosToMat4x4( const FQuat& rot, const FVec3& scl, const FVec3& pos );
 }
+

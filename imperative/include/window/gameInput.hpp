@@ -184,3 +184,4 @@ namespace hp_ip
 		UInt32 text;
 	};
 }
+

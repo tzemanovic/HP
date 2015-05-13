@@ -314,9 +314,12 @@ SF<ActorInput, ActorOutput> ball( )
 			static const float acceleration = 0.001f;
 			static const float jumpSpeed = 0.01f;
 			static const float rotSpeed = 0.003f;
+			static const float minPosX = 0.45f;
+			static const float gravity = -0.00000981f;
+			static const float cor = -0.5f; // coefficient of restitution
 			auto state = arr( getState ) < input;
 			auto gi = arr( getGameInput ) < input;
-			S<bool> onTheGround = arrAlt<float, bool>( eq( 0.45f ) )
+			S<bool> onTheGround = arrAlt<float, bool>( eq( minPosX ) )
 				< arr( getY ) < arr( getPos ) < state;
 			S<float> accZForward = arrAlt<bool, float>( ifElse( acceleration, 0.0f ) )
 				< and( onTheGround )
@@ -346,7 +349,6 @@ SF<ActorInput, ActorOutput> ball( )
 				< add( accZForward ) < accZBackward;
 			S<FVec3> accX = arrAlt<float, FVec3>( conFVec3fromX( ) )
 				< add( accXLeft ) < accXRight;
-			// TODO: move the YPos cond to input sf acc
 			S<FVec3> acc = add( accZ ) < accX;
 
 
@@ -359,9 +361,9 @@ SF<ActorInput, ActorOutput> ball( )
 
 			/*auto addEvent = []( const float y )
 			{
-			if ( y < 0.45f )
+			if ( y < minPosX )
 			{
-			return std::make_tuple( 0.45f, just( 0 ) );
+			return std::make_tuple( minPosX, just( 0 ) );
 			}
 			return std::make_tuple( y, nothing<int>( ) );
 			};
@@ -386,24 +388,24 @@ SF<ActorInput, ActorOutput> ball( )
 			bouncingBall( mul( -0.5f ) < velY ) );
 			} );
 			};
-			auto ball = bouncingBall( ( arr( getY ) < arr( getVel ) < state ) )( 0 );*/
+			auto ball = bouncingBall( ( arr( getY ) < arr( getVel ) < state ) )( 0 );
 
-			//auto ball = sw(fallingBall, bouncingBall);
+			//auto ball = sw(fallingBall, bouncingBall); */
 
 			S<float> velY =
 				// add last velY
 				add( arr( getY ) < arr( getVel ) < state )
 				// add gravity and jump
-				< add( velYUp ) < integral<float>( ) < -0.00000981f;
+				< add( velYUp ) < integral<float>( ) < gravity;
 			S<float> velY2 =
-				// set velY to zero if posY is lower than 0.45f
-				mul( arrAlt<bool, float>( ifElse( -0.5f, 1.0f ) )
-				< and( arrAlt<float, bool>( lte( 0.45f ) )
+				// set velY to zero if posY is lower than minPosX
+				mul( arrAlt<bool, float>( ifElse( cor, 1.0f ) )
+				< and( arrAlt<float, bool>( lte( minPosX ) )
 				< arr( getY ) < arr( getPos ) < state )
 				< arrAlt<float, bool>( lt( 0.0f ) ) < velY ) < velY;
 			// stop ball from jumping when velocity is low
 			S<float> velY3 = mul( arrAlt<bool, float>( ifElse( 0.0f, 1.0f ) )
-				< and( arrAlt<float, bool>( lte( 0.45f ) )
+				< and( arrAlt<float, bool>( lte( minPosX ) )
 				< arr( getY ) < arr( getPos ) < state )
 				< arrAlt<float, bool>( lt( 0.001f ) ) < arr( ab ) < velY2 ) < velY2;
 
@@ -411,7 +413,7 @@ SF<ActorInput, ActorOutput> ball( )
 			S<FVec3> vel = setY( velY3 ) < clampMag( 0.01f ) < mul<FVec3>( 0.999f )
 				< add( integral<FVec3>( ) < acc ) < arr( getVel ) < state;
 			// add oriented integral of velocity to position
-			S<FVec3> pos = arrAlt<FVec3, FVec3>( minY( 0.45f ) )
+			S<FVec3> pos = arrAlt<FVec3, FVec3>( minY( minPosX ) )
 				< add( rotate( rot ) < integral<FVec3>( ) < vel )
 				< arr( getPos ) < state;
 
@@ -594,7 +596,7 @@ int main( )
 		{
 			actorModelDef( {
 				builtInModelDef( { // model
-					BuiltInModelType::Box, // type
+					BuiltInModelType::Cube, // type
 					{ 500.0f, 0.1f, 500.0f } // dimensions
 				} ),
 				{ // material
@@ -617,39 +619,40 @@ int main( )
 			{ } // children
 		}
 	};
-	const int I = 64;
-	const int I_HALF = 32;
-	for ( int i = 0; i < I; ++i )
-	{
-		float y = ( abs( i - I_HALF ) / static_cast<float>( I_HALF ) );
-		actors.push_back( {
-			actorModelDef( {
-				loadedModelDef( { // model
-					"assets/models/basketball/basketball.fbx", // filename
-					0.02f // scale
-				} ),
-				{ // material
-					"assets/textures/basketball/basketball-diffuse.jpg", // diffuseTextureFilename
-					"", // specularTextureFilename
-					"assets/textures/basketball/basketball-bump.jpg", // bumpTextureFilename
-					"", // parallaxTextureFilename
-					"" // evnMapTextureFilename
-				}
-			} ),
-			{ // startingState
-				{ sinf( i * TWO_PI_F / I ) * 10.0f, 5.0f * y + 0.45f, cosf( i * TWO_PI_F / I ) * 10.0f }, // pos
-				{ 0.0f, 0.0f, 0.0f }, // vel
-				{ 1.0f, 1.0f, 1.0f }, // scl
-				FQuat::identity, // rot
-				FQuat::identity // modelRot
-			},
-			bouncingBall( ), // sf
-			{ } // children
-		} );
-	}
+	//const int I = 64;
+	//const int I_HALF = 32;
+	//for ( int i = 0; i < I; ++i )
+	//{
+	//	float y = ( abs( i - I_HALF ) / static_cast<float>( I_HALF ) );
+	//	actors.push_back( {
+	//		actorModelDef( {
+	//			loadedModelDef( { // model
+	//				"assets/models/basketball/basketball.fbx", // filename
+	//				0.02f // scale
+	//			} ),
+	//			{ // material
+	//				"assets/textures/basketball/basketball-diffuse.jpg", // diffuseTextureFilename
+	//				"", // specularTextureFilename
+	//				"assets/textures/basketball/basketball-bump.jpg", // bumpTextureFilename
+	//				"", // parallaxTextureFilename
+	//				"" // evnMapTextureFilename
+	//			}
+	//		} ),
+	//		{ // startingState
+	//			{ sinf( i * TWO_PI_F / I ) * 10.0f, 5.0f * y + 0.45f, cosf( i * TWO_PI_F / I ) * 10.0f }, // pos
+	//			{ 0.0f, 0.0f, 0.0f }, // vel
+	//			{ 1.0f, 1.0f, 1.0f }, // scl
+	//			FQuat::identity, // rot
+	//			FQuat::identity // modelRot
+	//		},
+	//		bouncingBall( ), // sf
+	//		{ } // children
+	//	} );
+	//}
 
 
 	Engine engine = init( "example1" );
 	run_IO( engine, std::move( actors ) );
 	return 0;
 }
+

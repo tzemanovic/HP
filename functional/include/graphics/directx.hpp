@@ -7,3 +7,4 @@
 #pragma comment(lib, "Effects11.lib")
 #include "DirectXTex/DDSTextureLoader/DDSTextureLoader.h"
 #include "DirectXTex/WICTextureLoader/WICTextureLoader.h"
+

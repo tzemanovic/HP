@@ -34,3 +34,4 @@ namespace hp_ip
 		ID3D11Buffer* _indexBuffer;
 	};
 }
+

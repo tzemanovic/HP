@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="hp_ip::BallTransformComponent">
+    <Position X="5.25" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>C:\Users\Kristen\Documents\GitHub\HP\imperative\examples\1\src\component\ballTransformComponent.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::Resources" Collapsed="true">
+    <Position X="14.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAIAAIQAAAAAAAAAJAAAAAQAAAACAAAAgAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\core\resources.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::Actor">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAQQAAAAAAAoAAECBAAAAAAAAAAAAIAAAACAAAUAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\core\actor\actor.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::CameraComponent">
+    <Position X="2.5" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAIAAAAAAgAIAAIAAAAAQAACAAAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\core\actor\component\cameracomponent.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::iComponent">
+    <Position X="0.5" Y="4" Width="1.5" />
+    <AssociationLine Name="_owner" Type="hp_ip::Actor">
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="-0.755" Y="0.102" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>EAAAgABAAAAAAAQAAAAAAIAAAABAAAAAAAAEAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\core\actor\component\icomponent.hpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="_owner" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="hp_ip::ModelComponent">
+    <Position X="5.25" Y="2.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAIAAAAQAAgEAAAAAAAAAAAEACAEEAAAAAAE=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\core\actor\component\modelcomponent.hpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="_material" />
+      <Field Name="_model" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="hp_ip::TransformComponent">
+    <Position X="8" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ABAAABKAAlAABARAACgAAJCCAABEAAAAAAAgAgAQAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\core\actor\component\transformcomponent.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::CameraBuffer" Collapsed="true">
+    <Position X="12.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAIgAAAAAAAIAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\camera.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::Material" Collapsed="true">
+    <Position X="2.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CEAgkSQIJFAEMAcIARQLxRAgAJRAAAISBIEIlRAQFAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\material.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::Mesh" Collapsed="true">
+    <Position X="10.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAEAAAAAAAAAAAAgAAAAAoAAAQgAAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\mesh.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="hp_ip::Model" Collapsed="true">
+    <Position X="2.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAqAAAAAAAAAAAAAAAAAIAAAAAgCQAgACAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\model.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="hp_ip::CameraDef" Collapsed="true">
+    <Position X="12.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\camera.hpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="hp_ip::Camera" Collapsed="true">
+    <Position X="10.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\camera.hpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="hp_ip::MaterialDef" Collapsed="true">
+    <Position X="14.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAABAAAQBAAAAKAAAAAAAggAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\material.hpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="hp_ip::LoadedModelDef" Collapsed="true">
+    <Position X="12.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\model.hpp</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="hp_ip::BuiltInModelDef" Collapsed="true">
+    <Position X="10.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>c:\users\kristen\documents\github\hp\imperative\include\graphics\model.hpp</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

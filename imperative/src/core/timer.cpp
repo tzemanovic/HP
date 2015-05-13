@@ -27,3 +27,4 @@ namespace hp_ip
 		return double( 1000 * time.QuadPart / frequency.QuadPart );
 	}
 }
+

@@ -8,3 +8,4 @@ namespace hp_fp
 	std::string basePath( const std::string& path );
 #endif
 }
+

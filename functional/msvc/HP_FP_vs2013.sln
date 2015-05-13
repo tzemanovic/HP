@@ -11,6 +11,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example1_vs2013", "..\examp
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0A6C8934-4B4C-4459-A0FD-782374AF934A}"
+	ProjectSection(SolutionItems) = preProject
+		Performance1.psess = Performance1.psess
+		Performance2.psess = Performance2.psess
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unit-tests", "..\unit-tests\unit-tests.vcxproj", "{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,8 +52,20 @@ Global
 		{A9F6EEE9-AC5D-4624-A146-3BBDEDA941F1}.Release|Win32.Build.0 = Release|Win32
 		{A9F6EEE9-AC5D-4624-A146-3BBDEDA941F1}.Release|x64.ActiveCfg = Release|x64
 		{A9F6EEE9-AC5D-4624-A146-3BBDEDA941F1}.Release|x64.Build.0 = Release|x64
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Debug|Win32.Build.0 = Debug|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Debug|x64.ActiveCfg = Debug|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Profile|Win32.ActiveCfg = Release|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Profile|Win32.Build.0 = Release|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Profile|x64.ActiveCfg = Release|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Release|Win32.ActiveCfg = Release|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Release|Win32.Build.0 = Release|Win32
+		{66E5069D-36A1-4983-94EF-A7E6F5CBF6FB}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

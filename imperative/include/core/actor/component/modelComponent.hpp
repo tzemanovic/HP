@@ -33,3 +33,4 @@ namespace hp_ip
 		MaterialDef _materialDef;
 	};
 }
+

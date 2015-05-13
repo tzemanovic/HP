@@ -24,3 +24,4 @@ namespace hp_ip
 		std::map<String, ID3D11ShaderResourceView*> _textures;
 	};
 }
+

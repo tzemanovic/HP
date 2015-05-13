@@ -20,3 +20,4 @@ namespace hp_fp
 		const float farClipDist );
 	bool isInside( const Frustum& frustum, const FVec3& point, const float radius );
 }
+

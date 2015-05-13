@@ -23,3 +23,4 @@ namespace hp_fp
 	void setCamera_IO( CameraBuffer& cameraBuffer, Camera&& camera );
 	void swap_IO( CameraBuffer& cameraBuffer );
 }
+

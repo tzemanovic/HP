@@ -20,20 +20,6 @@ namespace hp_fp
 		{
 			return Vec3 < A > { x - vec.x, y - vec.y, z - vec.z };
 		}
-		Vec3<A>& operator += ( const Vec3<A>& vec )
-		{
-			x += vec.x;
-			y += vec.y;
-			z += vec.z;
-			return *this;
-		}
-		Vec3<A>& operator -= ( const Vec3<A>& vec )
-		{
-			x -= vec.x;
-			y -= vec.y;
-			z -= vec.z;
-			return *this;
-		}
 		bool operator == ( const Vec3<A>& v ) const
 		{
 			return x == v.x && y == v.y && z == v.z;
@@ -128,3 +114,4 @@ namespace hp_fp
 		return vec;
 	}
 }
+

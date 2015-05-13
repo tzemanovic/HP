@@ -15,3 +15,4 @@ namespace hp_ip
 		return rotSclPosToMat4x4( _modelRot * _rot, _scl, _pos ) * _parentTransform;
 	}
 }
+

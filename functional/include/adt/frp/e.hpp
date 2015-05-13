@@ -15,3 +15,4 @@ namespace hp_fp
 		return E<A>( );
 	}
 }
+

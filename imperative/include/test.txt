@@ -1,0 +1,1545 @@
+#pragma once
+#include <core/engine.hpp>
+#include <core/actor/component/cameraComponent.hpp>
+#include <core/actor/component/modelComponent.hpp>
+#include <core/actor/component/transformComponent.hpp>
+
+#pragma once
+#include <vector>
+#include "resources.hpp"
+#include "actor/actor.hpp"
+#include "../graphics/renderer.hpp"
+#include "../window/gameInput.hpp"
+#include "../window/window.hpp"
+namespace hp_ip
+{
+	class Renderer;
+	enum class EngineState : UInt8
+	{
+		Initialized,
+		Running,
+		Terminated
+	};
+	class Engine
+	{
+	public:
+		Engine( String&& name, EngineState&& state )
+			: _name( std::move( name ) ), _state( std::move( state ) ),
+			_pWindow( nullptr )
+		{ }
+		Engine( String&& name ) : Engine( std::move( name ), EngineState::Initialized )
+		{ }
+		~Engine( )
+		{
+			HP_DELETE( _pRenderer );
+			HP_DELETE( _pWindow );
+		}
+		void run( const WindowConfig& windowConfig = Window::defaultWindowConfig( ) );
+		void addActor( Actor&& actor );
+	private:
+		const String _name;
+		EngineState _state;
+		GameInput _gameInput;
+		Resources _resources;
+		Window* _pWindow;
+		Renderer* _pRenderer;
+		std::vector<Actor> _actors;
+	};
+}
+
+#pragma once
+#include <map>
+#include <tuple>
+#include "../graphics/model.hpp"
+#include "../graphics/material.hpp"
+namespace hp_ip
+{
+	class Renderer;
+	class Resources
+	{
+	public:
+		Resources( )
+		{ }
+		~Resources( );
+		Resources( const Resources& ) = delete;
+		void operator = ( const Resources& ) = delete;
+		Model* getModel( Renderer* pRenderer, const LoadedModelDef& loadedModelDef );
+		Model* getModel( Renderer* pRenderer, const BuiltInModelDef& builtInModelDef );
+		Material* getMaterial( Renderer* pRenderer, const MaterialDef& materialDef );
+	private:
+		std::map<LoadedModelDef, Model*> _loadedModels;
+		std::map<BuiltInModelDef, Model*> _builtInModels;
+		std::map<MaterialDef, Material*> _materials;
+		std::map<String, ID3D11ShaderResourceView*> _textures;
+	};
+}
+
+#pragma once
+namespace hp_ip
+{
+	extern const double TIME_ADDITION;
+	class Timer
+	{
+	public:
+		Timer( )
+			: _lastTimeMs( getTimeMs( ) ), _timeMs( TIME_ADDITION )
+		{ }
+		double update( );
+	private:
+		double getTimeMs( );
+		double _timeMs;
+		double _lastTimeMs;
+	public:
+		double timeMs( ) const
+		{
+			return _timeMs - TIME_ADDITION;
+		}
+	};
+}
+
+#pragma once
+#include <vector>
+#include "component/iComponent.hpp"
+#include "component/transformComponent.hpp"
+#include "../../window/gameInput.hpp"
+namespace hp_ip
+{
+	class Actor
+	{
+	public:
+		//Actor( TransformComponent&& transform )
+		//	//: _transformComponent( /*std::forward<TransformComponent>(*/ transform/* )*/ )
+		//{
+		//	_pTransformComponent = HP_NEW TransformComponent( transform );
+		//}
+		Actor( TransformComponent* pTransform )
+		{
+			_pTransformComponent = pTransform;
+		}
+		//Actor( Actor&& actor ) : _transformComponent( /*std::move(*/ actor._transformComponent/* )*/ ),
+		//	_components( std::move( actor._components ) ),
+		//	_children( std::move( actor._children ) )
+		//{
+		//	actor._components.clear( );
+		//	_transformComponent._owner = this;
+		//	for ( auto& component : _components )
+		//	{
+		//		component->_owner = this;
+		//	}
+		//}
+		~Actor( )
+		{ }
+		void init( Resources& resources, Renderer* pRenderer );
+		void update( const float deltaMs, const GameInput& input );
+		void render( Renderer* pRenderer );
+		void addComponent( iComponent* component );
+		void addComponent( TransformComponent* component );
+	private:
+		TransformComponent* _pTransformComponent;
+		std::vector<iComponent*> _components;
+		std::vector<Actor> _children;
+	public:
+		TransformComponent& transformComponent( )
+		{
+			return *_pTransformComponent;
+		}
+		void addChild( Actor&& actor )
+		{
+			_children.push_back( std::forward<Actor>( actor ) );
+		}
+	};
+}
+
+#pragma once
+#include "iComponent.hpp"
+#include "../../../graphics/camera.hpp"
+#include "../../../math/frustum.hpp"
+namespace hp_ip
+{
+	class CameraComponent : public iComponent
+	{
+	public:
+		CameraComponent( CameraDef&& cameraDef )
+			: _cameraDef( std::forward<CameraDef>( cameraDef ) )
+		{ }
+		virtual void vInit( Resources& resources, Renderer* pRenderer ) override;
+		virtual void vUpdate( const float deltaMs, const GameInput& input ) override;
+	protected:
+		CameraDef _cameraDef;
+		Frustum _frustum;
+		Mat4x4 _projection;
+		Renderer* _pRenderer;
+	};
+}
+
+#pragma once
+#include "../../../window/gameInput.hpp"
+namespace hp_ip
+{
+	enum class ComponentType : UInt8
+	{
+		Transform, Other, Count
+	};
+	class Resources;
+	class Renderer;
+	class Actor;
+	class iComponent
+	{
+	public:
+		friend class Actor;
+		iComponent( ComponentType type = ComponentType::Other ) : _owner( nullptr ),
+			_type( type )
+		{ }
+		virtual ~iComponent( )
+		{ }
+		virtual void vInit( Resources& resources, Renderer* pRenderer )
+		{ }
+		virtual void vUpdate( const float deltaMs, const GameInput& input )
+		{ }
+		virtual void vRender( Renderer* pRenderer )
+		{ }
+	protected:
+		Actor* _owner;
+	private:
+		ComponentType _type;
+	};
+}
+
+#pragma once
+#include "iComponent.hpp"
+#include "../../../graphics/material.hpp"
+#include "../../../graphics/model.hpp"
+namespace hp_ip
+{
+	class ModelComponent : public iComponent
+	{
+	public:
+		ModelComponent( String&& filename, const float scale, MaterialDef& materialDef )
+			: _model( nullptr ), _type( ModelType::Loaded ),
+			_loadedModelDef( std::make_tuple( std::forward<String>( filename ), scale ) ),
+			_materialDef( std::forward<MaterialDef>( materialDef ) )
+		{ }
+		ModelComponent( const BuiltInModelType modelType, const FVec3& dimensions,
+			MaterialDef&& materialDef ) : _model( nullptr ), _type( ModelType::BuiltIn ),
+			_builtInModelDef( std::make_tuple( modelType, dimensions ) ),
+			_materialDef( std::forward<MaterialDef>( materialDef ) )
+		{ }
+		~ModelComponent()
+		{
+			_material = nullptr;
+			_model = nullptr;
+		}
+		virtual void vInit( Resources& resources, Renderer* pRenderer ) override;
+		virtual void vRender( Renderer* pRenderer ) override;
+	protected:
+		Model* _model;
+		Material* _material;
+		ModelType _type;
+		LoadedModelDef _loadedModelDef;
+		BuiltInModelDef _builtInModelDef;
+		MaterialDef _materialDef;
+	};
+}
+
+#pragma once
+#include "iComponent.hpp"
+#include "../../../math/mat4x4.hpp"
+#include "../../../math/quat.hpp"
+namespace hp_ip
+{
+	class TransformComponent : public iComponent
+	{
+	public:
+		TransformComponent( const FVec3& pos, const FVec3& vel, const FVec3& scl,
+			const FQuat& rot = FQuat::identity, const FQuat& modelRot = FQuat::identity,
+			const Mat4x4& parentTransform = Mat4x4::identity )
+			: iComponent( ComponentType::Transform ), _pos( pos ), _vel( vel ),
+			_scl( scl ), _rot( rot ), _modelRot( modelRot ),
+			_parentTransform( parentTransform )
+		{ }
+		TransformComponent( TransformComponent&& transform ) : TransformComponent(
+			std::move( transform._pos ), std::move( transform._vel ),
+			std::move( transform._scl ), std::move( transform._rot ),
+			std::move( transform._modelRot ), std::move( transform._parentTransform ) )
+		{ }
+		TransformComponent operator = ( TransformComponent&& transform )
+		{
+			return TransformComponent( std::forward<TransformComponent>( transform ) );
+		}
+		virtual void vUpdate( const float deltaMs, const GameInput& input );
+		Mat4x4 transform( ) const;
+		Mat4x4 modelTransform( ) const;
+	protected:
+		FVec3 _pos;
+		FVec3 _vel;
+		FVec3 _scl;
+		FQuat _rot;
+		FQuat _modelRot;
+		Mat4x4 _parentTransform;
+	public:
+		FVec3 pos( ) const
+		{
+			return _pos;
+		}
+		FVec3 vel( ) const
+		{
+			return _vel;
+		}
+		FVec3 scl( ) const
+		{
+			return _scl;
+		}
+		FQuat rot( ) const
+		{
+			return _rot;
+		}
+		FQuat modelRot( ) const
+		{
+			return _modelRot;
+		}
+		void setPos( const FVec3& pos )
+		{
+			_pos = pos;
+		}
+		void setVel( const FVec3 vel )
+		{
+			_vel = vel;
+		}
+		void setScl( const FVec3 scl )
+		{
+			_scl = scl;
+		}
+		void setRot( const FQuat rot )
+		{
+			_rot = rot;
+		}
+		void setModelRot( const FQuat modelRot )
+		{
+			_modelRot = modelRot;
+		}
+		void setParentTransform( const Mat4x4& transform )
+		{
+			_parentTransform = transform;
+		}
+	};
+}
+
+#pragma once
+#include "../math/mat4x4.hpp"
+namespace hp_ip
+{
+	struct CameraDef
+	{
+		float nearClipDist;
+		float farClipDist;
+	};
+	struct Camera
+	{
+		Mat4x4 projection;
+		Mat4x4 transform;
+	};
+	class CameraBuffer
+	{
+	public:
+		const Camera& getCamera( );
+		void setCamera( Camera&& camera );
+		void swap( );
+	private:
+		bool _first;
+		Camera _cam[2];
+	};
+}
+
+#pragma once
+#include <d3d11_2.h>
+#pragma comment(lib, "d3d11.lib")
+#include <D3Dcompiler.h>
+#pragma comment(lib, "d3dcompiler.lib")
+#include <Effects11/inc/d3dx11effect.h>
+#pragma comment(lib, "Effects11.lib")
+#include "DirectXTex/DDSTextureLoader/DDSTextureLoader.h"
+#include "DirectXTex/WICTextureLoader/WICTextureLoader.h"
+
+#pragma once
+#include "directx.hpp"
+#include "../math/color.hpp"
+#include "../math/mat4x4.hpp"
+#include "../math/vec2.hpp"
+namespace hp_ip
+{
+	struct MaterialDef
+	{
+		const char* diffuseTextureFilename;
+		const char* specularTextureFilename;
+		const char* bumpTextureFilename;
+		const char* parallaxTextureFilename;
+		const char* evnMapTextureFilename;
+		FVec2 textureRepeat;
+		bool operator == ( const MaterialDef& m ) const
+		{
+			return diffuseTextureFilename == m.diffuseTextureFilename &&
+				specularTextureFilename == m.specularTextureFilename &&
+				bumpTextureFilename == m.bumpTextureFilename &&
+				parallaxTextureFilename == m.parallaxTextureFilename &&
+				evnMapTextureFilename == m.evnMapTextureFilename &&
+				textureRepeat == m.textureRepeat;
+		}
+		bool operator < ( const MaterialDef& m ) const
+		{
+			if ( diffuseTextureFilename == m.diffuseTextureFilename )
+			{
+				if ( specularTextureFilename == m.specularTextureFilename )
+				{
+					if ( bumpTextureFilename == m.bumpTextureFilename )
+					{
+						if ( parallaxTextureFilename == m.parallaxTextureFilename )
+						{
+							if ( evnMapTextureFilename == m.evnMapTextureFilename )
+							{
+								return  textureRepeat < m.textureRepeat;
+							}
+							return evnMapTextureFilename < m.evnMapTextureFilename;
+						}
+						return parallaxTextureFilename < m.parallaxTextureFilename;
+					}
+					return bumpTextureFilename < m.bumpTextureFilename;
+				}
+				return specularTextureFilename < m.specularTextureFilename;
+			}
+			return diffuseTextureFilename < m.diffuseTextureFilename;
+		}
+	};
+	class Renderer;
+	class Material
+	{
+	public:
+		static Material* loadMaterial( Renderer* pRenderer, const MaterialDef& materialDef );
+		Material( const String& filename, const String& techniqueName,
+			const FVec2& textureRepeat, const Color& ambientMaterial,
+			const Color& diffuseMaterial, const Color& specularMaterial,
+			const float specularPower );
+		~Material( );
+	private:
+		bool init( Renderer* pRenderer );
+		bool createVertexLayout( Renderer* pRenderer );
+		bool loadDiffuseTexture( Renderer* pRenderer, const String& filename );
+		bool loadSpecularTexture( Renderer* pRenderer, const String& filename );
+		bool loadBumpTexture( Renderer* pRenderer, const String& filename );
+		bool loadParallaxTexture( Renderer* pRenderer, const String& filename );
+		bool loadEnvMapTexture( Renderer* pRenderer, const String& filename );
+	public:
+		void setProjection( const Mat4x4& mat )
+		{
+			_pProjectionMatrixVariable->SetMatrix( (float*) ( &mat ) );
+		}
+		void setView( const Mat4x4& mat )
+		{
+			_pViewMatrixVariable->SetMatrix( (float*) ( &mat ) );
+		}
+		void setWorld( const Mat4x4& mat )
+		{
+			_pWorldMatrixVariable->SetMatrix( (float*) ( &mat ) );
+		}
+		void setAbientLightColor( const Color& color )
+		{
+			_pAmbientLightColourVariable->SetFloatVector( (float*) ( &color ) );
+		}
+		void setDiffuseLightColor( const Color& color )
+		{
+			_pDiffuseLightColourVariable->SetFloatVector( (float*) ( &color ) );
+		}
+		void setSpecularLightColor( const Color& color )
+		{
+			_pSpecularLightColourVariable->SetFloatVector( (float*) ( &color ) );
+		}
+		void setLightDirection( const FVec3& dir )
+		{
+			_pLightDirectionVariable->SetFloatVector( (float*) ( &dir ) );
+		}
+		void setCameraPosition( const FVec3& dir )
+		{
+			_pCameraPositionVariable->SetFloatVector( (float*) ( &dir ) );
+		}
+		void setTextureRepeat( const FVec2& repeat )
+		{
+			_textureRepeat = repeat;
+		}
+		void setTextures( )
+		{
+			_pDiffuseTextureVariable->SetResource( _pDiffuseTexture );
+			_pSpecularTextureVariable->SetResource( _pSpecularTexture );
+			_pBumpTextureVariable->SetResource( _pBumpTexture );
+			_pParallaxTextureVariable->SetResource( _pParallaxTexture );
+			_pEnvMapVariable->SetResource( _pEnvMapTexture );
+			if ( _pDiffuseTexture )
+				_pUseDiffuseTextureVariable->SetBool( true );
+			if ( _pSpecularTexture )
+				_pUseSpecularTextureVariable->SetBool( true );
+			if ( _pBumpTexture )
+				_pUseBumpTextureVariable->SetBool( true );
+			if ( _pParallaxTexture )
+				_pUseParallaxTextureVariable->SetBool( true );
+			_pTextureRepeatVariable->SetFloatVector( (float*) ( &_textureRepeat ) );
+		}
+		void setMaterials( )
+		{
+			_pAmbientMaterialVariable->SetFloatVector( (float*) ( _ambientMaterial ) );
+			_pDiffuseMaterialVariable->SetFloatVector( (float*) ( _diffuseMaterial ) );
+			_pSpecularMaterialVariable->SetFloatVector( (float*) ( _specularMaterial ) );
+			_pSpecularPowerVariable->SetFloat( _specularPower );
+		}
+		void bindInputLayout( Renderer* pRenderer );
+		UInt32 getPassCount( )
+		{
+			return _techniqueDesc.Passes;
+		}
+		void applyPass( Renderer* pRenderer, UInt32 i );
+	private:
+		bool loadEffectFromFile( Renderer* pRenderer );
+		bool compileD3DShader( const String& filePath, const String& shaderModel,
+			ID3DBlob** ppBuffer );
+		bool loadTexture( ID3D11ShaderResourceView** texture, Renderer* pRenderer,
+			const String& filename );
+		String _filename;
+		String _techniqueName;
+		// effect variables
+		ID3DX11Effect* _pEffect;
+		ID3DX11EffectTechnique* _pTechnique;
+		ID3DX11EffectPass* _pPass;
+		// input layout
+		ID3D11InputLayout* _pInputLayout;
+		// technique desc
+		D3DX11_TECHNIQUE_DESC _techniqueDesc;
+		// effect variables(constants)
+		ID3DX11EffectMatrixVariable* _pViewMatrixVariable;
+		ID3DX11EffectMatrixVariable* _pProjectionMatrixVariable;
+		ID3DX11EffectMatrixVariable* _pWorldMatrixVariable;
+		// Textures
+		ID3DX11EffectShaderResourceVariable* _pDiffuseTextureVariable;
+		ID3DX11EffectShaderResourceVariable* _pSpecularTextureVariable;
+		ID3DX11EffectShaderResourceVariable* _pBumpTextureVariable;
+		ID3DX11EffectShaderResourceVariable* _pParallaxTextureVariable;
+		ID3DX11EffectShaderResourceVariable* _pEnvMapVariable;
+		ID3D11ShaderResourceView* _pDiffuseTexture;
+		ID3D11ShaderResourceView* _pSpecularTexture;
+		ID3D11ShaderResourceView* _pBumpTexture;
+		ID3D11ShaderResourceView* _pParallaxTexture;
+		ID3D11ShaderResourceView* _pEnvMapTexture;
+		FVec2 _textureRepeat;
+		// Texture switches
+		ID3DX11EffectScalarVariable* _pUseDiffuseTextureVariable;
+		ID3DX11EffectScalarVariable* _pUseSpecularTextureVariable;
+		ID3DX11EffectScalarVariable* _pUseBumpTextureVariable;
+		ID3DX11EffectScalarVariable* _pUseParallaxTextureVariable;
+		// Light
+		ID3DX11EffectVectorVariable* _pAmbientLightColourVariable;
+		ID3DX11EffectVectorVariable* _pDiffuseLightColourVariable;
+		ID3DX11EffectVectorVariable* _pSpecularLightColourVariable;
+		// Direction
+		ID3DX11EffectVectorVariable* _pLightDirectionVariable;
+		// Material
+		ID3DX11EffectVectorVariable* _pAmbientMaterialVariable;
+		ID3DX11EffectVectorVariable* _pDiffuseMaterialVariable;
+		ID3DX11EffectVectorVariable* _pSpecularMaterialVariable;
+		ID3DX11EffectScalarVariable* _pSpecularPowerVariable;
+		ID3DX11EffectVectorVariable* _pTextureRepeatVariable;
+		// Camera
+		ID3DX11EffectVectorVariable* _pCameraPositionVariable;
+		// Material colours
+		Color _ambientMaterial;
+		Color _diffuseMaterial;
+		Color _specularMaterial;
+		float _specularPower;
+	};
+}
+
+#pragma once
+#include <vector>
+#include "vertex.hpp"
+namespace hp_ip
+{
+	class Mesh
+	{
+		friend class Model;
+		friend class Renderer;
+	public:
+		Mesh( ) : _vertexBuffer( nullptr ), _indexBuffer( nullptr )
+		{ }
+		~Mesh( )
+		{
+			HP_RELEASE( _indexBuffer );
+			HP_RELEASE( _vertexBuffer );
+		}
+		size_t indicesSize( )
+		{
+			return _indices.size( );
+		}
+		/*std::vector<Vertex>& vertices( )
+		{
+		return _vertices;
+		}
+		std::vector<Index>& indices( )
+		{
+		return _indices;
+		}*/
+	private:
+		std::vector<Vertex> _vertices;
+		std::vector<Index> _indices;
+		ID3D11Buffer* _vertexBuffer;
+		ID3D11Buffer* _indexBuffer;
+	};
+}
+
+#pragma once
+#include <vector>
+#include <tuple>
+#include "mesh.hpp"
+namespace hp_ip
+{
+	class Renderer;
+	enum class ModelType : UInt8
+	{
+		Loaded, BuiltIn, Count
+	};
+	enum struct BuiltInModelType : UInt8
+	{
+		Box, Count
+	};
+	typedef std::tuple<String, float> LoadedModelDef;
+	typedef std::tuple<BuiltInModelType, FVec3> BuiltInModelDef;
+	class Model
+	{
+	public:
+		friend class ModelComponent;
+		Model( );
+		static Model* loadModelFromFile( Renderer* pRenderer,
+			const LoadedModelDef& loadedModelDef );
+		static Model* loadModelFromFBXFile( Renderer* pRenderer, const String& filename,
+			const float scale );
+		static Model* cubeMesh( Renderer* pRenderer, const FVec3& dimensions );
+	private:
+		static void computeTangentsAndBinormals( Vertex* vertices, UInt32 vertexCount,
+			UInt32* indices, UInt32 indexCount );
+		static void addVertex( Mesh& mesh, const Vertex vertex );
+		static void addIndex( Mesh& mesh, const Index index );
+		static bool createBuffers( Renderer* pRenderer, Mesh& mesh );
+		static Model* cubeMesh( const FVec3& dimensions );
+	private:
+		std::vector<Mesh> _meshes;
+	};
+}
+
+#pragma once
+#include "camera.hpp"
+#include "directx.hpp"
+#include "vertex.hpp"
+#include "../window/window.hpp"
+namespace hp_ip
+{
+	class Mesh;
+	class Renderer
+	{
+	public:
+		Renderer( const WindowConfig& windowConfig ) : _driverType( D3D_DRIVER_TYPE_NULL ),
+			_featureLevel( D3D_FEATURE_LEVEL_11_0 ), _pDevice( nullptr ),
+			_pDeviceContext( nullptr ), _pSwapChain( nullptr ), _pRenderTargetView( nullptr ),
+			_pDepthStencilView( nullptr ), _pDepthStencilTexture( nullptr ),
+			_windowConfig( windowConfig )
+		{ }
+		bool init( WindowHandle windowHandle );
+		void preRender( );
+		void swapCameras( );
+		void present( );
+		bool createVertexBuffer( ID3D11Buffer** vertexBuffer, UInt32 byteWidth,
+			const Vertex* initData );
+		bool createIndexBuffer( ID3D11Buffer** indexBuffer, UInt32 byteWidth,
+			const Index* initData );
+		void setVertexBuffers( ID3D11Buffer** vertexBuffer, UInt32* stride,
+			UInt32* offset );
+		void setIndexBuffer( ID3D11Buffer** indexBuffer );
+		void setBuffers( Mesh& mesh );
+		void drawIndexed( UInt32 indexCount, UInt32 startIndexLocation,
+			UInt32 baseVertexLocation );
+	private:
+		D3D_DRIVER_TYPE _driverType;
+		D3D_FEATURE_LEVEL _featureLevel;
+		ID3D11Device* _pDevice;
+		ID3D11DeviceContext* _pDeviceContext;
+		IDXGISwapChain* _pSwapChain;
+		ID3D11RenderTargetView* _pRenderTargetView;
+		ID3D11DepthStencilView* _pDepthStencilView;
+		ID3D11Texture2D* _pDepthStencilTexture;
+		CameraBuffer _cameraBuffer;
+		WindowConfig _windowConfig;
+	public:
+		ID3D11Device* device( )
+		{
+			return _pDevice;
+		}
+		ID3D11DeviceContext* deviceContext( )
+		{
+			return _pDeviceContext;
+		}
+		const WindowConfig& windowConfig( ) const
+		{
+			return _windowConfig;
+		}
+		void setCamera( Camera&& camera )
+		{
+			_cameraBuffer.setCamera( std::forward<Camera>( camera ) );
+		}
+		const Camera& getCamera( )
+		{
+			return _cameraBuffer.getCamera( );
+		}
+	};
+}
+
+#pragma once
+#include "directx.hpp"
+#include "../math/color.hpp"
+#include "../math/vec2.hpp"
+#include "../math/vec3.hpp"
+namespace hp_ip
+{
+	struct Vertex
+	{
+		FVec3 position;
+		Color color;
+		FVec2 texCoord;
+		FVec3 normal;
+		FVec3 tangent;
+		FVec3 binormal;
+	};
+	static const D3D11_INPUT_ELEMENT_DESC D3D11_LAYOUT[] =
+	{
+		{
+			"POSITION", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			0, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"COLOR", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32A32_FLOAT, // format
+			0, // input slot
+			12, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"TEXCOORD", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32_FLOAT, // format
+			0, // input slot
+			28, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"NORMAL", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			36, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"TANGENT", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			48, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+
+		{
+			"BINORMAL", // semantic name
+			0, // semantic index
+			DXGI_FORMAT_R32G32B32_FLOAT, // format
+			0, // input slot
+			60, // aligned byte offset
+			D3D11_INPUT_PER_VERTEX_DATA, // input slot class
+			0 // instance data step rate
+		},
+	};
+}
+
+#pragma once
+namespace hp_ip
+{
+	struct Color
+	{
+		float r, g, b, a;
+		Color( const float r = 0, const float g = 0, const float b = 0,
+			const float a = 1.0f ) : r( r ), g( g ), b( b ), a( a )
+		{ }
+		operator float*( )
+		{
+			return &r;
+		}
+	};
+}
+
+#pragma once
+#include "plane.hpp"
+namespace hp_ip
+{
+	enum struct FrustumSides : UInt8
+	{
+		Near, Far, Top, Right, Bottom, Left, Count
+	};
+	struct Frustum
+	{
+		Plane planes[static_cast<UInt8>( FrustumSides::Count )];
+		FVec3 nearClipVerts[4];
+		FVec3 farClipVerts[4];
+		float fieldOfView; // radians
+		float aspectRatio; // width / height
+		float nearClipDist;
+		float farClipDist;
+	};
+	Frustum init( const float fieldOfView, const float aspectRatio, const float nearClipDist,
+		const float farClipDist );
+	bool isInside( const Frustum& frustum, const FVec3& point, const float radius );
+}
+
+#pragma once
+#include "vec3.hpp"
+#include "vec4.hpp"
+#include "quat.hpp"
+namespace hp_ip
+{
+	struct Mat4x4
+	{
+	public:
+		union
+		{
+			struct
+			{
+				float _11, _12, _13, _14, _21, _22, _23, _24, _31, _32, _33, _34, _41, _42, _43, _44;
+			};
+			float m[4][4];
+		};
+		Mat4x4( ) : Mat4x4( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 )
+		{ }
+		Mat4x4( float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24,
+			float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44 )
+			: _11( m11 ), _12( m12 ), _13( m13 ), _14( m14 ), _21( m21 ), _22( m22 ), _23( m23 ), _24( m24 ),
+			_31( m31 ), _32( m32 ), _33( m33 ), _34( m34 ), _41( m41 ), _42( m42 ), _43( m43 ), _44( m44 )
+		{ }
+		static const Mat4x4 identity;
+		Mat4x4 operator * ( const Mat4x4& mat ) const
+		{
+			Mat4x4 result;
+			for ( int i = 0; i < 4; i++ )
+			{
+				for ( int j = 0; j < 4; j++ )
+				{
+					result.m[i][j] =
+						m[i][0] * mat.m[0][j] +
+						m[i][1] * mat.m[1][j] +
+						m[i][2] * mat.m[2][j] +
+						m[i][3] * mat.m[3][j];
+				}
+			}
+			return result;
+		}
+	};
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	FVec3 pos( const Mat4x4& mat );
+	float determinant( const Mat4x4& mat );
+	Mat4x4 inverse( const Mat4x4& mat );
+	Mat4x4 matrixPerspectiveFovLH( const float fieldOfView, const float aspectRatio,
+		const float nearClipDist, const float farClipDist );
+	Mat4x4 rotToMat4x4( const FQuat& rot );
+	Mat4x4 sclToMat4x4( const FVec3& scl );
+	Mat4x4 posToMat4x4( const FVec3& pos );
+	Mat4x4 rotSclPosToMat4x4( const FQuat& rot, const FVec3& scl, const FVec3& pos );
+}
+
+#pragma once
+#include "vec3.hpp"
+namespace hp_ip
+{
+	struct Plane
+	{
+	public:
+		float a, b, c, d;
+		Plane( ) : a( 0.f ), b( 0.f ), c( 0.f ), d( 0.f )
+		{ }
+		Plane( float a, float b, float c, float d ) : a( a ), b( b ), c( c ), d( d )
+		{ }
+	};
+	Plane init( const FVec3& p0, const FVec3& p1, const FVec3& p2 );
+	Plane normalize( const Plane& plane );
+	Plane planeFromPointNormal( const FVec3& point, const FVec3& normal );
+	bool isInside( const Plane& plane, const FVec3& point, const float radius );
+	float planeDotCoord( const Plane& plane, const FVec3& point );
+}
+
+#pragma once
+#include "vec3.hpp"
+namespace hp_ip
+{
+	template<typename A>
+	struct Quat
+	{
+	public:
+		A x, y, z, w;
+		Quat( const A x, const A y, const A z, const A w ) : x( x ), y( y ), z( z ), w( w )
+		{ };
+		Quat( ) : x( 0.0f ), y( 0.0f ), z( 0.0f ), w( 1.0f )
+		{ };
+		static const Quat<A> identity;
+		Quat operator * ( const Quat& q ) const
+		{
+			return Quat{
+				x * q.w + w * q.x + z * q.y - y * q.z,
+				y * q.w - z * q.x + w * q.y + x * q.z,
+				z * q.w + y * q.x - x * q.y + w * q.z,
+				w * q.w - x * q.x - y * q.y - z * q.z };
+		}
+	};
+	typedef Quat<float> FQuat;
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	template<typename A>
+	Quat<A> eulerDegToQuat( const Vec3<A>& vec )
+	{
+		return eulerRadToQuat( vec * DEG_TO_RAD_F );
+	}
+	template<typename A>
+	Quat<A> eulerRadToQuat( const Vec3<A>& vec )
+	{
+		Quat<A> quat;
+		quat.x = sin( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * sin( vec.z / 2.0f ) +
+			cos( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * cos( vec.z / 2.0f );
+		quat.y = sin( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * cos( vec.z / 2.0f ) -
+			cos( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * sin( vec.z / 2.0f );
+		quat.z = cos( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * sin( vec.z / 2.0f ) -
+			sin( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * cos( vec.z / 2.0f );
+		quat.w = cos( vec.y / 2.0f ) * cos( vec.x / 2.0f ) * cos( vec.z / 2.0f ) +
+			sin( vec.y / 2.0f ) * sin( vec.x / 2.0f ) * sin( vec.z / 2.0f );
+		return quat;
+	}
+	template<typename A>
+	Quat<A> conjugate( const Quat<A>& quat )
+	{
+		return Quat < A > {-quat.x, -quat.y, -quat.z, quat.w};
+	}
+	template<typename A>
+	Vec3<A> rotate( const Vec3<A>& vec, const Quat<A>& quat )
+	{
+		auto rotated = conjugate( quat ) * Quat < A > {vec.x, vec.y, vec.z, 1.0f} *quat;
+		return Vec3 < A > {rotated.x, rotated.y, rotated.z};
+	};
+}
+
+#pragma once
+namespace hp_ip
+{
+	template<typename A>
+	struct Vec2
+	{
+	public:
+		A x, y;
+		/*Vec2( const A x = 0, const A y = 0 ) : x( x ), y( y )
+		{ }*/
+		Vec2<A> operator - ( const Vec2<A>& vec ) const
+		{
+			return Vec2 < A > { x - vec.x, y - vec.y };
+		}
+		bool operator == ( const Vec2<A>& v ) const
+		{
+			return x == v.x && y == v.y;
+		}
+		bool operator < ( const Vec2<A>& v ) const
+		{
+			if ( x == v.x )
+			{
+				return y < v.y;
+			}
+			return x < v.x;
+		}
+	};
+	typedef Vec2<UInt16> UInt16Vec2;
+	typedef Vec2<Int16> Int16Vec2;
+	typedef Vec2<UInt32> UInt32Vec2;
+	typedef Vec2<Int32> Int32Vec2;
+	typedef Vec2<float> FVec2;
+}
+
+#pragma once
+namespace hp_ip
+{
+	template<typename A>
+	struct Vec3
+	{
+	public:
+		A x, y, z;
+		static const Vec3<A> zero;
+		static const Vec3<A> right;
+		static const Vec3<A> up;
+		static const Vec3<A> forward;
+		/*Vec3( const A x = 0, const A y = 0, const A z = 0 ) : x( x ), y( y ), z( z )
+		{ }*/
+		static inline Vec3<A> normalize( const Vec3<A>& vec )
+		{
+			Vec3<A> normVec{ };
+			float length = Vec3<A>::length( vec );
+			if ( length == 0.0f )
+			{
+				return normVec;
+			}
+			length = 1.0f / length;
+			normVec.x = vec.x * length;
+			normVec.y = vec.y * length;
+			normVec.z = vec.z * length;
+			return normVec;
+		}
+		static float length( const Vec3<A>& vec )
+		{
+			return sqrtf( vec.x * vec.x + vec.y * vec.y + vec.z * vec.z );
+		}
+		Vec3<A> operator + ( const Vec3<A>& vec ) const
+		{
+			return Vec3 < A > { x + vec.x, y + vec.y, z + vec.z };
+		}
+		Vec3<A> operator - ( const Vec3<A>& vec ) const
+		{
+			return Vec3 < A > { x - vec.x, y - vec.y, z - vec.z };
+		}
+		Vec3<A>& operator += ( const Vec3<A>& vec )
+		{
+			x += vec.x;
+			y += vec.y;
+			z += vec.z;
+			return *this;
+		}
+		Vec3<A>& operator -= ( const Vec3<A>& vec )
+		{
+			x -= vec.x;
+			y -= vec.y;
+			z -= vec.z;
+			return *this;
+		}
+		bool operator == ( const Vec3<A>& v ) const
+		{
+			return x == v.x && y == v.y && z == v.z;
+		}
+		bool operator < ( const Vec3<A>& v ) const
+		{
+			if ( x == v.x )
+			{
+				if ( y == v.y )
+				{
+					return  z < v.z;
+				}
+				return y < v.y;
+			}
+			return x < v.x;
+		}
+		float length(  )
+		{
+			return sqrtf( x * x + y * y + z * z );
+		}
+		float mag( )
+		{
+			return length();
+		}
+		Vec3<A>& clampMag( const float max )
+		{
+			float magnitude = mag( );
+			if ( magnitude > max )
+			{
+				float mult = max / magnitude;
+				x *= mult;
+				y *= mult;
+				z *= mult;
+			}
+			return *this;
+		}
+		template<typename B>
+		friend inline Vec3<B> operator * ( const float scalar, const Vec3<B>& vec );
+		template<typename B>
+		friend inline Vec3<B> operator * ( const Vec3<B>& vec, const float scalar );
+	};
+	typedef Vec3<UInt16> UInt16Vec3;
+	typedef Vec3<Int16> Int16Vec3;
+	typedef Vec3<UInt32> UInt32Vec3;
+	typedef Vec3<Int32> Int32Vec3;
+	typedef Vec3<float> FVec3;
+	/*}   }   }   }  }  }  } } } }}}} Functions {{{{ { { {  {  {  {   {   {   {*/
+
+	template<typename A>
+	inline Vec3<A> operator * ( const float scalar, const Vec3<A>& vec )
+	{
+		return Vec3 < A > { vec.x * scalar, vec.y * scalar, vec.z * scalar };
+	}
+	template<typename A>
+	inline Vec3<A> operator * ( const Vec3<A>& vec, const float scalar )
+	{
+		return scalar * vec;
+	}
+	template<typename A>
+	inline Vec3<A> cross( const Vec3<A>& vec1, const Vec3<A>& vec2 )
+	{
+		return Vec3 < A > {
+			vec1.y * vec2.z - vec1.z * vec2.y,
+				vec1.z * vec2.x - vec1.x * vec2.z,
+				vec1.x * vec2.y - vec1.y * vec2.x };
+	}
+	template<typename A>
+	inline A dot( const Vec3<A>& vec1, const Vec3<A>& vec2 )
+	{
+		return ( vec1.x ) * ( vec2.x ) + ( vec1.y ) * ( vec2.y ) + ( vec1.z ) * ( vec2.z );
+	}
+}
+
+#pragma once
+#include "vec3.hpp"
+namespace hp_ip
+{
+	template<typename A>
+	struct Vec4
+	{
+	public:
+		A x, y, z, w;
+		static const Vec4<A> right;
+		static const Vec4<A> up;
+		static const Vec4<A> forward;
+		Vec4( const A x = 0, const A y = 0, const A z = 0, const A w = 0 ) : x( x ), y( y ), z( z ), w( w )
+		{ }
+		Vec4( const FVec3& vec );
+		// not implemented yet
+		static inline float Vec4Dot( const Vec4<A>* vec1, const Vec4<A>* vec2 )
+		{
+			return 0.f;
+		}
+		// not implemented yet
+		static inline Vec3<A>* Vec4Normalize( Vec4<A>* vecOut, const Vec4<A>* vecIn )
+		{
+			return vecOut;
+		}
+		Vec4<A> operator + ( const Vec4<A>& vec ) const
+		{
+			return Vec4<A>( x + vec.x, y + vec.y, z + vec.z, 1.f );
+		}
+		Vec4<A> operator - ( const Vec4<A>& vec ) const
+		{
+			return Vec4<A>( x - vec.x, y - vec.y, z - vec.z, 1.f );
+		}
+		Vec4<A>& operator += ( const Vec4<A>& vec )
+		{
+			x += vec.x;
+			y += vec.y;
+			z += vec.z;
+			return *this;
+		}
+		Vec4<A>& operator -= ( const Vec4<A>& vec )
+		{
+			x -= vec.x;
+			y -= vec.y;
+			z -= vec.z;
+			return *this;
+		}
+		template<typename B >
+		friend inline Vec4< B > operator * ( const float scalar, const Vec4< B >& vec );
+		template<typename B >
+		friend inline Vec4< B > operator * ( const Vec4< B >& vec, const float scalar );
+	};
+	template<typename A>
+	inline Vec4<A> operator * ( const float scalar, const Vec4<A>& vec )
+	{
+		return Vec4<A>( vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w );
+	}
+	template<typename A>
+	inline Vec4<A> operator * ( const Vec4<A>& vec, const float scalar )
+	{
+		return scalar * vec;
+	}
+	template<typename A>
+	inline Vec4<A> cross( const Vec4<A>& vec1, const Vec4<A>& vec2, const Vec4<A>& vec3 )
+	{
+		return Vec4<A>(
+			vec1.y * ( vec2.z * vec3.w - vec2.w * vec3.z )
+			- vec1.z * ( vec2.y * vec3.w - vec2.w * vec3.y )
+			+ vec1.w * ( vec2.y * vec3.z - vec2.z * vec3.y ),
+			-vec1.x * ( vec2.z * vec3.w - vec2.w * vec3.z )
+			+ vec1.z * ( vec2.x * vec3.w - vec2.w * vec3.x )
+			- vec1.w * ( vec2.x * vec3.z - vec2.z * vec3.x ),
+			vec1.x * ( vec2.y * vec3.w - vec2.w * vec3.y )
+			- vec1.y * ( vec2.x * vec3.w - vec2.w * vec3.x )
+			+ vec1.w * ( vec2.x * vec3.y - vec2.y * vec3.x ),
+			-vec1.x * ( vec2.y * vec3.z - vec2.z * vec3.y )
+			+ vec1.y * ( vec2.x * vec3.z - vec2.z * vec3.x )
+			- vec1.z * ( vec2.x * vec3.y - vec2.y * vec3.x ) );
+	}
+	typedef Vec4<float> FVec4;
+}
+
+///
+/// precompiled header
+///
+#pragma once
+
+// disable STL expections
+#define _HAS_EXCEPTIONS 0
+
+#if defined( _WIN32 ) || defined( __WIN32__ )
+// Windows
+#   define HP_PLATFORM_WIN32
+// exclude rarely-used services from Windows headers
+#   ifndef WIN32_LEAN_AND_MEAN
+#       define WIN32_LEAN_AND_MEAN
+#   endif
+#	ifndef NOMINMAX
+#		define NOMINMAX
+#	endif
+#   include <Windows.h>
+#else
+#   error This operating system is not supported
+#endif
+
+// redefine new for debugging purposes
+#if defined( _LOG )
+#	define HP_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__ )
+#   define HP_DEBUG
+#	include <iostream>
+#	define ERR( x ) do { SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x0C ); std::cerr << __FILE__  << ":" << __LINE__ << ": " << x << std::endl; } while ( 0 )
+#	define WAR( x ) do { SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x0E ); std::cerr << __FILE__  << ":" << __LINE__ << ": " << x << std::endl; } while ( 0 )
+#	define LOG( x ) do { SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 0x07 ); std::cout << __FILE__  << ":" << __LINE__ << ": " << x << std::endl; } while ( 0 )
+#else
+#	define HP_NEW new
+#	define ERR( x )
+#	define WAR( x )
+#	define LOG( x )
+#endif
+
+// safe delete pointer
+#ifndef HP_DELETE
+#   define HP_DELETE( x ) delete x; x = nullptr;
+#endif
+// safe delete array
+#ifndef HP_DELETE_ARRAY
+#   define HP_DELETE_ARRAY( x ) delete [] x; x = nullptr;
+#endif
+// safe release
+#ifndef HP_RELEASE
+#   define HP_RELEASE( x ) if( x ) x->Release( ); x = nullptr;
+#endif
+
+#include <string>
+
+#if defined( HP_PLATFORM_WIN32 )
+typedef unsigned char		 UInt8;
+typedef signed char			 Int8;
+typedef unsigned short		 UInt16;
+typedef signed short		 Int16;
+typedef unsigned int		 UInt32;
+typedef signed int			 Int32;
+#   ifdef _MSC_VER
+typedef signed __int64		 Int64;
+typedef unsigned __int64	 UInt64;
+#   else
+typedef signed long long	 Int64;
+typedef unsigned long long	 UInt64;
+#   endif
+typedef Int32				 Int;
+typedef UInt32				 UInt;
+
+typedef HWND		 WindowHandle;
+typedef std::string	 String;
+typedef UInt32		 Index;
+#endif
+
+namespace hp_ip
+{
+	extern const double PI;
+	extern const double TWO_PI;
+	extern const double DEG_TO_RAD;
+	extern const double RAD_TO_DEG;
+	extern const float PI_F;
+	extern const float TWO_PI_F;
+	extern const float DEG_TO_RAD_F;
+	extern const float RAD_TO_DEG_F;
+}
+
+#pragma once
+namespace hp_ip
+{
+#if defined( HP_PLATFORM_WIN32 )
+	// converts multibyte string to unicode widechar string
+	std::wstring s2ws( const std::string& s );
+	// returns base path from a file path
+	std::string basePath( const std::string& path );
+#endif
+}
+
+#pragma once
+namespace hp_ip
+{
+	typedef void* TypeId;
+	template<typename A>
+	// get type id without RTTI
+	TypeId typeId( )
+	{
+		static A* typeUniqueMarker = NULL;
+		return &typeUniqueMarker;
+	}
+}
+
+#pragma once
+#include <array>
+namespace hp_ip
+{
+	enum class Key : UInt8
+	{
+		Backspace = VK_BACK,
+		Tab = VK_TAB,
+		Return = VK_RETURN,
+		Shift = VK_SHIFT,
+		Ctrl = VK_CONTROL,
+		Alt = VK_MENU,
+		Pause = VK_PAUSE,
+		CapsLock = VK_CAPITAL,
+		Esc = VK_ESCAPE,
+		Space = VK_SPACE,
+		PageUp = VK_PRIOR,
+		PageDown = VK_NEXT,
+		End = VK_END,
+		Home = VK_HOME,
+		ArrowLeft = VK_LEFT,
+		ArrowUp = VK_UP,
+		ArrowRight = VK_RIGHT,
+		ArrowDown = VK_DOWN,
+		Print = VK_PRINT,
+		PrintScreen = VK_SNAPSHOT,
+		Insert = VK_INSERT,
+		Delete = VK_DELETE,
+		Help = VK_HELP,
+		No0 = 0x30,
+		No1 = 0x31,
+		No2 = 0x32,
+		No3 = 0x33,
+		No4 = 0x34,
+		No5 = 0x35,
+		No6 = 0x36,
+		No7 = 0x37,
+		No8 = 0x38,
+		No9 = 0x39,
+		A = 'A',
+		B = 'B',
+		C = 'C',
+		D = 'D',
+		E = 'E',
+		F = 'F',
+		G = 'G',
+		H = 'H',
+		I = 'I',
+		J = 'J',
+		K = 'K',
+		L = 'L',
+		M = 'M',
+		N = 'N',
+		O = 'O',
+		P = 'P',
+		Q = 'Q',
+		R = 'R',
+		S = 'S',
+		T = 'T',
+		U = 'U',
+		V = 'V',
+		W = 'W',
+		X = 'X',
+		Y = 'Y',
+		Z = 'Z',
+		LWin = VK_LWIN,
+		RWin = VK_RWIN,
+		Num0 = VK_NUMPAD0,
+		Num1 = VK_NUMPAD1,
+		Num2 = VK_NUMPAD2,
+		Num3 = VK_NUMPAD3,
+		Num4 = VK_NUMPAD4,
+		Num5 = VK_NUMPAD5,
+		Num6 = VK_NUMPAD6,
+		Num7 = VK_NUMPAD7,
+		Num8 = VK_NUMPAD8,
+		Num9 = VK_NUMPAD9,
+		NumMultiply = VK_MULTIPLY,
+		NumAdd = VK_ADD,
+		NumSeparator = VK_SEPARATOR,
+		NumSubstract = VK_SUBTRACT,
+		NumDecimal = VK_DECIMAL,
+		NumDivide = VK_DIVIDE,
+		F1 = VK_F1,
+		F2 = VK_F2,
+		F3 = VK_F3,
+		F4 = VK_F4,
+		F5 = VK_F5,
+		F6 = VK_F6,
+		F7 = VK_F7,
+		F8 = VK_F8,
+		F9 = VK_F9,
+		F10 = VK_F10,
+		F11 = VK_F11,
+		F12 = VK_F12,
+		F13 = VK_F13,
+		F14 = VK_F14,
+		F15 = VK_F15,
+		F16 = VK_F16,
+		F17 = VK_F17,
+		F18 = VK_F18,
+		F19 = VK_F19,
+		F20 = VK_F20,
+		F21 = VK_F21,
+		F22 = VK_F22,
+		F23 = VK_F23,
+		F24 = VK_F24,
+		NumLock = VK_NUMLOCK,
+		ScrollLock = VK_SCROLL,
+		LShift = VK_LSHIFT,
+		RShift = VK_RSHIFT,
+		LCtrl = VK_LCONTROL,
+		RCtrl = VK_RCONTROL,
+		LAlt = VK_LMENU,
+		RAlt = VK_RMENU
+	};
+	enum class MouseButton : UInt8
+	{
+		LeftButton = MK_LBUTTON,
+		RightButton = MK_RBUTTON,
+		Shift = MK_SHIFT,
+		Control = MK_CONTROL,
+		MiddleButton = MK_MBUTTON,
+		XButton1 = MK_XBUTTON1,
+		XButton2 = MK_XBUTTON2
+	};
+	// 255 keys, 7 mouseButtons
+	const size_t STATES_SIZE = 255 + 7;
+	struct Mouse
+	{
+		UInt16 x;
+		UInt16 y;
+		UInt16 delta; // wheel delta
+	};
+	// [const][cop-c][cop-a][mov-c][mov-a]
+	// [  +  ][  +  ][  +  ][  +  ][  +  ]
+	struct GameInput
+	{
+		GameInput( )
+		{
+			std::fill_n( states.begin( ), STATES_SIZE, false );
+		}
+		GameInput( const GameInput& gi ) : states( gi.states ), mouse( gi.mouse ),
+			text( gi.text )
+		{ }
+		GameInput( GameInput&& gi ) : states( std::move( gi.states ) ),
+			mouse( std::move( gi.mouse ) ), text( std::move( gi.text ) )
+		{ }
+		GameInput operator = ( const GameInput& gi )
+		{
+			return GameInput{ gi };
+		}
+		GameInput operator = ( GameInput&& gi )
+		{
+			return GameInput{ std::move( gi ) };
+		}
+		bool& operator[]( size_t i )
+		{
+			return states[i];
+		}
+		bool& operator[]( Key k )
+		{
+			return states[static_cast<size_t>( k )];
+		}
+		bool& operator[]( MouseButton k )
+		{
+			return states[255 + static_cast<size_t>( k )];
+		}
+		bool operator[]( Key k ) const
+		{
+			return states[static_cast<size_t>( k )];
+		}
+		bool operator[]( MouseButton k ) const
+		{
+			return states[255 + static_cast<size_t>( k )];
+		}
+	private:
+		GameInput( std::array<bool, STATES_SIZE> states, Mouse mouse, UInt32 text )
+			: states( states ), mouse( mouse ), text( text )
+		{ }
+		std::array<bool, STATES_SIZE> states;
+	public:
+		Mouse mouse;
+		UInt32 text;
+	};
+}
+
+#pragma once
+#include "gameInput.hpp"
+#include "../utils/string.hpp"
+namespace hp_ip
+{
+	enum struct WindowStyle : unsigned
+	{
+		Window,
+		Fullscreen,
+		Default = Window
+	};
+	struct WindowConfig
+	{
+		UInt width;
+		UInt height;
+		WindowStyle windowStyle;
+		UInt bitsPerPx;
+	};
+	class Window
+	{
+	public:
+		Window( const String& name, const WindowConfig& windowConfig ) : _handle( nullptr ),
+			_name( s2ws( name ) ), _windowConfig( windowConfig ), _open( false )
+		{ }
+		bool open( );
+		void switchToFullscreen( );
+		void processMessages( );
+		bool isOpen( );
+		void captureMouse( );
+		void releaseMouse( );
+		LRESULT CALLBACK windowProc( HWND handle, UINT message, WPARAM wParam, LPARAM lParam );
+		static LRESULT CALLBACK staticWindowProc( HWND handle, UINT message, WPARAM wParam,
+			LPARAM lParam );
+		static WindowConfig defaultWindowConfig( );
+		static void setWindowVisibility( WindowHandle handle, const bool visible );
+	private:
+		bool isOnlyInstance( );
+	private:
+		WindowHandle _handle;
+		std::wstring _name;
+		WindowConfig _windowConfig;
+		GameInput _gameInput;
+		bool _open;
+	public:
+		WindowHandle handle( ) const
+		{
+			return _handle;
+		}
+		GameInput gameInput( ) const
+		{
+			return _gameInput;
+		}
+	};
+}
+

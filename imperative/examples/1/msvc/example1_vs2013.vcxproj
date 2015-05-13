@@ -33,6 +33,9 @@
   <ItemGroup>
     <ClInclude Include="..\src\component\ballTransformComponent.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A9F6EEE9-AC5D-4624-A146-3BBDEDA941F1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

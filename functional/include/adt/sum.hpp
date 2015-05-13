@@ -107,3 +107,4 @@ namespace hp_fp
 //
 //template <typename T>
 //using stack_ptr = std::unique_ptr<T, placement_deleter>;
+

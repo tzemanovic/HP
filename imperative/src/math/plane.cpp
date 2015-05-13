@@ -41,3 +41,4 @@ namespace hp_ip
 		return plane.a * point.x + plane.b * point.y + plane.c * point.z + plane.d;
 	}
 }
+

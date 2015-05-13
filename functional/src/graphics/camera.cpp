@@ -29,3 +29,4 @@ namespace hp_fp
 		cameraBuffer._first = !cameraBuffer._first;
 	}
 }
+

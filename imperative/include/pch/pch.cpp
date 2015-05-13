@@ -10,3 +10,4 @@ namespace hp_ip
 	const float DEG_TO_RAD_F = PI_F / 180.0f;
 	const float RAD_TO_DEG_F = 180.0f / PI_F;
 }
+

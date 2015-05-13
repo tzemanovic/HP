@@ -30,3 +30,4 @@ namespace hp_ip
 		ComponentType _type;
 	};
 }
+

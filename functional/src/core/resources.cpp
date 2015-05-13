@@ -20,7 +20,7 @@ namespace hp_fp
 		{
 			switch ( modelDef.type )
 			{
-			case BuiltInModelType::Box:
+			case BuiltInModelType::Cube:
 			{
 				resources.builtInModels.emplace( modelDef,
 					cubeMesh_IO( renderer, modelDef.dimensions ) );
@@ -83,3 +83,4 @@ namespace hp_fp
 		}
 	}
 }
+
